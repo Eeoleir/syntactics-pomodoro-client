@@ -72,9 +72,7 @@ function CardTop() {
 
       { /* ---- clock ---- */ }
       <div id="clock-container" className="flex w-full justify-center items-center p-[24px] mt-[64px]">
-        <div className="">
-          <CircularTimer/>
-        </div>
+        <CircularTimer/>
       </div>
     </div>
   );

@@ -10,7 +10,7 @@ export const ModeContext = createContext <{
   mode: Modes;
   setMode: (mode: Modes) => void;
 }>({
-  mode: Modes.SHORT_BREAK,
+  mode: Modes.FOCUS,
   setMode: () => {console.log('fasfas')}
 })
 
