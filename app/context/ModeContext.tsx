@@ -1,21 +1,21 @@
 import { createContext, ReactNode, useState } from "react";
 
-export enum Mode {
+export enum Modes {
   FOCUS = "focus",
   LONG_BREAK = "long_break",
   SHORT_BREAK = "short_break"
 }
 
 export const ModeContext = createContext <{
-  mode: Mode;
-  setMode: (mode: Mode) => void;
+  mode: Modes;
+  setMode: (mode: Modes) => void;
 }>({
-  mode: Mode.FOCUS,
-  setMode: () => {}
+  mode: Modes.SHORT_BREAK,
+  setMode: () => {console.log('fasfas')}
 })
 
 export function ModeProvider({ children }: { children: ReactNode }) {
-  const [mode, setMode] = useState<Mode>(Mode.FOCUS);
+  const [mode, setMode] = useState<Modes>(Modes.FOCUS);
 
   return (
     <ModeContext.Provider value={{mode, setMode}}>

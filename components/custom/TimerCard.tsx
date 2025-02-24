@@ -1,7 +1,6 @@
-import * as React from "react"
+import { useContext } from "react"
 import Image from "next/image";
-import { Mode, ModeContext } from "@/app/context/ModeContext";
-import { buildStyles, CircularProgressbar, CircularProgressbarWithChildren } from "react-circular-progressbar";
+import { Modes, ModeContext } from "@/app/context/ModeContext";
 import CircularTimer from "../subcomponents/CircularTimer";
 import { Button } from "../ui/button";
 
@@ -33,6 +32,8 @@ export default function PomodoroTimerCard() {
 }
 
 function CardTop() {
+  const { mode, setMode } = useContext(ModeContext);
+
   const containerStyles = `
     flex flex-row
     items-center justify-between
@@ -65,8 +66,8 @@ function CardTop() {
 
       {/* ---- cycles ---- */}
       <div id="cycles-container" className="flex flex-col space-y-[24px]">
-        <ModesIndicator title="Current Mode" subText="Current timer cycle" modeBadge={<ModeBadge mode={Mode.FOCUS}/>}/>
-        <ModesIndicator title="Next Mode" subText="Which cycle will be activated" modeBadge={<ModeBadge mode={Mode.LONG_BREAK}/>} />
+        <ModesIndicator title="Current Mode" subText="Current timer cycle" modeBadge={<ModeBadge mode={mode}/>}/>
+        <ModesIndicator title="Next Mode" subText="Which cycle will be activated" modeBadge={<ModeBadge mode={Modes.LONG_BREAK}/>} />
       </div>
 
       { /* ---- clock ---- */ }
@@ -93,7 +94,7 @@ const ModesIndicator = ({ title, subText, modeBadge} : { title:string, subText:s
   );
 }
 
-const ModeBadge = ({ mode } : {mode: Mode}) => {
+const ModeBadge = ({ mode } : {mode: Modes}) => {
   const badgeStyles = `
     flex flex-row
     space-x-2
@@ -107,7 +108,7 @@ const ModeBadge = ({ mode } : {mode: Mode}) => {
     `;
 
   const badgeProperties = {
-    [Mode.FOCUS] : {
+    [Modes.FOCUS] : {
       "title" : "Focus",
       "style" : `
         border-[#84cc16]
@@ -115,7 +116,7 @@ const ModeBadge = ({ mode } : {mode: Mode}) => {
         bg-[#84cc16]/10
         `
     },
-    [Mode.LONG_BREAK] : {
+    [Modes.LONG_BREAK] : {
       "title" : "Long Break",
       "style" : `
         border-[#06b6d4]
@@ -123,7 +124,7 @@ const ModeBadge = ({ mode } : {mode: Mode}) => {
         bg-[#06b6d4]/10
       `
     },
-    [Mode.SHORT_BREAK] : {
+    [Modes.SHORT_BREAK] : {
       "title" : "Short Break",
       "style" : `
         text-[#f59e0b]
