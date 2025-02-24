@@ -9,6 +9,10 @@ export default {
   ],
   theme: {
   	extend: {
+      fontFamily: {
+        sans: ["var(--font-inter)", "sans-serif"], // Use the CSS variable
+        rajdhani: ["var(--font-rajdhani)", "sans-serif"]
+      },
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
