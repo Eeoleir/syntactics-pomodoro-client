@@ -43,7 +43,7 @@ export default function Login() {
   };
 
   return (
-    <section className="login w-full h-screen mx-auto bg-[#18181B] text-[#FAFAFA] flex justify-center items-center">
+    <section className="content w-full h-screen mx-auto bg-[#18181B] text-[#FAFAFA] flex justify-center items-center">
       
       <div className="flex h-[398px] w-[408px] border-[1px] rounded-xl bg-[#18181B] border-[#84CC16] flex-col">
         <div className="title flex flex-col h-auto p-6">
@@ -116,7 +116,7 @@ export default function Login() {
           </p>
           <p>
             Forgot Password?
-            <Link href="/reset-password">
+            <Link href="/forgot-password">
               <span className="underline ml-2 text-[#84CC16]">
                 Reset Password
               </span>

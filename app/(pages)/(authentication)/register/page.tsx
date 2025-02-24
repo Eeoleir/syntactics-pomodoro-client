@@ -48,7 +48,7 @@ export default function Register() {
   };
 
   return (
-    <section className="login w-full h-screen mx-auto bg-[#18181B] text-[#FAFAFA] flex justify-center items-center">
+    <section className="content w-full h-screen mx-auto bg-[#18181B] text-[#FAFAFA] flex justify-center items-center">
       <div className="flex h-[519px] w-[408px] border-[1px] rounded-xl bg-[#18181B] border-[#84CC16] flex-col">
         <div className="title flex flex-col p-6 pb-5">
           <h2 className="text-2xl font-semibold">Create an Account</h2>
@@ -129,7 +129,7 @@ export default function Register() {
                   </FormItem>
                 )}
               />
-              <div className="loginBtn pt-3">
+              <div className="registerBtn pt-3">
                 
                   <Button type="submit" className="bg-[#84CC16] w-full flex">
                     Register
