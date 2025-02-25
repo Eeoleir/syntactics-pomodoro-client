@@ -2,7 +2,7 @@
 
 import { useContext } from "react"
 import Image from "next/image";
-import { Modes, ModeContext } from "@/app/context/ModeContext";
+import { Modes, useMode } from "@/app/context/ModeContext";
 import CircularTimer from "../subcomponents/CircularTimer";
 import { Button } from "../ui/button";
 
@@ -34,7 +34,7 @@ export default function PomodoroTimerCard() {
 }
 
 function CardTop() {
-  const { mode, setMode } = useContext(ModeContext);
+  const { mode, setMode } = useMode();
 
   const containerStyles = `
     flex flex-row
@@ -105,6 +105,7 @@ const ModeBadge = ({ mode } : {mode: Modes}) => {
     border
     rounded-[5px]
     text-[14px]
+    shadow-none
     `;
 
   const badgeProperties = {
@@ -138,7 +139,7 @@ const ModeBadge = ({ mode } : {mode: Modes}) => {
   };
 
   return (
-    <Button className={`${badgeStyles} ${badgeProperties[mode].style}`}>
+    <Button className={`${badgeStyles} ${badgeProperties[mode].style}`} onClick={() => {}}>
       <Image src={`/mode_badge_icons/${mode}.svg`} alt={'?'} width={16} height={15} className="-mt-[2px]"/> {badgeProperties[mode].title}
     </Button>
   );
