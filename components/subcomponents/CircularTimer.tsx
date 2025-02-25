@@ -22,7 +22,7 @@ export default function CircularTimer() {
   // (auto start next session = false then true & vice versa)
   const [isPaused, setIsPaused] = useState(true);
   const intervalRef = useRef<NodeJS.Timeout>(null);
-
+  // timer mechanism
   useEffect(() => {
     intervalRef.current = setInterval(() => {
       if (!isPaused) {
@@ -67,14 +67,14 @@ export default function CircularTimer() {
 
   return (
     <div onMouseOver={handleMouseOver} onMouseOut={handleMouseOut} className="container w-full flex flex-row justify-center">
-      <div className={`w-[250px] ${isHovering ? 'blur-sm opacity-75' : ''} transition duration-200`}>
+      <div className={`w-[250px] ${(isHovering || isPaused) ? 'blur-sm opacity-75' : ''} transition duration-200`}>
         <CircularProgressbarWithChildren strokeWidth={6.5} value={time} maxValue={mockTime} styles={styles}>
           <h3 className={`${rajdhani.className} text-white ${time > 3600 ? 'text-[45px]' : 'text-[64px]'}`}>
             {formatTime(time)}
           </h3>
         </CircularProgressbarWithChildren>
       </div>
-      {isHovering && (
+      {(isHovering || isPaused) && (
         <AnimatePresence>
           <motion.div
             initial={{ opacity: 0, scale: 0.95, marginTop: 5}}

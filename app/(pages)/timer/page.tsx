@@ -1,5 +1,3 @@
-"use client"
-
 import PomodoroTimerCard from "@/components/custom/TimerCard";
 import * as React from "react"
 
