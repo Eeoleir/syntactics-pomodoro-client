@@ -6,8 +6,11 @@ import { Modes, ModeContext } from "@/app/context/ModeContext";
 import CircularTimer from "../subcomponents/CircularTimer";
 import { Button } from "../ui/button";
 
+
+const darkMode = false;
+
 const primaryTextStyles = `
-  text-[#a1a1aa]
+  ${darkMode ? "text-[#a1a1aa]" : "text-[#52525b]"}
   font-bold
   font-sans
   `;
@@ -18,16 +21,13 @@ const secondaryTextStyles = `
   `;
 
 export default function PomodoroTimerCard() {
-  const containerStyles = `
-    flex flex-col
-    w-[542px]
-    p-[24px]
-    border border-[#27272a]
-    rounded-xl
-    `;
+  // temporary until dark mode context
+
+  const containerLayout = "flex flex-col w-full p-[24px] rounded-xl border";
+  const containerStyles = darkMode ? `border-[#27272a]` : `border-[#e4e4e7]`;
 
   return (
-    <div id="container-main" className={containerStyles}>
+    <div id="container-main" className={`${containerStyles} ${containerLayout}`}>
       <CardTop/>
     </div>
   );
@@ -46,12 +46,12 @@ function CardTop() {
     w-[40px] h-[40px]
     flex justify-center items-center
     text-[24px]
-    bg-[#27272a]
+    ${darkMode ? "bg-[#27272a]" : "bg-[#f4f4f5]"}
     rounded
     `;
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col w-full">
       { /* ---- title and icon ---- */ }
       <div id="header-container" className={containerStyles}>
         <div id="header-text" className="flex flex-col">
@@ -64,7 +64,7 @@ function CardTop() {
       </div>
 
       { /* ---- divider ---- */}
-      <div id="divider" className="h-[1px] w-full bg-[#27272a] mt-[24px] mb-[24px]"></div>
+      <div id="divider" className={`h-[1px] w-full bg-[${darkMode ? "#27272a" : "#e4e4e7"}] mt-[24px] mb-[24px]`}></div>
 
       {/* ---- cycles ---- */}
       <div id="cycles-container" className="flex flex-col space-y-[24px]">
@@ -114,6 +114,7 @@ const ModeBadge = ({ mode } : {mode: Modes}) => {
         border-[#84cc16]
         text-[#84cc16]
         bg-[#84cc16]/10
+        hover:bg-transparent
         `
     },
     [Modes.LONG_BREAK] : {
@@ -122,6 +123,7 @@ const ModeBadge = ({ mode } : {mode: Modes}) => {
         border-[#06b6d4]
         text-[#06b6d4]
         bg-[#06b6d4]/10
+        hover:bg-transparent
       `
     },
     [Modes.SHORT_BREAK] : {
@@ -130,6 +132,7 @@ const ModeBadge = ({ mode } : {mode: Modes}) => {
         text-[#f59e0b]
         border-[#f59e0b]
         bg-[#f59e0b]/10
+        hover:bg-transparent
       `
     }
   };
