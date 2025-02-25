@@ -285,7 +285,7 @@ const TaskList = () => {
           </div>
           <hr className="my-6 w-full border border-[#E4E4E7]" />
 
-          <ScrollArea className="flex flex-col justify-between h-[500px] overflow-y-auto">
+          <ScrollArea className="flex flex-col justify-between h-[382px] overflow-y-auto">
             {taskList.map((task) => (
               <div key={task.id} className="flex justify-between mx-3">
                 <div className="flex items-center gap-2 mb-6">
@@ -420,7 +420,7 @@ const TaskList = () => {
           </ScrollArea>
           <Button
             onClick={() => setAddTaskActive("addTitle")}
-            className="w-full py-2 px-3 text-sm font-semibold text-white bg-[#84CC16] hover:bg-[#669f10] rounded-md"
+            className="w-full py-2 px-3 mt-16 text-sm font-semibold text-white bg-[#84CC16] hover:bg-[#669f10] rounded-md"
           >
             Add
           </Button>
