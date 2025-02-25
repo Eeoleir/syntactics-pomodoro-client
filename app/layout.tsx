@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter, Rajdhani } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
-import 'animate.css';
+import "animate.css";
+import { QueryProvider } from "../lib/query-client"; 
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -46,8 +47,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${rajdhani.variable} antialiased`}
       >
-        {children}
-        <Toaster />
+        <QueryProvider>
+          {children}
+          <Toaster />
+        </QueryProvider>
       </body>
     </html>
   );

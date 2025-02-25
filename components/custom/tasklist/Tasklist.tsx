@@ -229,9 +229,6 @@ const TaskList = () => {
     taskDesc: string,
     taskCycle: number
   ) => {
-    console.log(
-      `TaskId: ${taskId}, TaskTitle: ${taskTitle}, TaskDesc: ${taskDesc}`
-    );
     setEditInfo({
       taskId: taskId,
       taskTitle: taskTitle,
