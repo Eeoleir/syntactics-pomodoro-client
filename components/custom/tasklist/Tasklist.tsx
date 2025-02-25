@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import AddTask from "./AddTask";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,8 @@ import {
 import { toast } from "sonner";
 import "animate.css";
 import EditTask from "./EditTask";
+import { driver } from "driver.js";
+import "driver.js/dist/driver.css";
 
 const TaskList = () => {
   const [activeTaskId, setActiveTaskId] = React.useState<number | null>(null);
@@ -259,10 +261,8 @@ const TaskList = () => {
     );
   };
 
-  console.log("TaskList:", taskList);
-
   return (
-    <div className="p-6 w-full relative">
+    <div id="task-list" className="p-6 w-full relative">
       {EditTaskActive === "editTitle" ? (
         <EditTask
           EditTaskActive={EditTaskActive}
@@ -274,7 +274,9 @@ const TaskList = () => {
         <>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="font-bold text-2xl text-black">Task list</h1>
+              <h1 className="iAmHere font-bold text-2xl text-black">
+                Task list
+              </h1>
               <p className="text-[#71717A] font-normal text-base">
                 Your goals for this session
               </p>
@@ -293,11 +295,21 @@ const TaskList = () => {
                     checked={task.status === "completed"}
                     onCheckedChange={() => handleCheckboxChange(task.id)}
                     id={`task-${task.id}`}
+                    className="bg-[#F4F4F5] border border-[#E4E4E7]"
                   />
                   <span
                     className={`${
                       task.status === "completed" ? "line-through" : ""
                     } text-[#71717A] text-base font-medium hover:underline cursor-pointer`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditClick(
+                        task.id,
+                        task.title,
+                        task.description,
+                        task.estimated_cycles
+                      );
+                    }}
                   >
                     {task.title}
                   </span>
@@ -309,6 +321,7 @@ const TaskList = () => {
                   {activeTaskId === task.id && (
                     <div className="flex items-center gap-4">
                       <svg
+                        id="edit-task-button"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
@@ -338,6 +351,7 @@ const TaskList = () => {
                       >
                         <DialogTrigger asChild>
                           <svg
+                            id="delete-task-button"
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
@@ -399,6 +413,7 @@ const TaskList = () => {
                   )}
 
                   <svg
+                    id="burger-menu-icon"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -420,6 +435,7 @@ const TaskList = () => {
           </ScrollArea>
           <Button
             onClick={() => setAddTaskActive("addTitle")}
+            id="add-task-button"
             className="w-full py-2 px-3 mt-16 text-sm font-semibold text-white bg-[#84CC16] hover:bg-[#669f10] rounded-md"
           >
             Add
