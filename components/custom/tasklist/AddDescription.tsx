@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner"
 
 import { Textarea } from "@/components/ui/textarea";
 
@@ -21,6 +22,11 @@ const AddDescription: React.FC<AddTaskProps> = ({
   AddTaskActive,
   setAddTaskActive,
 }) => {
+  const handlSubmitTask = () => {
+    console.log("Task submitted");
+    setAddTaskActive("default");
+    toast("Event has been created.")
+  };
   return (
     <div className="animate__animated animate__fadeIn flex flex-col justify-between h-[382px]">
       <div>
@@ -76,7 +82,12 @@ const AddDescription: React.FC<AddTaskProps> = ({
         >
           Go Back
         </Button>
-        <Button className="w-full bg-[#84CC16] hover:bg-[#669f10] font-semibold text-sm">
+        <Button
+          onClick={() => {
+            handlSubmitTask();
+          }}
+          className="w-full bg-[#84CC16] hover:bg-[#669f10] font-semibold text-sm"
+        >
           Save Task
         </Button>
       </div>
