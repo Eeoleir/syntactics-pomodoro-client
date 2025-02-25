@@ -8,8 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { IoArrowBack } from "react-icons/io5";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
-import { ResendTimer } from "@/components/custom/ResendTimer";
-import Link from "next/link";
+
 
 
 const formSchema = z
