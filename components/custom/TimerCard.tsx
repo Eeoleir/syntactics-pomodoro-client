@@ -136,9 +136,5 @@ const ModeBadge = ({ mode } : {mode: Modes}) => {
     <Button className={`${badgeStyles} ${badgeProperties[mode].style}`}>
       <Image src={`/mode_badge_icons/${mode}.svg`} alt={'?'} width={16} height={15} className="-mt-[2px]"/> {badgeProperties[mode].title}
     </Button>
-    // <div className={`${badgeProperties[mode].style} ${badgeStyles}`}>
-    //   <Image src={`/mode_badge_icons/${mode}.svg`} alt={'?'} width={16} height={15} className="-mt-[2px]"/>
-    //   <span>{badgeProperties[mode].title}</span>
-    // </div>
   );
 }
