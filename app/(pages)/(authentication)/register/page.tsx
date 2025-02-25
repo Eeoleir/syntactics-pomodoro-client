@@ -7,6 +7,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
+import { register } from "../../../../lib/auth-queries";
 
 import {
   Form,
@@ -14,37 +16,60 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage, // Added for error display
 } from "@/components/ui/form";
 
 const formSchema = z
   .object({
-    username: z.string().min(6),
-    email: z.string().email(),
-    password: z.string().min(6),
-    repassword: z.string().min(6),
+    name: z
+      .string()
+      .min(6, { message: "Username must be at least 6 characters" }),
+    email: z.string().email({ message: "Invalid email address" }),
+    password: z
+      .string()
+      .min(6, { message: "Password must be at least 6 characters" }),
+    repassword: z
+      .string()
+      .min(6, { message: "Password must be at least 6 characters" }),
   })
   .refine((data) => data.password === data.repassword, {
+    message: "Passwords do not match",
     path: ["repassword"],
   });
 
-  type FormValues = z.infer<typeof formSchema>;
+type FormValues = z.infer<typeof formSchema>;
 
 export default function Register() {
   const router = useRouter();
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
+      name: "",
       email: "",
       password: "",
       repassword: "",
     },
   });
 
-  const onSubmit = (data: any) => {
-    console.log("Form Data:", data);
-    router.push("/login");
-    console.log("I am heree")
+  const mutation = useMutation({
+    mutationFn: register,
+    onSuccess: (data) => {
+      console.log("Registration successful:", data);
+      router.push("/login"); // Redirect to login after success
+    },
+    onError: (error: Error) => {
+      console.error("Registration error:", error);
+      form.setError("root", {
+        message: error.message || "Registration failed",
+      });
+    },
+  });
+
+  const onSubmit = (data: FormValues) => {
+
+    const { name, email, password } = data;
+    mutation.mutate({ name, email, password });
   };
 
   return (
@@ -60,7 +85,8 @@ export default function Register() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
               <FormField
-                name="username"
+                control={form.control} 
+                name="name"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="font-bold text-[14px]">
@@ -74,14 +100,18 @@ export default function Register() {
                         {...field}
                       />
                     </FormControl>
+                    <FormMessage /> {/* Display validation errors */}
                   </FormItem>
                 )}
               />
               <FormField
+                control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="font-bold text-[14px]">Email</FormLabel>
+                    <FormLabel className="font-bold text-[14px]">
+                      Email
+                    </FormLabel>
                     <FormControl>
                       <Input
                         className="w-full bg-[#3D4142] border-none px-3 py-1"
@@ -90,14 +120,18 @@ export default function Register() {
                         {...field}
                       />
                     </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
               <FormField
+                control={form.control}
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="font-bold text-[14px]">Password</FormLabel>
+                    <FormLabel className="font-bold text-[14px]">
+                      Password
+                    </FormLabel>
                     <FormControl>
                       <Input
                         className="w-full bg-[#3D4142] border-none px-3 py-1"
@@ -107,10 +141,12 @@ export default function Register() {
                         {...field}
                       />
                     </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
               <FormField
+                control={form.control}
                 name="repassword"
                 render={({ field }) => (
                   <FormItem>
@@ -126,13 +162,24 @@ export default function Register() {
                         {...field}
                       />
                     </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
+              {/* Display API errors */}
+              {form.formState.errors.root && (
+                <p className="text-red-500 text-sm">
+                  {form.formState.errors.root.message}
+                </p>
+              )}
               <div className="registerBtn pt-3">
-                  <Button type="submit" className="bg-[#84CC16] w-full flex">
-                    Register
-                  </Button>         
+                <Button
+                  type="submit"
+                  className="bg-[#84CC16] w-full flex"
+                  disabled={mutation.isPending}
+                >
+                  {mutation.isPending ? "Registering..." : "Register"}
+                </Button>
               </div>
             </form>
           </Form>
