@@ -7,6 +7,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query"; 
+import { signIn } from "../../../../lib/auth-queries"; 
 
 import {
   Form,
@@ -14,6 +16,7 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage, // Added for error display
 } from "@/components/ui/form";
 
 const formSchema = z.object({
@@ -25,9 +28,9 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-
 export default function Login() {
   const router = useRouter();
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -36,15 +39,24 @@ export default function Login() {
     },
   });
 
+  const mutation = useMutation({
+    mutationFn: signIn,
+    onSuccess: (data) => {
+      console.log("Sign-in successful:", data);
+      router.push("/dashboard");
+    },
+    onError: (error: Error) => {
+      console.error("Sign-in error:", error);
+      form.setError("root", { message: error.message || "Sign-in failed" }); // Display error
+    },
+  });
+
   const onSubmit = (values: FormValues) => {
-    console.log(":", values);
-    router.push("/dashboard");
-    console.log("I am heree")
+    mutation.mutate(values); 
   };
 
   return (
     <section className="content w-full h-screen mx-auto bg-[#18181B] text-[#FAFAFA] flex justify-center items-center">
-      
       <div className="flex h-[398px] w-[408px] border-[1px] rounded-xl bg-[#18181B] border-[#84CC16] flex-col">
         <div className="title flex flex-col h-auto p-6">
           <h2 className="text-2xl font-semibold">Log in</h2>
@@ -74,6 +86,7 @@ export default function Login() {
                         {...field}
                       />
                     </FormControl>
+                    <FormMessage /> 
                   </FormItem>
                 )}
               />
@@ -94,12 +107,23 @@ export default function Login() {
                         {...field}
                       />
                     </FormControl>
+                    <FormMessage /> 
                   </FormItem>
                 )}
               />
+              {/* Display API error if present */}
+              {form.formState.errors.root && (
+                <p className="text-red-500 text-sm">
+                  {form.formState.errors.root.message}
+                </p>
+              )}
               <div className="loginBtn pt-5">
-                <Button type="submit" className="bg-[#84CC16] w-full">
-                  Login
+                <Button
+                  type="submit"
+                  className="bg-[#84CC16] w-full"
+                  disabled={mutation.isPending} // Disable button during request
+                >
+                  {mutation.isPending ? "Logging In..." : "Login"}
                 </Button>
               </div>
             </form>

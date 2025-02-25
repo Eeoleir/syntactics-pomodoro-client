@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter, Rajdhani } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
-import 'animate.css';
+import "animate.css";
+import { QueryProvider } from "../lib/query-client"; 
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,19 +17,19 @@ const geistMono = Geist_Mono({
 
 const inter = Inter({
   variable: "--font-inter",
-  subsets: ["latin"]
+  subsets: ["latin"],
 });
 
 const rajdhani = Rajdhani({
-  variable: "--font-radjhani",
+  variable: "--font-rajdhani", 
   subsets: ["latin"],
-  weight: ["300", "400", "500", "700"]
+  weight: ["300", "400", "500", "700"],
 });
 
 // const foco = Foco({
-//   subsets: ["latin"], // Choose the subset you need
-//   weight: ["400", "700"], // Add required font weights
-//   variable: "--font-foco", // Optional: Define a CSS variable
+//   subsets: ["latin"],
+//   weight: ["400", "700"],
+//   variable: "--font-foco",
 // });
 
 export const metadata: Metadata = {
@@ -46,8 +47,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${rajdhani.variable} antialiased`}
       >
-        {children}
-        <Toaster />
+        <QueryProvider>
+          {children}
+          <Toaster />
+        </QueryProvider>
       </body>
     </html>
   );
