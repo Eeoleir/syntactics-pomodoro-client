@@ -7,8 +7,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query"; 
-import { signIn } from "../../../../lib/auth-queries"; 
+import { useMutation } from "@tanstack/react-query";
+import { signIn } from "../../../../lib/auth-queries";
 
 import {
   Form,
@@ -16,7 +16,6 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage, // Added for error display
 } from "@/components/ui/form";
 
 const formSchema = z.object({
@@ -46,13 +45,13 @@ export default function Login() {
       router.push("/dashboard");
     },
     onError: (error: Error) => {
-      console.error("Sign-in error:", error);
-      form.setError("root", { message: error.message || "Sign-in failed" }); // Display error
+      form.setError("root", { message: error.message || "Sign-in failed" });
     },
   });
 
   const onSubmit = (values: FormValues) => {
-    mutation.mutate(values); 
+    console.log("Form data:", values);
+    mutation.mutate(values);
   };
 
   return (
@@ -86,7 +85,6 @@ export default function Login() {
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage /> 
                   </FormItem>
                 )}
               />
@@ -107,21 +105,14 @@ export default function Login() {
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage /> 
                   </FormItem>
                 )}
               />
-              {/* Display API error if present */}
-              {form.formState.errors.root && (
-                <p className="text-red-500 text-sm">
-                  {form.formState.errors.root.message}
-                </p>
-              )}
               <div className="loginBtn pt-5">
                 <Button
                   type="submit"
                   className="bg-[#84CC16] w-full"
-                  disabled={mutation.isPending} // Disable button during request
+                  disabled={mutation.isPending}
                 >
                   {mutation.isPending ? "Logging In..." : "Login"}
                 </Button>
@@ -129,6 +120,7 @@ export default function Login() {
             </form>
           </Form>
         </div>
+
         <div className="links text-zinc-400 px-6 pb-6 flex flex-col text-sm space-y-1 justify-center items-center">
           <p>
             New to Pomodoro?
