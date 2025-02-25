@@ -35,7 +35,7 @@ export default function NewPassword() {
 
   const onSubmit = (values: FormValues) => {
     console.log("Form data:", values);
-    router.push("/new-password");
+    router.push("/login");
   };
 
   return (
@@ -94,13 +94,14 @@ export default function NewPassword() {
                   </FormItem>
                 )}
               />
-            </form>
-
-            <div className="Request-btn py-6">
+              <div className="Request-btn pt-3 pb-6">
                 <Button type="submit" className="bg-[#84CC16] w-full">
-                  <Link href="/login">Continue</Link>
+                  Continue
                 </Button>
               </div>
+            </form>
+
+            
           </Form>
         </div>
         

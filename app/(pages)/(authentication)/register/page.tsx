@@ -130,11 +130,9 @@ export default function Register() {
                 )}
               />
               <div className="registerBtn pt-3">
-                
                   <Button type="submit" className="bg-[#84CC16] w-full flex">
                     Register
-                  </Button>
-              
+                  </Button>         
               </div>
             </form>
           </Form>

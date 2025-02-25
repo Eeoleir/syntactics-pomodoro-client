@@ -9,11 +9,10 @@ import { useRouter } from "next/navigation";
 import { IoArrowBack } from "react-icons/io5";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { ResendTimer } from "@/components/custom/ResendTimer";
-import Link from "next/link";
 
 
 const formSchema = z.object({
-  recoveryCode: z.string().min(6),
+  recoveryCode: z.string().min(4),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -56,7 +55,7 @@ export default function ResetCode() {
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-3 text-left"
+              className=" text-left"
             >
               <FormField
                 control={form.control}
@@ -75,10 +74,10 @@ export default function ResetCode() {
                 )}
               />
 
-              <div className="Request-btn pt-5">
+              <div className="Request-btn pt-6">
                 <Button type="submit" className="bg-[#84CC16] w-full">
-                  <Link href="/new-password">Continue</Link>
-                </Button>
+                    Continue
+                </Button>      
               </div>
             </form>
           </Form>
