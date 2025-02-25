@@ -1,12 +1,12 @@
 "use client";
 
 import { IoArrowBack } from "react-icons/io5";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import PomodoroSettings from "@/components/custom/settings/pomodoro_settings";
 import EditProfile from "@/components/custom/settings/edit_profile";
 
 export default function Settings() {
-  const router = useRouter();
+  // const router = useRouter();
 
   return (
     <main className="w-full min-h-screen mx-auto bg-[#18181B] text-[#FAFAFA] flex flex-col py-4 sm:py-8 md:py-[67px] px-4 sm:px-8 md:px-[160px] gap-6 sm:gap-8 md:gap-[48px]">
