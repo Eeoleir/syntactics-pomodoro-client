@@ -1,16 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface AddTaskProps {
   AddTaskActive: string;
@@ -21,6 +13,24 @@ const AddTask: React.FC<AddTaskProps> = ({
   AddTaskActive,
   setAddTaskActive,
 }) => {
+  const [taskName, setTaskName] = useState("");
+  const [taskDescription, setTaskDescription] = useState("");
+  const [pomodoroCycles, setPomodoroCycles] = useState("");
+
+  const handleSubmitTask = () => {
+    if (!taskName || !taskDescription || !pomodoroCycles) {
+      toast.error("All fields are required.");
+      return;
+    }
+    console.log("Task submitted:", {
+      taskName,
+      taskDescription,
+      pomodoroCycles,
+    });
+    setAddTaskActive("default");
+    toast.success("Task added successfully. 🎉");
+  };
+
   return (
     <div className="animate__animated animate__fadeIn flex flex-col justify-between h-[382px]">
       <div>
@@ -29,13 +39,12 @@ const AddTask: React.FC<AddTaskProps> = ({
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
-            stroke-width="1.5"
+            strokeWidth="1.5"
             stroke="currentColor"
-            className="size-6"
+            className="size-6 cursor-pointer"
             onClick={() => setAddTaskActive("default")}
           >
             <path
-              strokeLinecap="round"
               strokeLinecap="round"
               d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
             />
@@ -48,8 +57,18 @@ const AddTask: React.FC<AddTaskProps> = ({
         <Separator className="my-6" />
 
         <div className="flex flex-col gap-3 mt-1">
-          <Input type="email" placeholder="Name of Task" />
-          <Input type="email" placeholder="Description of your task" />
+          <Input
+            type="text"
+            placeholder="Name of Task"
+            value={taskName}
+            onChange={(e) => setTaskName(e.target.value)}
+          />
+          <Input
+            type="text"
+            placeholder="Description of your task"
+            value={taskDescription}
+            onChange={(e) => setTaskDescription(e.target.value)}
+          />
         </div>
         <Separator className="my-6" />
 
@@ -57,20 +76,14 @@ const AddTask: React.FC<AddTaskProps> = ({
           <span className="font-medium text-base text-[#71717A]">
             Est. # of Pomodoro Cycle
           </span>
-          <Select>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select a number" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {[...Array(10).keys()].map((num) => (
-                  <SelectItem key={num} value={num.toString()}>
-                    {num}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+          <Input
+            type="number"
+            placeholder="0"
+            className="w-20"
+            min="1"
+            value={pomodoroCycles}
+            onChange={(e) => setPomodoroCycles(e.target.value)}
+          />
         </div>
       </div>
       <div className="flex justify-between items-center gap-6 mt-6">
@@ -81,10 +94,11 @@ const AddTask: React.FC<AddTaskProps> = ({
           Cancel
         </Button>
         <Button
-          onClick={() => setAddTaskActive("addDescription")}
+          onClick={handleSubmitTask}
           className="w-full bg-[#84CC16] hover:bg-[#669f10] font-semibold text-sm"
+          disabled={!taskName || !taskDescription || !pomodoroCycles}
         >
-          Next
+          Save Task
         </Button>
       </div>
     </div>
