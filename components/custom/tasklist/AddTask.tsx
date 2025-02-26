@@ -23,11 +23,15 @@ const AddTask: React.FC<AddTaskProps> = ({
   const mutation = useMutation({
     mutationFn: createTask,
     onSuccess: () => {
-      toast.success("Task added successfully. 🎉");
-      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] }); // Match TaskList query key
+      toast.success("Task created successfully!");
+      setTaskName("");
+      setTaskDescription("");
+      setPomodoroCycles("");
+      setAddTaskActive("default");
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      toast.error(`Failed to create task: ${error.message}`);
     },
   });
 
@@ -36,24 +40,18 @@ const AddTask: React.FC<AddTaskProps> = ({
       toast.error("All fields are required.");
       return;
     }
-    console.log("Task submitted:", {
-      taskName,
-      taskDescription,
-      pomodoroCycles,
-    });
+    const today = new Date();
+    const formattedDate = today.toISOString().split("T")[0];
 
     const newTask = {
       title: taskName,
       description: taskDescription,
-      due_date: "2025-03-21", // Example date
-      estimated_cycles: pomodoroCycles,
+      due_date: formattedDate, // Example date; adjust as needed
+      estimated_cycles: parseInt(pomodoroCycles, 10), // Convert to number
       status: "pending",
     };
 
-    mutation.mutate(newTask as any);
-
-    setAddTaskActive("default");
-    toast.success("Task added successfully. 🎉");
+    mutation.mutate(newTask);
   };
 
   return (
@@ -61,26 +59,24 @@ const AddTask: React.FC<AddTaskProps> = ({
       <div>
         <div className="flex items-center gap-2">
           <svg
+            onClick={() => setAddTaskActive("default")}
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
             strokeWidth="1.5"
             stroke="currentColor"
             className="size-6 cursor-pointer"
-            onClick={() => setAddTaskActive("default")}
           >
             <path
               strokeLinecap="round"
               d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
             />
           </svg>
-
           <h3 className="text-2xl font-bold text-[#52525B]">
             What are you working on?
           </h3>
         </div>
         <Separator className="my-6" />
-
         <div className="flex flex-col gap-3 mt-1">
           <Input
             type="text"
@@ -96,7 +92,6 @@ const AddTask: React.FC<AddTaskProps> = ({
           />
         </div>
         <Separator className="my-6" />
-
         <div className="flex items-center justify-between">
           <span className="font-medium text-base text-[#71717A]">
             Est. # of Pomodoro Cycle
