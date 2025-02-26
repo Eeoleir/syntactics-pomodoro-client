@@ -1,5 +1,3 @@
-import API_BASE_URL from "./api_url";
-
 export async function signIn({
   email,
   password,
@@ -7,7 +5,7 @@ export async function signIn({
   email: string;
   password: string;
 }) {
-  const response = await fetch(`${API_BASE_URL}/auth/login`, {
+  const response = await fetch("http://192.167.0.165:8000/api/auth/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
@@ -16,7 +14,7 @@ export async function signIn({
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.error || "Sign-in failed");
+    throw alert(data.error||"Something went wrong");
   }
 
   return data;
@@ -31,7 +29,7 @@ export async function register({
   email: string;
   password: string;
 }) {
-  const response = await fetch(`${API_BASE_URL}/auth/register`, {
+  const response = await fetch("http://192.167.0.165:8000/api/auth/register", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name, email, password }),
@@ -40,7 +38,7 @@ export async function register({
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.error || "Registration failed");
+    throw alert(data.error||"Something went wrong");
   }
 
   return data;

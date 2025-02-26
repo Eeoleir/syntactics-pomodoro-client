@@ -166,12 +166,8 @@ export default function Register() {
                   </FormItem>
                 )}
               />
-              {/* Display API errors */}
-              {form.formState.errors.root && (
-                <p className="text-red-500 text-sm">
-                  {form.formState.errors.root.message}
-                </p>
-              )}
+             
+              
               <div className="registerBtn pt-3">
                 <Button
                   type="submit"
