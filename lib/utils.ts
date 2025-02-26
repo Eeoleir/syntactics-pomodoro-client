@@ -1,3 +1,4 @@
+import { Mode } from "@/app/stores/cycleStore";
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -38,3 +39,22 @@ export function hexToRgb(hex: string): { r: number; g: number; b: number; } | nu
     return { r, g, b };
   }
 }
+
+export const generateColor = (mode: string) => {
+  let color = "#27272a";
+  switch (mode) {
+    case Mode.FOCUS: {
+      color = "#84cc16";
+      break;
+    }
+    case Mode.LONG_BREAK: {
+      color = "#06b6d4";
+      break;
+    }
+    case Mode.SHORT_BREAK: {
+      color = "#f59e0b";
+      break;
+    }
+  }
+  return color;
+};

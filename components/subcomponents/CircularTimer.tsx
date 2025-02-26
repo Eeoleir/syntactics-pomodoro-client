@@ -1,76 +1,63 @@
 import { buildStyles, CircularProgressbarWithChildren } from "react-circular-progressbar";
-import { Modes, useMode, } from "@/app/context/ModeContext";
 import { useContext, useEffect, useRef, useState} from "react";
 
 import { Rajdhani } from "next/font/google";
 import { AnimatePresence, motion } from "motion/react";
 import { Button } from "../ui/button";
 import Image from "next/image";
-import { formatTime } from "@/lib/utils";
+import { formatTime, generateColor } from "@/lib/utils";
+import { Mode, useCycleStore } from "@/app/stores/cycleStore";
 const rajdhani = Rajdhani({ subsets: ["latin"], weight: ["700"] });
 
+// DUMMY VALUES FOR FEATURES THAT ARE NOT YET IMPLEMENTED
 const darkMode = false;
+const autoStart = true; // from settings
+const cycleDone = false; // is set to true when no more tasks are left
 
 export default function CircularTimer() {
+
   // mode context for the color of the timer
-  const { mode, setMode } = useMode();
+  const {
+    currentMode,
+    durations,
+    setTimeLeft,
+    nextMode,
+    activateNextMode
+  } = useCycleStore();
 
-  const mockTime = 120;
-  const [ time, setTime ] = useState(mockTime);
+  // countdown state variable
+  const [ time, setTime ] = useState(durations[currentMode]);
+  const [isPaused, setIsPaused] = useState(true); // intial value should be from settings (auto start next session = false then true & vice versa)
+  const intervalRef = useRef<NodeJS.Timeout>(null); // prevents re-renders, save resource
 
-  // timer logic
-  // NOTE: initial value should be passed from settings
-  // (auto start next session = false then true & vice versa)
-  const [isPaused, setIsPaused] = useState(true);
-  const intervalRef = useRef<NodeJS.Timeout>(null);
+  // important for countdown animation
+  const [prevTime, setPrevTime] = useState('');
 
-  //
-  const [current, setCurrentTime] = useState(formatTime(mockTime))
-  const [prev, setPrevTime] = useState('');
-
-  // timer mechanism
   useEffect(() => {
-    setPrevTime((current));
-
+    setPrevTime(formatTime(time));
+    console.log(`prevTime --> ${prevTime}`)
     intervalRef.current = setInterval(() => {
-      if (!isPaused) {
+      if (!isPaused && !cycleDone) {
         setTime((prev) => (prev > 0 ? prev - 1 : prev));
       }
     }, 1000);
 
-    setCurrentTime(formatTime(time));
-
     if (time === 0) {
-      setIsPaused(true);
-      setTime(mockTime);
-    };
-
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [isPaused, time, current]);
-
-  const generateColor = (mode: string) => {
-    let color = "#27272a";
-    switch (mode) {
-      case Modes.FOCUS: {
-        color = "#84cc16";
-        break;
-      }
-      case Modes.LONG_BREAK: {
-        color = "#06b6d4";
-        break;
-      }
-      case Modes.SHORT_BREAK: {
-        color = "#f59e0b";
-        break;
+      if (!cycleDone && autoStart) {
+        activateNextMode();
+        setTimeLeft(nextMode, durations[nextMode]);
+        setTime(durations[nextMode]);
+      } else {
+        setIsPaused(true);
       }
     }
-    return color;
-  };
+
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current) };
+
+  }, [time, isPaused, activateNextMode, durations, nextMode, setTimeLeft, prevTime]);
 
   const styles = buildStyles({
-    pathColor: generateColor(mode),
+    pathColor: !cycleDone ? generateColor(currentMode) : "#f4f4f5",
     trailColor: darkMode ? "#27272a" : "#f4f4f5",
     strokeLinecap: "round",
   });
@@ -81,11 +68,13 @@ export default function CircularTimer() {
   const handleMouseOut = () => { setIsHovering(false); };
 
   return (
-    <div onMouseOver={handleMouseOver} onMouseOut={handleMouseOut} className="container w-full flex flex-row justify-center">
-      <div className={`w-[250px] ${(isHovering || isPaused) ? 'blur-sm opacity-75' : ''} transition duration-200`}>
-        <CircularProgressbarWithChildren strokeWidth={6.5} value={time} maxValue={mockTime} styles={styles}>
-          <TimeTickerAnim prev={prev} current={current} seconds={time}/>
-        </CircularProgressbarWithChildren>
+    <div onMouseOver={handleMouseOver} onMouseOut={handleMouseOut} className="container w-full flex flex-row justify-center max-h-72 px-5">
+      <div className={`container w-6/12 flex xl:justify-center justify-start py-2 ${(isHovering || isPaused) ? 'blur-sm opacity-75' : ''} transition duration-200`}>
+        <div className="w-[250px]">
+          <CircularProgressbarWithChildren strokeWidth={6.5} value={time} maxValue={durations[currentMode]} styles={styles}>
+            <TimeTickerAnim prev={prevTime} current={formatTime(time)} seconds={time}/>
+          </CircularProgressbarWithChildren>
+        </div>
       </div>
       {(isHovering || isPaused) && (
         <AnimatePresence>
@@ -94,33 +83,34 @@ export default function CircularTimer() {
             animate={{ opacity: 1, scale: 1, marginTop: 0}}
             exit={{ opacity: 0, scale: 0.95, marginTop: 5}}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="absolute w-2/6 flex justify-center"
+            className="absolute w-2/6 flex justify-center p-6"
           >
-            <TimerControls isPaused={isPaused} setPaused={setIsPaused} initialTime={mockTime} setTime={setTime}/>
+            <TimerControls isPaused={isPaused} setPaused={setIsPaused} initialTime={durations[currentMode]} setTime={setTime}/>
           </motion.div>
         </AnimatePresence>
+      )}
+      { (cycleDone) &&  (
+        <div className="flex flex-col w-6/12 justify-start space-y-20">
+          <div className="flex flex-col space-y-3">
+            <h3 className={`font-sans text-[32px] font-bold ${darkMode ? "text-[#f4f4f5]" : "text-[#3f3f46]"}`}>Congratulations! 🎉</h3>
+            <h6 className={`${darkMode ? "text-[#f4f4f5]" : "text-[#71717a]"} text-[18px]`}>You have reached the end of another cycles in this session!</h6>
+          </div>
+          <OnFinishedCycleButton/>
+        </div>
       )}
     </div>
   );
 }
 
 const TimeTickerAnim = ({ prev, current, seconds }: { prev: string, current: string, seconds: number }) => {
-  // Store references to each digit element
   const digitRefs = useRef<(HTMLSpanElement | null)[]>([]);
 
-  // Style constants
-  const textSizeClass = seconds > 3600 ? "text-[45px]" : "text-[64px]";
-  const textColorClass = darkMode ? "text-white" : "text-[#52525b]";
-
-  // Use useEffect to handle animations only when necessary
   useEffect(() => {
     [...current].forEach((c, index) => {
       if (prev[index] !== c && digitRefs.current[index]) {
-        // Get the current element
         const e = digitRefs.current[index];
         if (!e) return;
 
-        // Create animation using the Web Animation API
         e.animate([
           { opacity: 0.2, transform: 'translateY(-16px) rotateX(-200deg)' },
           { opacity: 1, transform: 'translateY(4px) rotateX(0deg)' },
@@ -134,10 +124,14 @@ const TimeTickerAnim = ({ prev, current, seconds }: { prev: string, current: str
     });
   }, [current, prev]);
 
+  const textSizeClass = seconds > 3600 ? "text-[45px]" : "text-[64px]";
+  const textColorClass = darkMode ? "text-white" : "text-[#52525b]";
+
   return (
-    <h3 className={`${rajdhani.className} flex ${textColorClass} ${textSizeClass}`}>
+    <h3 className={`flex ${textColorClass} ${textSizeClass}`}>
       {[...current].map((c, index) => (
         <span
+          className={`${rajdhani.className}`}
           key={index}
           ref={e => {if (e) digitRefs.current[index] = e}}
         >
@@ -184,5 +178,15 @@ const TimerControls = ({ isPaused, setPaused, initialTime, setTime }: { isPaused
         </Button>
       </div>
     </div>
+  );
+}
+
+const OnFinishedCycleButton = ({ /* nextMode */ }) => {
+  const { activateNextMode } = useCycleStore();
+
+  return (
+    <Button className="text-[18px] font-semibold py-[30px] bg-[#84cc16] shadow-none" onClick={activateNextMode}>
+      Start: Focus
+    </Button>
   );
 }
