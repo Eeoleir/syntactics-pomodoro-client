@@ -14,7 +14,8 @@ export async function signIn({
   const data = await response.json();
 
   if (!response.ok) {
-    throw alert(data.error||"Something went wrong");
+    throw alert(data.error || "Something went wrong");
+   
   }
 
   return data;
@@ -38,8 +39,8 @@ export async function register({
   const data = await response.json();
 
   if (!response.ok) {
+    throw alert(data.error || "Something went wrong");
     throw alert(data.error||"Something went wrong");
   }
-
   return data;
 }

@@ -62,10 +62,10 @@ export default function PomodoroSettings() {
           <CiClock2 className="size-[24px]" />
           <h3 className="text-[20px] font-[700]">Timer</h3>
         </div>
-        <div className="form w-1/2">
+        <div className="form w-full">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
-              <div className="titleSettings flex flex-row gap-[16px] mt-[12px] w-full text-[16px] justify-between">
+              <div className="titleSettings flex flex-row gap-[16px] mt-[12px] w-4/5 text-[16px] justify-between flex-wrap">
                 <FormField
                   control={form.control}
                   name="focusMin"
@@ -121,14 +121,14 @@ export default function PomodoroSettings() {
                 />
               </div>
               <div className="autoSettings">
-                <div className=" flex flex-col w-full gap-[8px]">
+                <div className=" flex flex-col w-4/5 gap-[8px]">
                   <FormField
                     control={form.control}
                     name="autoStartBreaks"
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center justify-between rounded-lg  shadow-sm mt-2">
                         <div className="">
-                          <FormLabel>Auto start Breaks</FormLabel>
+                          <FormLabel>Auto Start Breaks</FormLabel>
                         </div>
                         <FormControl>
                           <Switch
@@ -145,7 +145,7 @@ export default function PomodoroSettings() {
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center justify-between rounded-lg shadow-sm">
                         <div className="">
-                          <FormLabel>Auto start Focus</FormLabel>
+                          <FormLabel>Auto Start Focus</FormLabel>
                         </div>
                         <FormControl>
                           <Switch
@@ -175,12 +175,19 @@ export default function PomodoroSettings() {
                       </FormItem>
                     )}
                   />
-                  {/* <FormField
+                </div>
+              </div>
+              <div className="timer flex flex-row items-center gap-2 text-[#52525B] border-b-[1px] border-[#52525B] pb-2">
+                <FaCheck className="size-[24px]" />
+                <h3 className="text-[20px] font-[700]">Tasks</h3>
+              </div>
+              <div className=" flex flex-col w-4/5 gap-[8px]">
+                <FormField
                   control={form.control}
                   name="autoCheckTasks"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg p-3 shadow-sm">
-                      <div className="space-y-0.5">
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg  shadow-sm mt-2">
+                      <div className="">
                         <FormLabel>Auto Check Tasks</FormLabel>
                       </div>
                       <FormControl>
@@ -196,8 +203,8 @@ export default function PomodoroSettings() {
                   control={form.control}
                   name="autoSwitchTasks"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg p-3 shadow-sm">
-                      <div className="space-y-0.5">
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg shadow-sm">
+                      <div className="">
                         <FormLabel>Auto Switch Tasks</FormLabel>
                       </div>
                       <FormControl>
@@ -208,12 +215,15 @@ export default function PomodoroSettings() {
                       </FormControl>
                     </FormItem>
                   )}
-                /> */}
-                </div>
+                />
               </div>
-              <div className="timer flex flex-row items-center gap-2 text-[#52525B] border-b-[1px] border-[#52525B] pb-2">
-                <FaCheck className="size-[24px]" />
-                <h3 className="text-[20px] font-[700]">Tasks</h3>
+              <div className="loginBtn flex-col gap-2 flex h-full pt-24 md:flex-row">
+                <Button type="button" className="bg-[#71717A] w-full">
+                  Cancel
+                </Button>
+                <Button type="submit" className="bg-[#84CC16] w-full">
+                  Save Changes
+                </Button>
               </div>
             </form>
           </Form>

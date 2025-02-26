@@ -3,6 +3,8 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createTask } from "@/lib/task-queries";
 
 interface AddTaskProps {
   AddTaskActive: string;
@@ -16,6 +18,18 @@ const AddTask: React.FC<AddTaskProps> = ({
   const [taskName, setTaskName] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
   const [pomodoroCycles, setPomodoroCycles] = useState("");
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: createTask,
+    onSuccess: () => {
+      toast.success("Task added successfully. 🎉");
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
+  });
 
   const handleSubmitTask = () => {
     if (!taskName || !taskDescription || !pomodoroCycles) {
@@ -27,6 +41,17 @@ const AddTask: React.FC<AddTaskProps> = ({
       taskDescription,
       pomodoroCycles,
     });
+
+    const newTask = {
+      title: taskName,
+      description: taskDescription,
+      due_date: "2025-03-21", // Example date
+      estimated_cycles: pomodoroCycles,
+      status: "pending",
+    };
+
+    mutation.mutate(newTask as any);
+
     setAddTaskActive("default");
     toast.success("Task added successfully. 🎉");
   };
