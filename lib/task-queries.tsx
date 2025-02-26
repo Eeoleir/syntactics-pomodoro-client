@@ -37,7 +37,7 @@ export async function createTask(task: {
   return await response.json();
 }
 
-export async function deleteTask(taskId: string) {
+export async function deleteTask(taskId: number) {
   const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
     method: "DELETE",
     headers: {
@@ -79,44 +79,67 @@ export async function getTasks(): Promise<Task[]> {
   }
 }
 
-export async function editTask({
-  title,
-  description,
-  due_date,
-  estimated_cycles,
-  status,
-  id,
-}: {
-  title: string;
-  description: string;
-  due_date: string;
-  estimated_cycles: number;
-  status: string;
-  id: number;
-}) {
-  const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      title,
-      description,
-      due_date,
-      estimated_cycles,
-      status,
-    }),
-  });
+export async function editTask(
+  id: number,
+  title: string,
+  description: string,
+  due_date: string,
+  estimated_cycles: string,
+  status: string
+) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        title,
+        description,
+        due_date,
+        estimated_cycles,
+        status,
+      }),
+    });
 
-  const data = await response.json();
+    const data = await response.json();
 
-  if (response.status === 200) {
-    toast.success("Task added successfully. 🎉");
-  } else
-    (error: Error) => {
-      toast.warning(error.message);
-    };
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to update task");
+    }
 
-  return data;
+    toast.success("Task updated successfully. 🎉");
+    return data;
+  } catch (error: any) {
+    toast.warning(error.message);
+    throw error;
+  }
+}
+
+export async function editTaskStatus(id: number, status: string) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        status,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to update task status");
+    }
+
+    toast.success("Task status updated successfully. 🎉");
+    return data;
+  } catch (error: any) {
+    toast.warning(error.message);
+    throw error;
+  }
 }

@@ -14,12 +14,12 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import EditTask from "./EditTask";
-import { deleteTask, getTasks } from "@/lib/task-queries";
+import { deleteTask, editTaskStatus, getTasks, Task } from "@/lib/task-queries";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const TaskList = () => {
   const [activeTaskId, setActiveTaskId] = React.useState<number | null>(null);
-  const [taskList, setTaskList] = React.useState([]);
+  const [taskList, setTaskList] = React.useState<Task[]>([]);
   const [isSpinning, setIsSpinning] = React.useState(false);
   const [AddTaskActive, setAddTaskActive] = React.useState("default");
   const [EditTaskActive, setEditTaskActive] = React.useState("default");
@@ -30,7 +30,9 @@ const TaskList = () => {
     taskId: 0,
     taskTitle: "",
     taskDesc: "",
+    taskDueDate: "",
     taskCycle: 0,
+    taskStatus: "",
   });
 
   const {
@@ -43,7 +45,7 @@ const TaskList = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (taskId: string) => deleteTask(taskId),
+    mutationFn: (taskId: number) => deleteTask(taskId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       setIsDeleteDialogOpen(false);
@@ -55,7 +57,7 @@ const TaskList = () => {
 
   useEffect(() => {
     if (fetchedTasks) {
-      setTaskList(fetchedTasks.data); // Assuming fetchedTasks is an array; adjust if it’s nested (e.g., fetchedTasks.data)
+      setTaskList(fetchedTasks.data);
     }
   }, [fetchedTasks]);
 
@@ -69,27 +71,48 @@ const TaskList = () => {
     taskId: number,
     taskTitle: string,
     taskDesc: string,
-    taskCycle: number
+    taskDueDate: string,
+    taskCycle: number,
+    taskStatus: string
   ) => {
-    setEditInfo({ taskId, taskTitle, taskDesc, taskCycle });
+    setEditInfo({
+      taskId,
+      taskTitle,
+      taskDesc,
+      taskDueDate,
+      taskCycle,
+      taskStatus,
+    });
     setEditTaskActive("editTitle");
   };
 
-  const handleDeleteClick = (taskTitle: string, taskId: number) => {
-    deleteMutation.mutate(taskId.toString());
+  const handleDeleteClick = (taskId: number) => {
+    deleteMutation.mutate(taskId);
   };
 
-  const handleCheckboxChange = (taskId: number) => {
+  const editStatusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: number; status: string }) =>
+      editTaskStatus(id, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    },
+    onError: (error: any) => {
+      toast.warning(error.message);
+    },
+  });
+
+  const handleCheckboxChange = (taskId: number, currentStatus: string) => {
+    const newStatus = currentStatus === "completed" ? "pending" : "completed";
+
+    // Optimistic update of local state
     setTaskList(
       taskList.map((task) =>
-        task.id === taskId
-          ? {
-              ...task,
-              status: task.status === "completed" ? "pending" : "completed",
-            }
-          : task
+        task.id === taskId ? { ...task, status: newStatus } : task
       )
     );
+
+    // Make API request to update status
+    editStatusMutation.mutate({ id: taskId, status: newStatus });
   };
 
   if (isLoading) return <div>Loading...</div>;
@@ -128,7 +151,9 @@ const TaskList = () => {
                   <div className="flex items-center gap-2 mb-6">
                     <Checkbox
                       checked={task.status === "completed"}
-                      onCheckedChange={() => handleCheckboxChange(task.id)}
+                      onCheckedChange={() =>
+                        handleCheckboxChange(task.id, task.status)
+                      }
                       id={`task-${task.id}`}
                       className="bg-[#F4F4F5] border border-[#E4E4E7]"
                     />
@@ -142,7 +167,9 @@ const TaskList = () => {
                           task.id,
                           task.title,
                           task.description,
-                          task.estimated_cycles
+                          task.due_date,
+                          task.estimated_cycles,
+                          task.status
                         );
                       }}
                     >
@@ -169,7 +196,9 @@ const TaskList = () => {
                               task.id,
                               task.title,
                               task.description,
-                              task.estimated_cycles
+                              task.due_date,
+                              task.estimated_cycles,
+                              task.status
                             );
                           }}
                         >
@@ -223,9 +252,7 @@ const TaskList = () => {
                               </Button>
                               <Button
                                 className="bg-[#84CC16] hover:bg-[#669f10]"
-                                onClick={() =>
-                                  handleDeleteClick(task.title, task.id)
-                                }
+                                onClick={() => handleDeleteClick(task.id)}
                               >
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"

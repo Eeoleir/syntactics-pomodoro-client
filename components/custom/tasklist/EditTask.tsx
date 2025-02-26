@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 import { Textarea } from "@/components/ui/textarea";
+import { deleteTask, editTask } from "@/lib/task-queries";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface EditTaskProps {
   EditTaskActive: string;
@@ -21,14 +23,19 @@ interface EditTaskProps {
     taskId: number;
     taskTitle: string;
     taskDesc: string;
+    taskDueDate: string;
     taskCycle: number;
+    taskStatus: string;
   };
+
   setEditInfo: React.Dispatch<
     React.SetStateAction<{
       taskId: number;
       taskTitle: string;
       taskDesc: string;
+      taskDueDate: string;
       taskCycle: number;
+      taskStatus: string;
     }>
   >;
 }
@@ -39,16 +46,52 @@ const EditTask: React.FC<EditTaskProps> = ({
   setEditInfo,
 }) => {
   const [isEditable, setIsEditable] = React.useState(false);
-  const handlSubmitTask = () => {
-    console.log("Task submitted");
-    setEditTaskActive("default");
-    toast("Task updated successfully. 🎉");
+  const queryClient = useQueryClient();
+
+  const editMutation = useMutation({
+    mutationFn: (taskData: {
+      id: number;
+      title: string;
+      description: string;
+      due_date: string;
+      estimated_cycles: number;
+      status: string;
+    }) =>
+      editTask(
+        taskData.id,
+        taskData.title,
+        taskData.description,
+        taskData.due_date,
+        String(taskData.estimated_cycles),
+        taskData.status
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      setEditTaskActive("default");
+    },
+    onError: (error: any) => {
+      toast.warning(error.message);
+    },
+  });
+
+  const handleSubmitTask = () => {
+    console.log("Task submitted:", editInfo);
+
+    editMutation.mutate({
+      id: editInfo.taskId,
+      title: editInfo.taskTitle,
+      description: editInfo.taskDesc,
+      due_date: editInfo.taskDueDate,
+      estimated_cycles: editInfo.taskCycle, // Convert to string
+      status: editInfo.taskStatus,
+    });
   };
 
   const handleGoBack = () => {
     setEditTaskActive("default");
     console.log("Go back");
   };
+
   return (
     <div className="animate__animated animate__fadeIn flex flex-col justify-between h-[382px]">
       <div>
@@ -138,7 +181,7 @@ const EditTask: React.FC<EditTaskProps> = ({
         </Button>
         <Button
           onClick={() => {
-            handlSubmitTask();
+            handleSubmitTask();
           }}
           className="w-full bg-[#84CC16] hover:bg-[#669f10] font-semibold text-sm"
         >
