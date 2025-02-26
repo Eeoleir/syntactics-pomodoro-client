@@ -2,6 +2,16 @@ import { error } from "console";
 import API_BASE_URL from "./api_url";
 import { toast } from "sonner";
 
+export interface Task {
+  id: number;
+  title: string;
+  description: string;
+  due_date: string; // Keeping it as a string since it's a date from the API
+  estimated_cycles: number;
+  status: "in_progress" | "completed" | "pending"; // Define possible statuses
+  user_id: number;
+}
+
 export async function createTask(task: {
   title: string;
   description: string;
@@ -45,13 +55,13 @@ export async function deleteTask(taskId: string, token: string) {
   return true;
 }
 
-export async function getTasks() {
+export async function getTasks(): Promise<Task[]> {
   try {
     const response = await fetch(`${API_BASE_URL}/tasks`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer 9|Jxwrz7UWjpEkKPcuQLDUSaGnyEFM87kFv6cFTc3q99a008e6`,
+        Authorization: `Bearer 2|CYoaHb4o8dXc7B2oK4q0BAcsQJwp2jBnwkmDiStu56a04844`,
       },
     });
 
@@ -59,7 +69,7 @@ export async function getTasks() {
       throw new Error(`Error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data: Task[] = await response.json();
     toast.success("Tasks fetched successfully. 🎉");
     return data;
   } catch (error: any) {

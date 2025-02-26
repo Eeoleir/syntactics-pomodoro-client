@@ -23,8 +23,7 @@ const AddTask: React.FC<AddTaskProps> = ({
   const mutation = useMutation({
     mutationFn: createTask,
     onSuccess: () => {
-      toast.success("Task added successfully. 🎉");
-      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["addTasks"] });
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -53,7 +52,6 @@ const AddTask: React.FC<AddTaskProps> = ({
     mutation.mutate(newTask as any);
 
     setAddTaskActive("default");
-    toast.success("Task added successfully. 🎉");
   };
 
   return (

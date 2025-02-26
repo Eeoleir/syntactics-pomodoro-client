@@ -20,7 +20,7 @@ const fetchTasks = async (): Promise<Tasks[]> => {
 
 export const createTask = () => {
   return useQuery<Tasks[], Error>({
-    queryKey: ["tasks"], // Cache key
+    queryKey: ["create-tasks"], // Cache key
     queryFn: fetchTasks,
   });
 };
