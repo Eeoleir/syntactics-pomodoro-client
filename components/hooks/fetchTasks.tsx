@@ -3,6 +3,7 @@ import API_BASE_URL from "../apiConfig/apiConfig";
 import { toast } from "sonner";
 
 export interface Tasks {
+  id: number;
   title: number;
   description: string;
   due_date: string;

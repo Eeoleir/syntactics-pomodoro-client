@@ -2,6 +2,8 @@ import { error } from "console";
 import API_BASE_URL from "./api_url";
 import { toast } from "sonner";
 
+const token = "2|CYoaHb4o8dXc7B2oK4q0BAcsQJwp2jBnwkmDiStu56a04844";
+
 export interface Task {
   id: number;
   title: string;
@@ -23,7 +25,7 @@ export async function createTask(task: {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer 9|Jxwrz7UWjpEkKPcuQLDUSaGnyEFM87kFv6cFTc3q99a008e6`,
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(task),
   });
@@ -35,8 +37,8 @@ export async function createTask(task: {
   return await response.json();
 }
 
-export async function deleteTask(taskId: string, token: string) {
-  const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}`, {
+export async function deleteTask(taskId: string) {
+  const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
@@ -51,7 +53,6 @@ export async function deleteTask(taskId: string, token: string) {
       toast.warning(error.message);
     };
 
-  toast.success("Task deleted successfully.");
   return true;
 }
 
@@ -61,7 +62,7 @@ export async function getTasks(): Promise<Task[]> {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer 2|CYoaHb4o8dXc7B2oK4q0BAcsQJwp2jBnwkmDiStu56a04844`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -94,8 +95,11 @@ export async function editTask({
   id: number;
 }) {
   const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
     body: JSON.stringify({
       title,
       description,

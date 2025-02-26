@@ -1,4 +1,3 @@
-"use client";
 import React, { useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import AddTask from "./AddTask";
@@ -14,22 +13,18 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import "animate.css";
 import EditTask from "./EditTask";
-import { driver } from "driver.js";
-import "driver.js/dist/driver.css";
-import { getTasks } from "@/lib/task-queries";
-import { Tasks } from "@/components/hooks/fetchTasks";
-import { useQuery } from "@tanstack/react-query";
+import { deleteTask, getTasks } from "@/lib/task-queries";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const TaskList = () => {
   const [activeTaskId, setActiveTaskId] = React.useState<number | null>(null);
-  const [taskList, setTaskList] = React.useState<Tasks[]>([]);
-  const [isSpinning, setIsSpinning] = React.useState<boolean>(false);
-  const [AddTaskActive, setAddTaskActive] = React.useState<string>("default");
-  const [EditTaskActive, setEditTaskActive] = React.useState<string>("default");
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] =
-    React.useState<boolean>(false);
+  const [taskList, setTaskList] = React.useState([]);
+  const [isSpinning, setIsSpinning] = React.useState(false);
+  const [AddTaskActive, setAddTaskActive] = React.useState("default");
+  const [EditTaskActive, setEditTaskActive] = React.useState("default");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+  const queryClient = useQueryClient();
 
   const [editInfo, setEditInfo] = React.useState({
     taskId: 0,
@@ -42,17 +37,28 @@ const TaskList = () => {
     data: fetchedTasks,
     isLoading,
     isError,
-  } = useQuery<Tasks[]>({
-    queryKey: ["createtasks"],
+  } = useQuery({
+    queryKey: ["tasks"], // Consistent query key
     queryFn: getTasks,
   });
 
-  // Then, update `taskList` state when `fetchedTasks` changes
+  const deleteMutation = useMutation({
+    mutationFn: (taskId: string) => deleteTask(taskId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      setIsDeleteDialogOpen(false);
+    },
+    onError: (error: Error) => {
+      toast.warning(`Failed to delete task: ${error.message}`);
+    },
+  });
+
   useEffect(() => {
     if (fetchedTasks) {
-      setTaskList(fetchedTasks.data);
+      setTaskList(fetchedTasks.data); // Assuming fetchedTasks is an array; adjust if it’s nested (e.g., fetchedTasks.data)
     }
   }, [fetchedTasks]);
+
   const handleActionClick = (taskId: number) => {
     setIsSpinning(true);
     setActiveTaskId(activeTaskId === taskId ? null : taskId);
@@ -65,20 +71,12 @@ const TaskList = () => {
     taskDesc: string,
     taskCycle: number
   ) => {
-    setEditInfo({
-      taskId: taskId,
-      taskTitle: taskTitle,
-      taskDesc: taskDesc,
-      taskCycle: taskCycle,
-    });
+    setEditInfo({ taskId, taskTitle, taskDesc, taskCycle });
     setEditTaskActive("editTitle");
   };
 
-  const handleDeleteClick = (taskTitle: string) => {
-    console.log("Delete confirmed");
-    setIsDeleteDialogOpen(false);
-    toast(`Task "${taskTitle}" deleted successfully. 🗑️`);
-    // toast("Failed to delete task. Please try again. 🚨")
+  const handleDeleteClick = (taskTitle: string, taskId: number) => {
+    deleteMutation.mutate(taskId.toString());
   };
 
   const handleCheckboxChange = (taskId: number) => {
@@ -93,6 +91,9 @@ const TaskList = () => {
       )
     );
   };
+
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error loading tasks</div>;
 
   return (
     <div id="task-list" className="p-6 w-full relative">
@@ -222,7 +223,9 @@ const TaskList = () => {
                               </Button>
                               <Button
                                 className="bg-[#84CC16] hover:bg-[#669f10]"
-                                onClick={() => handleDeleteClick(task.title)}
+                                onClick={() =>
+                                  handleDeleteClick(task.title, task.id)
+                                }
                               >
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
