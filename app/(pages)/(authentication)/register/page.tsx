@@ -16,7 +16,6 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage, // Added for error display
 } from "@/components/ui/form";
 
 const formSchema = z
@@ -55,11 +54,10 @@ export default function Register() {
   const mutation = useMutation({
     mutationFn: register,
     onSuccess: (data) => {
-      console.log("Registration successful:", data);
-      router.push("/login"); // Redirect to login after success
+      alert("Account created successfully!");
+      router.push("/login");
     },
     onError: (error: Error) => {
-      console.error("Registration error:", error);
       form.setError("root", {
         message: error.message || "Registration failed",
       });
@@ -67,7 +65,6 @@ export default function Register() {
   });
 
   const onSubmit = (data: FormValues) => {
-
     const { name, email, password } = data;
     mutation.mutate({ name, email, password });
   };
@@ -85,7 +82,7 @@ export default function Register() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
               <FormField
-                control={form.control} 
+                control={form.control}
                 name="name"
                 render={({ field }) => (
                   <FormItem>
@@ -100,7 +97,6 @@ export default function Register() {
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage /> {/* Display validation errors */}
                   </FormItem>
                 )}
               />
@@ -120,7 +116,6 @@ export default function Register() {
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -141,7 +136,6 @@ export default function Register() {
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -162,12 +156,10 @@ export default function Register() {
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage />
                   </FormItem>
                 )}
               />
-             
-              
+
               <div className="registerBtn pt-3">
                 <Button
                   type="submit"
