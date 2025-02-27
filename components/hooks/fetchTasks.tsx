@@ -3,6 +3,7 @@ import API_BASE_URL from "../apiConfig/apiConfig";
 import { toast } from "sonner";
 
 export interface Tasks {
+  id: number;
   title: number;
   description: string;
   due_date: string;
@@ -20,7 +21,7 @@ const fetchTasks = async (): Promise<Tasks[]> => {
 
 export const createTask = () => {
   return useQuery<Tasks[], Error>({
-    queryKey: ["tasks"], // Cache key
+    queryKey: ["create-tasks"], // Cache key
     queryFn: fetchTasks,
   });
 };

@@ -2,6 +2,18 @@ import { error } from "console";
 import API_BASE_URL from "./api_url";
 import { toast } from "sonner";
 
+const token = "2|CYoaHb4o8dXc7B2oK4q0BAcsQJwp2jBnwkmDiStu56a04844";
+
+export interface Task {
+  id: number;
+  title: string;
+  description: string;
+  due_date: string; // Keeping it as a string since it's a date from the API
+  estimated_cycles: number;
+  status: "in_progress" | "completed" | "pending"; // Define possible statuses
+  user_id: number;
+}
+
 export async function createTask(task: {
   title: string;
   description: string;
@@ -13,7 +25,7 @@ export async function createTask(task: {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer 9|Jxwrz7UWjpEkKPcuQLDUSaGnyEFM87kFv6cFTc3q99a008e6`,
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(task),
   });
@@ -25,8 +37,8 @@ export async function createTask(task: {
   return await response.json();
 }
 
-export async function deleteTask(taskId: string, token: string) {
-  const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}`, {
+export async function deleteTask(taskId: number) {
+  const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
@@ -41,17 +53,16 @@ export async function deleteTask(taskId: string, token: string) {
       toast.warning(error.message);
     };
 
-  toast.success("Task deleted successfully.");
   return true;
 }
 
-export async function getTasks() {
+export async function getTasks(): Promise<Task[]> {
   try {
     const response = await fetch(`${API_BASE_URL}/tasks`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer 9|Jxwrz7UWjpEkKPcuQLDUSaGnyEFM87kFv6cFTc3q99a008e6`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -59,7 +70,7 @@ export async function getTasks() {
       throw new Error(`Error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data: Task[] = await response.json();
     toast.success("Tasks fetched successfully. 🎉");
     return data;
   } catch (error: any) {
@@ -68,41 +79,67 @@ export async function getTasks() {
   }
 }
 
-export async function editTask({
-  title,
-  description,
-  due_date,
-  estimated_cycles,
-  status,
-  id,
-}: {
-  title: string;
-  description: string;
-  due_date: string;
-  estimated_cycles: number;
-  status: string;
-  id: number;
-}) {
-  const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      title,
-      description,
-      due_date,
-      estimated_cycles,
-      status,
-    }),
-  });
+export async function editTask(
+  id: number,
+  title: string,
+  description: string,
+  due_date: string,
+  estimated_cycles: string,
+  status: string
+) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        title,
+        description,
+        due_date,
+        estimated_cycles,
+        status,
+      }),
+    });
 
-  const data = await response.json();
+    const data = await response.json();
 
-  if (response.status === 200) {
-    toast.success("Task added successfully. 🎉");
-  } else
-    (error: Error) => {
-      toast.warning(error.message);
-    };
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to update task");
+    }
 
-  return data;
+    toast.success("Task updated successfully. 🎉");
+    return data;
+  } catch (error: any) {
+    toast.warning(error.message);
+    throw error;
+  }
+}
+
+export async function editTaskStatus(id: number, status: string) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        status,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to update task status");
+    }
+
+    toast.success("Task status updated successfully. 🎉");
+    return data;
+  } catch (error: any) {
+    toast.warning(error.message);
+    throw error;
+  }
 }
