@@ -1,5 +1,5 @@
 import { buildStyles, CircularProgressbarWithChildren } from "react-circular-progressbar";
-import { useContext, useEffect, useRef, useState} from "react";
+import { useEffect, useRef, useState} from "react";
 
 import { Rajdhani } from "next/font/google";
 import { AnimatePresence, motion } from "motion/react";
@@ -12,9 +12,11 @@ const rajdhani = Rajdhani({ subsets: ["latin"], weight: ["700"] });
 // DUMMY VALUES FOR FEATURES THAT ARE NOT YET IMPLEMENTED
 const darkMode = false;
 const autoStart = true; // from settings
-const cycleDone = false; // is set to true when no more tasks are left
 
 export default function CircularTimer() {
+  // DUMMY STATE FOR CYCLE DONE
+  const [ cycleDone, setCycleDone ] = useState(false);
+  const [mockTaskCountdown, setMockTaskCountDown] = useState(4);
 
   // mode context for the color of the timer
   const {
@@ -35,7 +37,6 @@ export default function CircularTimer() {
 
   useEffect(() => {
     setPrevTime(formatTime(time));
-    console.log(`prevTime --> ${prevTime}`)
     intervalRef.current = setInterval(() => {
       if (!isPaused && !cycleDone) {
         setTime((prev) => (prev > 0 ? prev - 1 : prev));
@@ -43,6 +44,15 @@ export default function CircularTimer() {
     }, 1000);
 
     if (time === 0) {
+      // < -------------- MOCK CONDITION FOR TESTING --------------> //
+      if (mockTaskCountdown === 0) {
+        setCycleDone(true);
+      } else {
+        if (currentMode === Mode.FOCUS) {
+          setMockTaskCountDown(mockTaskCountdown - 1);
+        }
+      }
+
       if (!cycleDone && autoStart) {
         activateNextMode();
         setTimeLeft(nextMode, durations[nextMode]);
@@ -54,7 +64,7 @@ export default function CircularTimer() {
 
     return () => { if (intervalRef.current) clearInterval(intervalRef.current) };
 
-  }, [time, isPaused, activateNextMode, durations, nextMode, setTimeLeft, prevTime]);
+  }, [time, isPaused, activateNextMode, durations, nextMode, setTimeLeft, prevTime, mockTaskCountdown, currentMode, cycleDone]);
 
   const styles = buildStyles({
     pathColor: !cycleDone ? generateColor(currentMode) : "#f4f4f5",
@@ -68,15 +78,15 @@ export default function CircularTimer() {
   const handleMouseOut = () => { setIsHovering(false); };
 
   return (
-    <div onMouseOver={handleMouseOver} onMouseOut={handleMouseOut} className="container w-full flex flex-row justify-center max-h-72 px-5">
-      <div className={`container w-6/12 flex xl:justify-center justify-start py-2 ${(isHovering || isPaused) ? 'blur-sm opacity-75' : ''} transition duration-200`}>
+    <div onMouseOver={handleMouseOver} onMouseOut={handleMouseOut} className="container w-full flex flex-row justify-center max-h-72 px-5 space-x-5">
+      <div className={`container w-6/12 flex xl:justify-center justify-start py-2 ${((isHovering || isPaused) && !cycleDone) ? 'blur-sm opacity-75' : ''} transition duration-200`}>
         <div className="w-[250px]">
           <CircularProgressbarWithChildren strokeWidth={6.5} value={time} maxValue={durations[currentMode]} styles={styles}>
-            <TimeTickerAnim prev={prevTime} current={formatTime(time)} seconds={time}/>
+            <TimeTickerAnim prev={prevTime} current={formatTime(time)} seconds={time} textColor={`${darkMode ? (cycleDone ? "text-[#3f3f46]" : "text-white") : (cycleDone ? "text-[#d4d4d8]" : "text-[#52525b]")}`}/>
           </CircularProgressbarWithChildren>
         </div>
       </div>
-      {(isHovering || isPaused) && (
+      {(isHovering || isPaused) && !cycleDone && (
         <AnimatePresence>
           <motion.div
             initial={{ opacity: 0, scale: 0.95, marginTop: 5}}
@@ -93,7 +103,7 @@ export default function CircularTimer() {
         <div className="flex flex-col w-6/12 justify-start space-y-20">
           <div className="flex flex-col space-y-3">
             <h3 className={`font-sans text-[32px] font-bold ${darkMode ? "text-[#f4f4f5]" : "text-[#3f3f46]"}`}>Congratulations! 🎉</h3>
-            <h6 className={`${darkMode ? "text-[#f4f4f5]" : "text-[#71717a]"} text-[18px]`}>You have reached the end of another cycles in this session!</h6>
+            <h6 className={`${darkMode ? "text-[#f4f4f5]" : "text-[#71717a]"} text-[18px]`}>You have reached the end of another cycle in this session!</h6>
           </div>
           <OnFinishedCycleButton/>
         </div>
@@ -102,7 +112,7 @@ export default function CircularTimer() {
   );
 }
 
-const TimeTickerAnim = ({ prev, current, seconds }: { prev: string, current: string, seconds: number }) => {
+const TimeTickerAnim = ({ prev, current, seconds, textColor }: { prev: string, current: string, seconds: number, textColor: string}) => {
   const digitRefs = useRef<(HTMLSpanElement | null)[]>([]);
 
   useEffect(() => {
@@ -125,7 +135,7 @@ const TimeTickerAnim = ({ prev, current, seconds }: { prev: string, current: str
   }, [current, prev]);
 
   const textSizeClass = seconds > 3600 ? "text-[45px]" : "text-[64px]";
-  const textColorClass = darkMode ? "text-white" : "text-[#52525b]";
+  const textColorClass = textColor;
 
   return (
     <h3 className={`flex ${textColorClass} ${textSizeClass}`}>
@@ -182,10 +192,8 @@ const TimerControls = ({ isPaused, setPaused, initialTime, setTime }: { isPaused
 }
 
 const OnFinishedCycleButton = ({ /* nextMode */ }) => {
-  const { activateNextMode } = useCycleStore();
-
   return (
-    <Button className="text-[18px] font-semibold py-[30px] bg-[#84cc16] shadow-none" onClick={activateNextMode}>
+    <Button className="text-[18px] font-semibold py-[30px] bg-[#84cc16] shadow-none" onClick={()=>{}}>
       Start: Focus
     </Button>
   );
