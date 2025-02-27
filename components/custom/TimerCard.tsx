@@ -1,11 +1,9 @@
 "use client"
 
-import { useContext } from "react"
 import Image from "next/image";
-import { Modes, useMode } from "@/app/context/ModeContext";
 import CircularTimer from "../subcomponents/CircularTimer";
 import { Button } from "../ui/button";
-
+import { Mode, useCycleStore } from "@/app/stores/cycleStore";
 
 const darkMode = false;
 
@@ -23,7 +21,7 @@ const secondaryTextStyles = `
 export default function PomodoroTimerCard() {
   // temporary until dark mode context
 
-  const containerLayout = "flex flex-col w-full p-[24px] rounded-xl border";
+  const containerLayout = "flex flex-col w-full p-[24px] rounded-xl border pb-12";
   const containerStyles = darkMode ? `border-[#27272a]` : `border-[#e4e4e7]`;
 
   return (
@@ -34,7 +32,13 @@ export default function PomodoroTimerCard() {
 }
 
 function CardTop() {
-  const { mode, setMode } = useMode();
+  const {
+    durations,
+    longBreakInterval,
+    currentMode,
+    currentTimeLeft,
+    nextMode
+  } = useCycleStore();
 
   const containerStyles = `
     flex flex-row
@@ -68,19 +72,19 @@ function CardTop() {
 
       {/* ---- cycles ---- */}
       <div id="cycles-container" className="flex flex-col space-y-[24px]">
-        <ModesIndicator title="Current Mode" subText="Current timer cycle" modeBadge={<ModeBadge mode={mode}/>}/>
-        <ModesIndicator title="Next Mode" subText="Which cycle will be activated" modeBadge={<ModeBadge mode={Modes.LONG_BREAK}/>} />
+        <CycleIndicator title="Current Mode" subText="Current timer cycle" modeBadge={<ModeBadge mode={currentMode}/>}/>
+        <CycleIndicator title="Next Mode" subText="Which cycle will be activated" modeBadge={<ModeBadge mode={nextMode}/>} />
       </div>
 
       { /* ---- clock ---- */ }
-      <div id="clock-container" className="flex w-full justify-center items-center p-[24px] mt-[64px]">
+      <div id="clock-container" className="flex w-full justify-center items-center mt-[64px]">
         <CircularTimer/>
       </div>
     </div>
   );
 }
 
-const ModesIndicator = ({ title, subText, modeBadge} : { title:string, subText:string, modeBadge: React.ReactNode}) => {
+const CycleIndicator = ({ title, subText, modeBadge} : { title:string, subText:string, modeBadge: React.ReactNode}) => {
   return (
     <div className="flex flex-row justify-between">
       <div className="flex flex-col">
@@ -94,7 +98,7 @@ const ModesIndicator = ({ title, subText, modeBadge} : { title:string, subText:s
   );
 }
 
-const ModeBadge = ({ mode } : {mode: Modes}) => {
+const ModeBadge = ({ mode } : {mode: Mode}) => {
   const badgeStyles = `
     flex flex-row
     space-x-2
@@ -109,7 +113,7 @@ const ModeBadge = ({ mode } : {mode: Modes}) => {
     `;
 
   const badgeProperties = {
-    [Modes.FOCUS] : {
+    [Mode.FOCUS] : {
       "title" : "Focus",
       "style" : `
         border-[#84cc16]
@@ -118,7 +122,7 @@ const ModeBadge = ({ mode } : {mode: Modes}) => {
         hover:bg-transparent
         `
     },
-    [Modes.LONG_BREAK] : {
+    [Mode.LONG_BREAK] : {
       "title" : "Long Break",
       "style" : `
         border-[#06b6d4]
@@ -127,7 +131,7 @@ const ModeBadge = ({ mode } : {mode: Modes}) => {
         hover:bg-transparent
       `
     },
-    [Modes.SHORT_BREAK] : {
+    [Mode.SHORT_BREAK] : {
       "title" : "Short Break",
       "style" : `
         text-[#f59e0b]

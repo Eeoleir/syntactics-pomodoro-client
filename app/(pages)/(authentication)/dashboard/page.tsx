@@ -132,11 +132,11 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row mt-12 border-[#E4E4E7] gap-9">
-          <div className="w-full">
+        <div className="flex flex-col lg:flex-row mt-12 border-[#E4E4E7] gap-9">
+          <div className="xl:w-3/6 2xl:w-5/12 lg:w-full">
             <PomodoroTimerCard />
           </div>
-          <div className="flex flex-row w-full border border-[#E4E4E7] rounded-xl">
+          <div className="flex flex-row xl:w-3/6 2xl:w-7/12 lg:w-full w-full border border-[#E4E4E7] rounded-xl">
             <TaskList />
           </div>
         </div>
