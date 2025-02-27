@@ -1,19 +1,12 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 import { Textarea } from "@/components/ui/textarea";
-import { deleteTask, editTask } from "@/lib/task-queries";
+import { editTask } from "@/lib/task-queries";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface EditTaskProps {
@@ -82,7 +75,7 @@ const EditTask: React.FC<EditTaskProps> = ({
       title: editInfo.taskTitle,
       description: editInfo.taskDesc,
       due_date: editInfo.taskDueDate,
-      estimated_cycles: editInfo.taskCycle, // Convert to string
+      estimated_cycles: editInfo.taskCycle, 
       status: editInfo.taskStatus,
     });
   };

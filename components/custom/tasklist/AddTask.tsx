@@ -11,10 +11,7 @@ interface AddTaskProps {
   setAddTaskActive: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const AddTask: React.FC<AddTaskProps> = ({
-  AddTaskActive,
-  setAddTaskActive,
-}) => {
+const AddTask: React.FC<AddTaskProps> = ({ setAddTaskActive }) => {
   const [taskName, setTaskName] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
   const [pomodoroCycles, setPomodoroCycles] = useState("");

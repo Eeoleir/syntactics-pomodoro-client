@@ -1,5 +1,6 @@
+import API_BASE_URL from "@/lib/api_url";
 import { useQuery } from "@tanstack/react-query";
-import API_BASE_URL from "../apiConfig/apiConfig";
+
 import { toast } from "sonner";
 
 export interface Tasks {

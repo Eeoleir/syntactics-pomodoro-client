@@ -1,14 +1,20 @@
 import { IoCameraSharp } from "react-icons/io5";
 import React, { useRef } from "react";
 
-export default function ProfilePicture({ size = "md", editable = false }) {
+export default function ProfilePicture({
+  size = "md",
+  editable = false,
+}: {
+  size: "sm" | "md" | "lg"; 
+  editable?: boolean;
+}) {
   const sizeStyles = {
     sm: "w-[100px] h-[100px]",
     md: "w-[120px] h-[120px]",
     lg: "w-[150px] h-[150px]",
   };
 
-  const fileInputRef = useRef(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleClick = () => {
     if (editable && fileInputRef.current) {
@@ -16,10 +22,10 @@ export default function ProfilePicture({ size = "md", editable = false }) {
     }
   };
 
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (file) {
-      console.log("Selected file:", file); // Handle the file (e.g., upload or preview)
+      console.log("Selected file:", file); 
     }
   };
 
@@ -27,7 +33,7 @@ export default function ProfilePicture({ size = "md", editable = false }) {
     <div className="flex flex-col items-center gap-2">
       <div
         className={`
-          ${sizeStyles[size]}
+          ${sizeStyles[size]} 
           rounded-full 
           bg-green-500 
           border-[#84CC16] 

@@ -1,17 +1,27 @@
-import { error } from "console";
-import API_BASE_URL from "./api_url";
-import { toast } from "sonner";
+import Cookies from 'js-cookie'; 
+import useAuthStore from '@/app/stores/authStore';
 
-const token = "2|CYoaHb4o8dXc7B2oK4q0BAcsQJwp2jBnwkmDiStu56a04844";
+import { toast } from 'sonner';
+import API_BASE_URL from './api_url';
 
 export interface Task {
   id: number;
   title: string;
   description: string;
-  due_date: string; // Keeping it as a string since it's a date from the API
+  due_date: string;
   estimated_cycles: number;
-  status: "in_progress" | "completed" | "pending"; // Define possible statuses
+  status: 'in_progress' | 'completed' | 'pending';
   user_id: number;
+}
+
+
+function getToken(): string | null {
+
+  const storeToken = useAuthStore.getState().token;
+  if (storeToken) return storeToken;
+
+
+  return Cookies.get('token') || null;
 }
 
 export async function createTask(task: {
@@ -21,47 +31,56 @@ export async function createTask(task: {
   estimated_cycles: number;
   status: string;
 }) {
-  const response = await fetch(`${API_BASE_URL}/tasks`, {
-    method: "POST",
+  const token = getToken();
+  if (!token) throw new Error('No authentication token available');
+
+  const response = await fetch(`${API_BASE_URL}tasks`, {
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(task),
   });
 
   if (!response.ok) {
-    throw new Error("Failed to create task");
+    throw new Error('Failed to create task');
   }
 
   return await response.json();
 }
 
 export async function deleteTask(taskId: number) {
-  const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
-    method: "DELETE",
+  const token = getToken();
+  if (!token) throw new Error('No authentication token available');
+
+  const response = await fetch(`${API_BASE_URL}tasks/${taskId}`, {
+    method: 'DELETE',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
   });
 
   if (response.status === 200) {
-    toast.success("Task deleted successfully. 🎉");
-  } else
-    (error: Error) => {
-      toast.warning(error.message);
-    };
+    toast.success('Task deleted successfully. 🎉');
+  } else {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to delete task');
+  }
 
   return true;
 }
 
 export async function getTasks(): Promise<Task[]> {
+  const token = getToken();
+  if (!token) throw new Error('No authentication token available');
+
   try {
-    const response = await fetch(`${API_BASE_URL}/tasks`, {
-      method: "GET",
+    const response = await fetch(`${API_BASE_URL}tasks`, {
+      method: 'GET',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
     });
@@ -71,10 +90,10 @@ export async function getTasks(): Promise<Task[]> {
     }
 
     const data: Task[] = await response.json();
-    toast.success("Tasks fetched successfully. 🎉");
+    toast.success('Tasks fetched successfully. 🎉');
     return data;
   } catch (error: any) {
-    toast.warning(error.message || "Failed to fetch tasks");
+    toast.warning(error.message || 'Failed to fetch tasks');
     return [];
   }
 }
@@ -87,11 +106,14 @@ export async function editTask(
   estimated_cycles: string,
   status: string
 ) {
+  const token = getToken();
+  if (!token) throw new Error('No authentication token available');
+
   try {
-    const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
-      method: "PATCH",
+    const response = await fetch(`${API_BASE_URL}tasks/${id}`, {
+      method: 'PATCH',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
@@ -106,10 +128,10 @@ export async function editTask(
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || "Failed to update task");
+      throw new Error(data.message || 'Failed to update task');
     }
 
-    toast.success("Task updated successfully. 🎉");
+    toast.success('Task updated successfully. 🎉');
     return data;
   } catch (error: any) {
     toast.warning(error.message);
@@ -118,11 +140,14 @@ export async function editTask(
 }
 
 export async function editTaskStatus(id: number, status: string) {
+  const token = getToken();
+  if (!token) throw new Error('No authentication token available');
+
   try {
-    const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
-      method: "PATCH",
+    const response = await fetch(`${API_BASE_URL}tasks/${id}`, {
+      method: 'PATCH',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
@@ -133,10 +158,10 @@ export async function editTaskStatus(id: number, status: string) {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || "Failed to update task status");
+      throw new Error(data.message || 'Failed to update task status');
     }
 
-    toast.success("Task status updated successfully. 🎉");
+    toast.success('Task status updated successfully. 🎉');
     return data;
   } catch (error: any) {
     toast.warning(error.message);
