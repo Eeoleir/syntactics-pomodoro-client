@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { signIn } from "../../../../lib/auth-queries";
+import useAuthStore from "@/app/stores/authStore";
 
 import {
   Form,
@@ -29,6 +30,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 export default function Login() {
   const router = useRouter();
+  const login = useAuthStore((state) => state.login);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -42,6 +44,7 @@ export default function Login() {
     mutationFn: signIn,
     onSuccess: (data) => {
       console.log("Sign-in successful:", data);
+      login(data.user, data.token); 
       router.push("/dashboard");
     },
     onError: (error: Error) => {
@@ -108,6 +111,11 @@ export default function Login() {
                   </FormItem>
                 )}
               />
+              {form.formState.errors.root && (
+                <p className="text-red-500 text-sm">
+                  {form.formState.errors.root.message}
+                </p>
+              )}
               <div className="loginBtn pt-5">
                 <Button
                   type="submit"

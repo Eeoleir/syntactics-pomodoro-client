@@ -17,7 +17,7 @@ import "animate.css";
 import PomodoroTimerCard from "@/components/custom/TimerCard";
 import EditTask from "@/components/custom/tasklist/EditTask";
 import AddTask from "@/components/custom/tasklist/AddTask";
-import AddDescription from "@/components/custom/tasklist/AddDescription";
+// import AddDescription from "@/components/custom/tasklist/AddDescription";
 import { ModeProvider } from "@/app/context/ModeContext";
 
 const Dashboard = () => {
