@@ -57,7 +57,7 @@ const TaskList = () => {
 
   useEffect(() => {
     if (fetchedTasks) {
-      setTaskList(fetchedTasks); 
+      setTaskList(fetchedTasks.data); 
     }
   }, [fetchedTasks]);
 

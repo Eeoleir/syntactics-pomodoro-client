@@ -1,14 +1,7 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-// import {
-//   Select,
-//   SelectContent,
-//   SelectGroup,
-//   SelectItem,
-//   SelectTrigger,
-//   SelectValue,
-// } from "@/components/ui/select";
+
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -40,7 +33,7 @@ interface EditTaskProps {
   >;
 }
 const EditTask: React.FC<EditTaskProps> = ({
-  // EditTaskActive,
+  EditTaskActive,
   setEditTaskActive,
   editInfo,
   setEditInfo,
@@ -69,7 +62,7 @@ const EditTask: React.FC<EditTaskProps> = ({
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       setEditTaskActive("default");
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       toast.warning(error.message);
     },
   });
@@ -82,7 +75,7 @@ const EditTask: React.FC<EditTaskProps> = ({
       title: editInfo.taskTitle,
       description: editInfo.taskDesc,
       due_date: editInfo.taskDueDate,
-      estimated_cycles: editInfo.taskCycle, // Convert to string
+      estimated_cycles: editInfo.taskCycle, 
       status: editInfo.taskStatus,
     });
   };
