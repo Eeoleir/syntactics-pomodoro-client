@@ -46,6 +46,8 @@ export default function Login() {
       console.log("Sign-in successful:", data);
       login(data.user, data.token);
       router.push("/dashboard");
+
+      
     },
     onError: (error: Error) => {
       form.setError("root", { message: error.message || "Sign-in failed" });

@@ -7,8 +7,21 @@ import TaskList from "@/components/custom/tasklist/Tasklist";
 import { driver } from "driver.js";
 import "driver.js/dist/driver.css";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./AvatarDropdown";
+import useAuthStore from "@/app/stores/authStore";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 const Dashboard = () => {
+  const [isDarkMode, setIsDarkMode] = React.useState(false);
+
   const driverObj = driver({
     showProgress: true,
     steps: [
@@ -91,6 +104,8 @@ const Dashboard = () => {
       },
     ],
   });
+  const router = useRouter();
+
   useEffect(() => {
     const firstTimeUser = JSON.parse(
       localStorage.getItem("firstTimeUser") ?? "true"
@@ -105,10 +120,14 @@ const Dashboard = () => {
     driverObj.drive();
   };
 
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+
   return (
     <div className="min-w-screen min-h-screen bg-[#FAFAFA] text-black">
       <div className="p-10 w-full">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-end items-center justify-between md:flex-row md:mt-4 flex-col">
           <div id="pomodoro-timer-card">
             <h1 className="font-extrabold text-5xl">Pomodoro</h1>
             <p className="text-[#71717A] font-medium text-xl">
@@ -117,17 +136,66 @@ const Dashboard = () => {
           </div>
           <div className="flex items-center gap-4">
             <Button onClick={howToUseButton}>How to use</Button>
-            <img
-              src="/SunDim.svg"
-              alt="lightmode"
-              className="p-2 bg-[#F4F4F5] rounded-[4px]"
-            />
+            <Button
+              onClick={toggleDarkMode}
+              className={`${
+                isDarkMode ? "bg-black" : "bg-[#F4F4F5] hover:bg-gray-200"
+              } h-8 w-8 `}
+            >
+              {isDarkMode ? (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="white"
+                  className="size-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="black"
+                  className="size-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"
+                  />
+                </svg>
+              )}
+            </Button>
 
-            <img
-              src="/Translate.svg"
-              alt="translate"
-              className="p-2 bg-[#F4F4F5] rounded-[4px]"
-            />
+            <Select
+              onValueChange={(value) => {
+                if (value === "logout") {
+                  useAuthStore.getState().logout();
+                  router.push("/login");
+                  toast.success("Logout successfully!");
+                }
+                if (value === "settings") {
+                  router.push("/user-settings");
+                }
+              }}
+            >
+              <SelectTrigger className="border-none focus:ring-0 focus:outline-none">
+                <Avatar>
+                  <AvatarImage src="https://github.com/shadcn.png" />
+                  <AvatarFallback>U</AvatarFallback>
+                </Avatar>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="settings">Settings</SelectItem>
+                <SelectItem value="logout">Logout</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
