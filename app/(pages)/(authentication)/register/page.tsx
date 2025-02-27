@@ -53,7 +53,7 @@ export default function Register() {
 
   const mutation = useMutation({
     mutationFn: register,
-    onSuccess: (data) => {
+    onSuccess: () => {
       alert("Account created successfully!");
       router.push("/login");
     },

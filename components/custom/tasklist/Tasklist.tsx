@@ -40,7 +40,7 @@ const TaskList = () => {
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["tasks"], // Consistent query key
+    queryKey: ["tasks"],
     queryFn: getTasks,
   });
 
@@ -57,7 +57,7 @@ const TaskList = () => {
 
   useEffect(() => {
     if (fetchedTasks) {
-      setTaskList(fetchedTasks.data);
+      setTaskList(fetchedTasks); 
     }
   }, [fetchedTasks]);
 

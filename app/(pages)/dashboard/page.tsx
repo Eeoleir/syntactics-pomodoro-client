@@ -1,5 +1,4 @@
 "use client"; // Ensure this runs on the client side
-
 import React, { useEffect } from "react";
 import "animate.css";
 import PomodoroTimerCard from "@/components/custom/TimerCard";
@@ -100,7 +99,7 @@ const Dashboard = () => {
       driverObj.drive();
       localStorage.setItem("firstTimeUser", JSON.stringify(false));
     }
-  }, []);
+  }, [driverObj]);
 
   const howToUseButton = () => {
     driverObj.drive();

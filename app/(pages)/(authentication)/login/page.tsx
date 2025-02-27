@@ -44,7 +44,7 @@ export default function Login() {
     mutationFn: signIn,
     onSuccess: (data) => {
       console.log("Sign-in successful:", data);
-      login(data.user, data.token); 
+      login(data.user, data.token);
       router.push("/dashboard");
     },
     onError: (error: Error) => {
@@ -59,7 +59,7 @@ export default function Login() {
 
   return (
     <section className="content w-full h-screen mx-auto bg-[#18181B] text-[#FAFAFA] flex justify-center items-center">
-      <div className="flex h-[398px] w-[408px] border-[1px] rounded-xl bg-[#18181B] border-[#84CC16] flex-col">
+      <div className="flex h-fit w-[408px] border-[1px] rounded-xl bg-[#18181B] border-[#84CC16] flex-col">
         <div className="title flex flex-col h-auto p-6">
           <h2 className="text-2xl font-semibold">Log in</h2>
           <p className="text-[14px] mt-1 text-zinc-400 font-normal">

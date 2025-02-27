@@ -8,7 +8,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { FaCheck } from "react-icons/fa6";
-
 import {
   Form,
   FormControl,
@@ -17,33 +16,114 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
+import { useEffect } from "react";
+import {
+  getPreferences,
+  editPreference,
+  createPreference,
+  
+} from "@/lib/preference-queries";
+import { usePomodoroStore } from "@/app/stores/pomodoroStore"; 
 
 const FormSchema = z.object({
   focusMin: z.number().default(25),
   shortBreakMin: z.number().default(5),
   longBreakMin: z.number().default(15),
-  autoStartBreaks: z.boolean().default(false).optional(),
-  autoStartFocus: z.boolean().default(false).optional(),
-  autoCheckTasks: z.boolean().default(false).optional(),
-  autoSwitchTasks: z.boolean().default(false).optional(),
+  autoStartBreaks: z.boolean().default(false),
+  autoStartFocus: z.boolean().default(false),
+  autoCheckTasks: z.boolean().default(false),
+  autoSwitchTasks: z.boolean().default(false),
 });
 
 export default function PomodoroSettings() {
+  const { settings, setSettings } = usePomodoroStore();
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      focusMin: 25,
-      shortBreakMin: 5,
-      longBreakMin: 15,
-      autoStartBreaks: false,
-      autoStartFocus: false,
-      autoCheckTasks: false,
-      autoSwitchTasks: false,
+      focusMin: settings.focus_duration,
+      shortBreakMin: settings.short_break_duration,
+      longBreakMin: settings.long_break_duration,
+      autoStartBreaks: settings.is_auto_start_breaks,
+      autoStartFocus: settings.is_auto_start_focus,
+      autoCheckTasks: settings.is_auto_complete_tasks,
+      autoSwitchTasks: settings.is_auto_switch_tasks,
     },
   });
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    console.log("Form submitted with values:", data);
+  const userId = 2;
+
+  useEffect(() => {
+    const loadPreferences = async () => {
+      try {
+        const preferences = await getPreferences();
+        console.log("Fetched Preferences:", preferences);
+        if (preferences.length > 0) {
+          const pref = preferences.find((p) => p.user_id === userId);
+          if (pref) {
+            
+            setSettings({
+              focus_duration: pref.focus_duration,
+              short_break_duration: pref.short_break_duration,
+              long_break_duration: pref.long_break_duration,
+              cycles_before_long_break: pref.cycles_before_long_break,
+              is_auto_start_breaks: pref.is_auto_start_breaks,
+              is_auto_start_focus: pref.is_auto_start_focus,
+              is_auto_complete_tasks: pref.is_auto_complete_tasks,
+              is_auto_switch_tasks: pref.is_auto_switch_tasks,
+              is_dark_mode: pref.is_dark_mode,
+            });
+           
+            form.reset({
+              focusMin: pref.focus_duration,
+              shortBreakMin: pref.short_break_duration,
+              longBreakMin: pref.long_break_duration,
+              autoStartBreaks: pref.is_auto_start_breaks,
+              autoStartFocus: pref.is_auto_start_focus,
+              autoCheckTasks: pref.is_auto_complete_tasks,
+              autoSwitchTasks: pref.is_auto_switch_tasks,
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load preferences:", error);
+      }
+    };
+    loadPreferences();
+  }, [form, setSettings]);
+
+  async function onSubmit(data: z.infer<typeof FormSchema>) {
+    try {
+      const preferences = await getPreferences();
+      const existingPref = preferences.find((p) => p.user_id === userId);
+
+      const updatedSettings = {
+        focus_duration: data.focusMin,
+        short_break_duration: data.shortBreakMin,
+        long_break_duration: data.longBreakMin,
+        cycles_before_long_break: 4, // Hardcoded as in original
+        is_auto_start_breaks: data.autoStartBreaks,
+        is_auto_start_focus: data.autoStartFocus,
+        is_auto_complete_tasks: data.autoCheckTasks,
+        is_auto_switch_tasks: data.autoSwitchTasks,
+        is_dark_mode: settings.is_dark_mode, // Preserve existing dark mode
+      };
+
+      if (existingPref) {
+        await editPreference(userId, updatedSettings);
+      } else {
+        await createPreference({
+          user_id: userId,
+          ...updatedSettings,
+        });
+      }
+
+      // Update Zustand store with new settings
+      setSettings(updatedSettings);
+
+      console.log("Preferences saved successfully:", data);
+    } catch (error) {
+      console.error("Failed to save preferences:", error);
+    }
   }
 
   return (
@@ -83,7 +163,6 @@ export default function PomodoroSettings() {
                     </FormItem>
                   )}
                 />
-
                 <FormField
                   control={form.control}
                   name="shortBreakMin"
@@ -101,7 +180,6 @@ export default function PomodoroSettings() {
                     </FormItem>
                   )}
                 />
-
                 <FormField
                   control={form.control}
                   name="longBreakMin"
@@ -121,12 +199,12 @@ export default function PomodoroSettings() {
                 />
               </div>
               <div className="autoSettings">
-                <div className=" flex flex-col w-4/5 gap-[8px]">
+                <div className="flex flex-col w-4/5 gap-[8px]">
                   <FormField
                     control={form.control}
                     name="autoStartBreaks"
                     render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg  shadow-sm mt-2">
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg shadow-sm mt-2">
                         <div className="">
                           <FormLabel>Auto Start Breaks</FormLabel>
                         </div>
@@ -181,12 +259,12 @@ export default function PomodoroSettings() {
                 <FaCheck className="size-[24px]" />
                 <h3 className="text-[20px] font-[700]">Tasks</h3>
               </div>
-              <div className=" flex flex-col w-4/5 gap-[8px]">
+              <div className="flex flex-col w-4/5 gap-[8px]">
                 <FormField
                   control={form.control}
                   name="autoCheckTasks"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg  shadow-sm mt-2">
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg shadow-sm mt-2">
                       <div className="">
                         <FormLabel>Auto Check Tasks</FormLabel>
                       </div>

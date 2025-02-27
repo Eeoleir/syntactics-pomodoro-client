@@ -1,19 +1,19 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectGroup,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 import { Textarea } from "@/components/ui/textarea";
-import { deleteTask, editTask } from "@/lib/task-queries";
+import { editTask } from "@/lib/task-queries";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface EditTaskProps {
@@ -40,7 +40,7 @@ interface EditTaskProps {
   >;
 }
 const EditTask: React.FC<EditTaskProps> = ({
-  EditTaskActive,
+  // EditTaskActive,
   setEditTaskActive,
   editInfo,
   setEditInfo,
@@ -69,7 +69,7 @@ const EditTask: React.FC<EditTaskProps> = ({
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       setEditTaskActive("default");
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.warning(error.message);
     },
   });
