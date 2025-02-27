@@ -4,9 +4,7 @@ import { Button } from "@/components/ui/button";
 import { PiPencilSimpleLineDuotone } from "react-icons/pi";
 import { CiClock2 } from "react-icons/ci";
 import { TimeDropdown } from "./dropdown_minutes";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { FaCheck } from "react-icons/fa6";
 import {
   Form,
@@ -17,28 +15,24 @@ import {
 } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
 import { useEffect } from "react";
-import {
-  getPreferences,
-  editPreference,
-  createPreference,
-  
-} from "@/lib/preference-queries";
-import { usePomodoroStore } from "@/app/stores/pomodoroStore"; 
+import { getPreferences, editPreference } from "@/lib/preference-queries";
+import { usePomodoroStore } from "@/app/stores/pomodoroStore";
 
-const FormSchema = z.object({
-  focusMin: z.number().default(25),
-  shortBreakMin: z.number().default(5),
-  longBreakMin: z.number().default(15),
-  autoStartBreaks: z.boolean().default(false),
-  autoStartFocus: z.boolean().default(false),
-  autoCheckTasks: z.boolean().default(false),
-  autoSwitchTasks: z.boolean().default(false),
-});
+// Define the form data type
+interface PomodoroFormData {
+  focusMin: number;
+  shortBreakMin: number;
+  longBreakMin: number;
+  autoStartBreaks: boolean;
+  autoStartFocus: boolean;
+  autoCheckTasks: boolean;
+  autoSwitchTasks: boolean;
+}
 
 export default function PomodoroSettings() {
-  const { settings, setSettings } = usePomodoroStore();
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
+  const { settings, setSettings, userId, setUserId } = usePomodoroStore();
+
+  const form = useForm<PomodoroFormData>({
     defaultValues: {
       focusMin: settings.focus_duration,
       shortBreakMin: settings.short_break_duration,
@@ -50,77 +44,96 @@ export default function PomodoroSettings() {
     },
   });
 
-  const userId = 2;
-
+  // Fetch preferences and update store/form
   useEffect(() => {
     const loadPreferences = async () => {
       try {
         const preferences = await getPreferences();
-        console.log("Fetched Preferences:", preferences);
+        console.log("Fetched Preferences in useEffect:", preferences);
+
         if (preferences.length > 0) {
-          const pref = preferences.find((p) => p.user_id === userId);
-          if (pref) {
-            
-            setSettings({
-              focus_duration: pref.focus_duration,
-              short_break_duration: pref.short_break_duration,
-              long_break_duration: pref.long_break_duration,
-              cycles_before_long_break: pref.cycles_before_long_break,
-              is_auto_start_breaks: pref.is_auto_start_breaks,
-              is_auto_start_focus: pref.is_auto_start_focus,
-              is_auto_complete_tasks: pref.is_auto_complete_tasks,
-              is_auto_switch_tasks: pref.is_auto_switch_tasks,
-              is_dark_mode: pref.is_dark_mode,
-            });
-           
-            form.reset({
-              focusMin: pref.focus_duration,
-              shortBreakMin: pref.short_break_duration,
-              longBreakMin: pref.long_break_duration,
-              autoStartBreaks: pref.is_auto_start_breaks,
-              autoStartFocus: pref.is_auto_start_focus,
-              autoCheckTasks: pref.is_auto_complete_tasks,
-              autoSwitchTasks: pref.is_auto_switch_tasks,
-            });
-          }
+          const pref = preferences[0]; 
+          console.log("Setting userId to:", pref.user_id);
+          setUserId(pref.user_id);
+
+          const newSettings = {
+            focus_duration: pref.focus_duration,
+            short_break_duration: pref.short_break_duration,
+            long_break_duration: pref.long_break_duration,
+            cycles_before_long_break: pref.cycles_before_long_break,
+            is_auto_start_breaks: pref.is_auto_start_breaks,
+            is_auto_start_focus: pref.is_auto_start_focus,
+            is_auto_complete_tasks: pref.is_auto_complete_tasks,
+            is_auto_switch_tasks: pref.is_auto_switch_tasks,
+            is_dark_mode: pref.is_dark_mode,
+          };
+
+          setSettings(newSettings);
+          console.log("Updated Zustand settings:", newSettings);
+
+          form.reset({
+            focusMin: pref.focus_duration,
+            shortBreakMin: pref.short_break_duration,
+            longBreakMin: pref.long_break_duration,
+            autoStartBreaks: pref.is_auto_start_breaks,
+            autoStartFocus: pref.is_auto_start_focus,
+            autoCheckTasks: pref.is_auto_complete_tasks,
+            autoSwitchTasks: pref.is_auto_switch_tasks,
+          });
+          console.log("Form reset with values:", form.getValues());
         }
       } catch (error) {
         console.error("Failed to load preferences:", error);
       }
     };
     loadPreferences();
-  }, [form, setSettings]);
+  }, [form, setSettings, setUserId]);
 
-  async function onSubmit(data: z.infer<typeof FormSchema>) {
+  async function onSubmit(data: PomodoroFormData) {
+    console.log("onSubmit called with userId:", userId);
+    if (!userId) {
+      console.error("No user ID available");
+      return;
+    }
+
     try {
-      const preferences = await getPreferences();
-      const existingPref = preferences.find((p) => p.user_id === userId);
-
       const updatedSettings = {
         focus_duration: data.focusMin,
         short_break_duration: data.shortBreakMin,
         long_break_duration: data.longBreakMin,
-        cycles_before_long_break: 4, // Hardcoded as in original
+        cycles_before_long_break: 4,
         is_auto_start_breaks: data.autoStartBreaks,
         is_auto_start_focus: data.autoStartFocus,
         is_auto_complete_tasks: data.autoCheckTasks,
         is_auto_switch_tasks: data.autoSwitchTasks,
-        is_dark_mode: settings.is_dark_mode, // Preserve existing dark mode
+        is_dark_mode: settings.is_dark_mode,
       };
 
-      if (existingPref) {
-        await editPreference(userId, updatedSettings);
-      } else {
-        await createPreference({
-          user_id: userId,
-          ...updatedSettings,
-        });
-      }
-
-      // Update Zustand store with new settings
-      setSettings(updatedSettings);
-
-      console.log("Preferences saved successfully:", data);
+      console.log("Calling editPreference with userId:", userId);
+      const response = await editPreference(userId, updatedSettings);
+      const updatedPref = response.data; 
+      
+      setSettings({
+        focus_duration: updatedPref.focus_duration,
+        short_break_duration: updatedPref.short_break_duration,
+        long_break_duration: updatedPref.long_break_duration,
+        cycles_before_long_break: updatedPref.cycles_before_long_break,
+        is_auto_start_breaks: updatedPref.is_auto_start_breaks,
+        is_auto_start_focus: updatedPref.is_auto_start_focus,
+        is_auto_complete_tasks: updatedPref.is_auto_complete_tasks,
+        is_auto_switch_tasks: updatedPref.is_auto_switch_tasks,
+        is_dark_mode: updatedPref.is_dark_mode,
+      });
+      form.reset({
+        focusMin: updatedPref.focus_duration,
+        shortBreakMin: updatedPref.short_break_duration,
+        longBreakMin: updatedPref.long_break_duration,
+        autoStartBreaks: updatedPref.is_auto_start_breaks,
+        autoStartFocus: updatedPref.is_auto_start_focus,
+        autoCheckTasks: updatedPref.is_auto_complete_tasks,
+        autoSwitchTasks: updatedPref.is_auto_switch_tasks,
+      });
+      console.log("Form and store updated with PATCH response:", updatedPref);
     } catch (error) {
       console.error("Failed to save preferences:", error);
     }
