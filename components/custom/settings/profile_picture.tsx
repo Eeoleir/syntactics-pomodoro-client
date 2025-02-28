@@ -2,15 +2,17 @@ import { IoCameraSharp } from "react-icons/io5";
 import React, { useRef } from "react";
 import { useRouter } from "next/navigation";
 
+interface ProfilePictureProps {
+  size: "sm" | "md" | "lg";
+  editable?: boolean;
+  src?: string; // Add src prop to accept the profile photo URL
+}
+
 export default function ProfilePicture({
   size = "md",
   editable = false,
-}: {
-  size: "sm" | "md" | "lg";
-  editable?: boolean;
-}) {
-  const router = useRouter();
-
+  src,
+}: ProfilePictureProps) {
   const sizeStyles = {
     sm: "w-[100px] h-[100px]",
     md: "w-[120px] h-[120px]",
@@ -42,15 +44,33 @@ export default function ProfilePicture({
         className={`
           ${sizeStyles[size]} 
           rounded-full 
-          bg-green-500 
           border-[#84CC16] 
           border-[3px]
           flex items-center justify-center
+          relative
+          overflow-hidden
           ${editable ? "cursor-pointer hover:opacity-80" : ""}
         `}
         onClick={handleClick}
       >
-        <IoCameraSharp className="size-6" />
+
+        {src ? (
+          <img
+            src={src}
+            alt="Profile"
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-green-500 flex items-center justify-center">
+            <IoCameraSharp className="size-6 text-white" />
+          </div>
+        )}
+     
+        {editable && src && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+            <IoCameraSharp className="size-6 text-white" />
+          </div>
+        )}
       </div>
       {editable && (
         <input

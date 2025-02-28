@@ -12,9 +12,9 @@ interface PomodoroState {
     is_auto_switch_tasks: boolean;
     is_dark_mode: boolean;
   };
-  userId: number | null;
+  userId: number | null; // Removed the stray 'A'
   setSettings: (settings: Partial<PomodoroState["settings"]>) => void;
-  setUserId: (userId: number) => void; 
+  setUserId: (userId: number) => void;
 }
 
 export const usePomodoroStore = create<PomodoroState>((set) => ({
@@ -29,11 +29,11 @@ export const usePomodoroStore = create<PomodoroState>((set) => ({
     is_auto_switch_tasks: false,
     is_dark_mode: false,
   },
-  userId: null, 
+  userId: null,
   setSettings: (settings) =>
     set((state) => ({
       ...state,
       settings: { ...state.settings, ...settings },
     })),
-  setUserId: (userId) => set({ userId }), 
+  setUserId: (userId) => set({ userId }),
 }));

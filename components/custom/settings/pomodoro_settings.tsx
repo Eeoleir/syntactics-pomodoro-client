@@ -18,7 +18,6 @@ import { useEffect, useState } from "react"; // Added useState
 import { getPreferences, editPreference } from "@/lib/preference-queries";
 import { usePomodoroStore } from "@/app/stores/pomodoroStore";
 
-// Updated form data type to include cycles
 interface PomodoroFormData {
   focusMin: number;
   shortBreakMin: number;
@@ -51,11 +50,10 @@ export default function PomodoroSettings() {
     const loadPreferences = async () => {
       try {
         const preferences = await getPreferences();
-        console.log("Fetched Preferences in useEffect:", preferences);
 
         if (preferences.length > 0) {
           const pref = preferences[0];
-          console.log("Setting userId to:", pref.user_id);
+
           setUserId(pref.user_id);
 
           const newSettings = {
@@ -71,7 +69,6 @@ export default function PomodoroSettings() {
           };
 
           setSettings(newSettings);
-          console.log("Updated Zustand settings:", newSettings);
 
           form.reset({
             focusMin: pref.focus_duration,
@@ -83,7 +80,6 @@ export default function PomodoroSettings() {
             autoCheckTasks: pref.is_auto_complete_tasks,
             autoSwitchTasks: pref.is_auto_switch_tasks,
           });
-          console.log("Form reset with values:", form.getValues());
         }
       } catch (error) {
         console.error("Failed to load preferences:", error);
@@ -104,7 +100,6 @@ export default function PomodoroSettings() {
   };
 
   async function onSubmit(data: PomodoroFormData) {
-    console.log("onSubmit called with userId:", userId);
     if (!userId) {
       console.error("No user ID available");
       return;
@@ -123,7 +118,6 @@ export default function PomodoroSettings() {
         is_dark_mode: settings.is_dark_mode,
       };
 
-      console.log("Calling editPreference with userId:", userId);
       const response = await editPreference(userId, updatedSettings);
       const updatedPref = response.data;
 
@@ -148,8 +142,8 @@ export default function PomodoroSettings() {
         autoCheckTasks: updatedPref.is_auto_complete_tasks,
         autoSwitchTasks: updatedPref.is_auto_switch_tasks,
       });
-      console.log("Form and store updated with PATCH response:", updatedPref);
-      setIsEditing(false); // Disable editing mode after successful save
+
+      setIsEditing(false); 
     } catch (error) {
       console.error("Failed to save preferences:", error);
     }
@@ -159,7 +153,7 @@ export default function PomodoroSettings() {
     <div className="appSettings w-full lg:w-2/3 flex border-[1px] border-[#27272A] flex-col p-4 sm:p-6 md:p-[24px] gap-3 md:gap-[12px] rounded-[12px] text-[#A1A1AA]">
       <div className="top flex flex-row items-center justify-between w-full h-auto">
         <h2 className="text-[24px] font-[700]">Pomodoro Settings</h2>
-        {!isEditing && ( // Show pencil button only when not editing
+        {!isEditing && ( 
           <Button
             className="pencil ml-auto bg-[#84CC16] p-3 rounded-[12px] h-fit text-white"
             onClick={handleEditClick}

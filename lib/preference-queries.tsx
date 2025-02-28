@@ -41,9 +41,9 @@ export async function getPreferences(): Promise<Preference[]> {
 
     const responseData = await response.json();
     toast.success("Preferences fetched successfully.");
+
     return responseData.data;
   } catch (error: any) {
-    toast.warning(error.message || "Failed to fetch preferences");
     return [];
   }
 }
@@ -78,14 +78,12 @@ export async function editPreference(
 
     try {
       const data = JSON.parse(responseText);
-      toast.success("Preference updated successfully. 🎉");
       return data;
     } catch (e) {
       console.error("Failed to parse response as JSON:", responseText);
       throw new Error("Invalid JSON response from server");
     }
   } catch (error: any) {
-    toast.warning(error.message);
     throw error;
   }
 }
