@@ -57,7 +57,7 @@ const TaskList = () => {
 
   useEffect(() => {
     if (fetchedTasks) {
-      setTaskList(fetchedTasks.data); 
+      setTaskList(fetchedTasks.data);
     }
   }, [fetchedTasks]);
 
@@ -115,8 +115,15 @@ const TaskList = () => {
     editStatusMutation.mutate({ id: taskId, status: newStatus });
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>Error loading tasks</div>;
+  if (isLoading)
+    return (
+      <div className="flex justify-center items-center w-full text-lg font-bold font-sans relative before:content-['Loading...'] before:block before:w-fit before:bg-[repeating-linear-gradient(90deg,currentColor_0_8%,transparent_0_10%)] before:bg-[200%_100%] before:bg-[length:200%_3px] before:bg-no-repeat before:animate-loading"></div>
+    );
+
+  if (isError)
+    return (
+      <div className="flex justify-center items-center w-full text-lg font-bold font-sans relative before:content-['Loading...'] before:block before:w-fit before:bg-[repeating-linear-gradient(90deg,currentColor_0_8%,transparent_0_10%)] before:bg-[200%_100%] before:bg-[length:200%_3px] before:bg-no-repeat before:animate-loading"></div>
+    );
 
   return (
     <div id="task-list" className="p-6 w-full relative">
