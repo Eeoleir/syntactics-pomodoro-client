@@ -1,13 +1,16 @@
 import { IoCameraSharp } from "react-icons/io5";
 import React, { useRef } from "react";
+import { useRouter } from "next/navigation";
 
 export default function ProfilePicture({
   size = "md",
   editable = false,
 }: {
-  size: "sm" | "md" | "lg"; 
+  size: "sm" | "md" | "lg";
   editable?: boolean;
 }) {
+  const router = useRouter();
+
   const sizeStyles = {
     sm: "w-[100px] h-[100px]",
     md: "w-[120px] h-[120px]",
@@ -25,8 +28,12 @@ export default function ProfilePicture({
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      console.log("Selected file:", file); 
+      console.log("Selected file:", file);
     }
+  };
+
+  const handleGoBack = () => {
+    router.push("/dashboard");
   };
 
   return (

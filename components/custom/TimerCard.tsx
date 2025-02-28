@@ -7,7 +7,7 @@ import { Mode, useCycleStore } from "@/app/stores/cycleStore";
 const darkMode = false;
 
 const primaryTextStyles = `
-  ${darkMode ? "text-[#a1a1aa]" : "text-[#52525b]"}
+  ${darkMode ? "text-[#a1a1aa]" : "text-[#52525b] dark:text-[#a1a1aa]"}
   font-bold
   font-sans
   `;
@@ -22,7 +22,9 @@ export default function PomodoroTimerCard() {
 
   const containerLayout =
     "flex flex-col w-full p-[24px] rounded-xl border pb-12";
-  const containerStyles = darkMode ? `border-[#27272a]` : `border-[#e4e4e7]`;
+  const containerStyles = darkMode
+    ? `border-[#27272a]`
+    : `border-[#e4e4e7] dark:border-[#27272A]`;
 
   return (
     <div
@@ -60,8 +62,14 @@ function CardTop() {
       {/* ---- title and icon ---- */}
       <div id="header-container" className={containerStyles}>
         <div id="header-text" className="flex flex-col">
-          <h3 className={`text-[24px] ${primaryTextStyles}`}>Session data</h3>
-          <h6 className={`text-[16px] ${secondaryTextStyles}`}>
+          <h3
+            className={`text-[24px] dark:text-[#A1A1AA] ${primaryTextStyles}`}
+          >
+            Session data
+          </h3>
+          <h6
+            className={`text-[16px] dark:text-[#71717A] ${secondaryTextStyles}`}
+          >
             Track the next cycles
           </h6>
         </div>
@@ -73,13 +81,16 @@ function CardTop() {
       {/* ---- divider ---- */}
       <div
         id="divider"
-        className={`h-[1px] w-full bg-[${
+        className={`h-[1px] w-full dark:bg-[#27272A] bg-[${
           darkMode ? "#27272a" : "#e4e4e7"
         }] mt-[24px] mb-[24px]`}
       ></div>
 
       {/* ---- cycles ---- */}
-      <div id="cycles-container" className="flex flex-col space-y-[24px]">
+      <div
+        id="cycles-container"
+        className="flex flex-col space-y-[24px] text-[#71717A] dark:text-[#A1A1AA]"
+      >
         <CycleIndicator
           title="Current Mode"
           subText="Current timer cycle"

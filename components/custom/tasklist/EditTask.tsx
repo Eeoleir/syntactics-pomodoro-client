@@ -75,7 +75,7 @@ const EditTask: React.FC<EditTaskProps> = ({
       title: editInfo.taskTitle,
       description: editInfo.taskDesc,
       due_date: editInfo.taskDueDate,
-      estimated_cycles: editInfo.taskCycle, 
+      estimated_cycles: editInfo.taskCycle,
       status: editInfo.taskStatus,
     });
   };
@@ -95,7 +95,7 @@ const EditTask: React.FC<EditTaskProps> = ({
             viewBox="0 0 24 24"
             strokeWidth="1.5"
             stroke="currentColor"
-            className="size-6"
+            className="size-6 dark:text-[#A1A1AA] cursor-pointer"
             onClick={() => setEditTaskActive("default")}
           >
             <path
@@ -108,7 +108,7 @@ const EditTask: React.FC<EditTaskProps> = ({
             <Input
               type="text"
               placeholder=""
-              className="w-fit"
+              className="w-fit text-[#52525B] dark:text-[#A1A1AA]"
               value={editInfo.taskTitle}
               onChange={(e) => {
                 setEditInfo({
@@ -118,22 +118,33 @@ const EditTask: React.FC<EditTaskProps> = ({
               }}
             />
           ) : (
-            <h3 className="text-2xl font-bold text-[#52525B]">
+            <h3 className="text-2xl font-bold text-[#52525B] dark:text-[#A1A1AA]">
               {editInfo.taskTitle}
             </h3>
           )}
 
-          <img
-            src="/editIcon.svg"
-            alt="editIcon"
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="blue"
+            className="size-5 hover:cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-600 rounded-full "
             onClick={() => setIsEditable(!isEditable)}
-          />
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+            />
+          </svg>
         </div>
         <Separator className="my-6" />
 
         <div className="mt-1">
           <Textarea
             placeholder="Type your description here."
+            className="text-[#52525B] dark:text-[#A1A1AA]"
             disabled={!isEditable}
             value={editInfo.taskDesc}
             onChange={(e) => {
@@ -153,7 +164,7 @@ const EditTask: React.FC<EditTaskProps> = ({
           <Input
             type="number"
             placeholder=""
-            className="w-20"
+            className="w-20 text-[#52525B] dark:text-[#A1A1AA]"
             value={editInfo.taskCycle}
             onChange={(e) => {
               setEditInfo({
