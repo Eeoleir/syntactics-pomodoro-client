@@ -12,9 +12,9 @@ interface PomodoroState {
     is_auto_switch_tasks: boolean;
     is_dark_mode: boolean;
   };
-  userId: number | null; // Add userId to the store
+  userId: number | null;
   setSettings: (settings: Partial<PomodoroState["settings"]>) => void;
-  setUserId: (userId: number) => void; // Action to set userId
+  setUserId: (userId: number) => void; 
 }
 
 export const usePomodoroStore = create<PomodoroState>((set) => ({

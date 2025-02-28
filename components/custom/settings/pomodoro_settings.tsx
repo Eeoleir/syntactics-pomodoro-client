@@ -14,15 +14,16 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
-import { useEffect } from "react";
+import { useEffect, useState } from "react"; // Added useState
 import { getPreferences, editPreference } from "@/lib/preference-queries";
 import { usePomodoroStore } from "@/app/stores/pomodoroStore";
 
-// Define the form data type
+// Updated form data type to include cycles
 interface PomodoroFormData {
   focusMin: number;
   shortBreakMin: number;
   longBreakMin: number;
+  cycles: number;
   autoStartBreaks: boolean;
   autoStartFocus: boolean;
   autoCheckTasks: boolean;
@@ -31,12 +32,14 @@ interface PomodoroFormData {
 
 export default function PomodoroSettings() {
   const { settings, setSettings, userId, setUserId } = usePomodoroStore();
+  const [isEditing, setIsEditing] = useState(false); // State to track editing mode
 
   const form = useForm<PomodoroFormData>({
     defaultValues: {
       focusMin: settings.focus_duration,
       shortBreakMin: settings.short_break_duration,
       longBreakMin: settings.long_break_duration,
+      cycles: settings.cycles_before_long_break,
       autoStartBreaks: settings.is_auto_start_breaks,
       autoStartFocus: settings.is_auto_start_focus,
       autoCheckTasks: settings.is_auto_complete_tasks,
@@ -44,7 +47,6 @@ export default function PomodoroSettings() {
     },
   });
 
-  // Fetch preferences and update store/form
   useEffect(() => {
     const loadPreferences = async () => {
       try {
@@ -52,7 +54,7 @@ export default function PomodoroSettings() {
         console.log("Fetched Preferences in useEffect:", preferences);
 
         if (preferences.length > 0) {
-          const pref = preferences[0]; 
+          const pref = preferences[0];
           console.log("Setting userId to:", pref.user_id);
           setUserId(pref.user_id);
 
@@ -75,6 +77,7 @@ export default function PomodoroSettings() {
             focusMin: pref.focus_duration,
             shortBreakMin: pref.short_break_duration,
             longBreakMin: pref.long_break_duration,
+            cycles: pref.cycles_before_long_break,
             autoStartBreaks: pref.is_auto_start_breaks,
             autoStartFocus: pref.is_auto_start_focus,
             autoCheckTasks: pref.is_auto_complete_tasks,
@@ -89,6 +92,17 @@ export default function PomodoroSettings() {
     loadPreferences();
   }, [form, setSettings, setUserId]);
 
+  // Toggle editing mode on pencil button click
+  const handleEditClick = () => {
+    setIsEditing(true);
+  };
+
+  // Disable editing mode on cancel button click
+  const handleCancelClick = () => {
+    setIsEditing(false);
+    form.reset(); // Reset form to initial values
+  };
+
   async function onSubmit(data: PomodoroFormData) {
     console.log("onSubmit called with userId:", userId);
     if (!userId) {
@@ -101,7 +115,7 @@ export default function PomodoroSettings() {
         focus_duration: data.focusMin,
         short_break_duration: data.shortBreakMin,
         long_break_duration: data.longBreakMin,
-        cycles_before_long_break: 4,
+        cycles_before_long_break: data.cycles,
         is_auto_start_breaks: data.autoStartBreaks,
         is_auto_start_focus: data.autoStartFocus,
         is_auto_complete_tasks: data.autoCheckTasks,
@@ -111,8 +125,8 @@ export default function PomodoroSettings() {
 
       console.log("Calling editPreference with userId:", userId);
       const response = await editPreference(userId, updatedSettings);
-      const updatedPref = response.data; 
-      
+      const updatedPref = response.data;
+
       setSettings({
         focus_duration: updatedPref.focus_duration,
         short_break_duration: updatedPref.short_break_duration,
@@ -128,12 +142,14 @@ export default function PomodoroSettings() {
         focusMin: updatedPref.focus_duration,
         shortBreakMin: updatedPref.short_break_duration,
         longBreakMin: updatedPref.long_break_duration,
+        cycles: updatedPref.cycles_before_long_break,
         autoStartBreaks: updatedPref.is_auto_start_breaks,
         autoStartFocus: updatedPref.is_auto_start_focus,
         autoCheckTasks: updatedPref.is_auto_complete_tasks,
         autoSwitchTasks: updatedPref.is_auto_switch_tasks,
       });
       console.log("Form and store updated with PATCH response:", updatedPref);
+      setIsEditing(false); // Disable editing mode after successful save
     } catch (error) {
       console.error("Failed to save preferences:", error);
     }
@@ -143,12 +159,14 @@ export default function PomodoroSettings() {
     <div className="appSettings w-full lg:w-2/3 flex border-[1px] border-[#27272A] flex-col p-4 sm:p-6 md:p-[24px] gap-3 md:gap-[12px] rounded-[12px] text-[#A1A1AA]">
       <div className="top flex flex-row items-center justify-between w-full h-auto">
         <h2 className="text-[24px] font-[700]">Pomodoro Settings</h2>
-        <Button
-          className="pencil ml-auto bg-[#84CC16] p-3 rounded-[12px] h-fit text-white"
-          onClick={form.handleSubmit(onSubmit)}
-        >
-          <PiPencilSimpleLineDuotone className="size-4" />
-        </Button>
+        {!isEditing && ( // Show pencil button only when not editing
+          <Button
+            className="pencil ml-auto bg-[#84CC16] p-3 rounded-[12px] h-fit text-white"
+            onClick={handleEditClick}
+          >
+            <PiPencilSimpleLineDuotone className="size-4" />
+          </Button>
+        )}
       </div>
       <div className="timerSettings">
         <div className="timer flex flex-row items-center gap-2 text-[#52525B] border-b-[1px] border-[#52525B] pb-2">
@@ -171,6 +189,7 @@ export default function PomodoroSettings() {
                           onValueChange={(value) =>
                             field.onChange(parseInt(value.replace(" mins", "")))
                           }
+                          disabled={!isEditing} // Disable when not editing
                         />
                       </FormControl>
                     </FormItem>
@@ -188,6 +207,7 @@ export default function PomodoroSettings() {
                           onValueChange={(value) =>
                             field.onChange(parseInt(value.replace(" mins", "")))
                           }
+                          disabled={!isEditing}
                         />
                       </FormControl>
                     </FormItem>
@@ -205,6 +225,7 @@ export default function PomodoroSettings() {
                           onValueChange={(value) =>
                             field.onChange(parseInt(value.replace(" mins", "")))
                           }
+                          disabled={!isEditing}
                         />
                       </FormControl>
                     </FormItem>
@@ -218,13 +239,14 @@ export default function PomodoroSettings() {
                     name="autoStartBreaks"
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center justify-between rounded-lg shadow-sm mt-2">
-                        <div className="">
+                        <div>
                           <FormLabel>Auto Start Breaks</FormLabel>
                         </div>
                         <FormControl>
                           <Switch
                             checked={field.value}
                             onCheckedChange={field.onChange}
+                            disabled={!isEditing}
                           />
                         </FormControl>
                       </FormItem>
@@ -235,13 +257,14 @@ export default function PomodoroSettings() {
                     name="autoStartFocus"
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center justify-between rounded-lg shadow-sm">
-                        <div className="">
+                        <div>
                           <FormLabel>Auto Start Focus</FormLabel>
                         </div>
                         <FormControl>
                           <Switch
                             checked={field.value}
                             onCheckedChange={field.onChange}
+                            disabled={!isEditing}
                           />
                         </FormControl>
                       </FormItem>
@@ -249,19 +272,25 @@ export default function PomodoroSettings() {
                   />
                   <FormField
                     control={form.control}
-                    name="longBreakMin"
+                    name="cycles"
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center gap-[8px] justify-between">
-                        <FormLabel>Long Break Interval</FormLabel>
+                        <FormLabel>Cycles Before Long Break</FormLabel>
                         <FormControl className="flex ml-auto">
-                          <TimeDropdown
+                          <select
                             value={field.value}
-                            onValueChange={(value) =>
-                              field.onChange(
-                                parseInt(value.replace(" mins", ""))
-                              )
+                            onChange={(e) =>
+                              field.onChange(parseInt(e.target.value))
                             }
-                          />
+                            className="bg-[#27272A] text-white p-2 rounded-[8px]"
+                            disabled={!isEditing}
+                          >
+                            {[1, 2, 3, 4, 5, 6].map((num) => (
+                              <option key={num} value={num}>
+                                {num}
+                              </option>
+                            ))}
+                          </select>
                         </FormControl>
                       </FormItem>
                     )}
@@ -278,13 +307,14 @@ export default function PomodoroSettings() {
                   name="autoCheckTasks"
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-lg shadow-sm mt-2">
-                      <div className="">
+                      <div>
                         <FormLabel>Auto Check Tasks</FormLabel>
                       </div>
                       <FormControl>
                         <Switch
                           checked={field.value}
                           onCheckedChange={field.onChange}
+                          disabled={!isEditing}
                         />
                       </FormControl>
                     </FormItem>
@@ -295,27 +325,34 @@ export default function PomodoroSettings() {
                   name="autoSwitchTasks"
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-lg shadow-sm">
-                      <div className="">
+                      <div>
                         <FormLabel>Auto Switch Tasks</FormLabel>
                       </div>
                       <FormControl>
                         <Switch
                           checked={field.value}
                           onCheckedChange={field.onChange}
+                          disabled={!isEditing}
                         />
                       </FormControl>
                     </FormItem>
                   )}
                 />
               </div>
-              <div className="loginBtn flex-col gap-2 flex h-full pt-24 md:flex-row">
-                <Button type="button" className="bg-[#71717A] w-full">
-                  Cancel
-                </Button>
-                <Button type="submit" className="bg-[#84CC16] w-full">
-                  Save Changes
-                </Button>
-              </div>
+              {isEditing && ( // Show buttons only when editing
+                <div className="loginBtn flex-col gap-2 flex h-full pt-24 md:flex-row">
+                  <Button
+                    type="button"
+                    className="bg-[#71717A] w-full"
+                    onClick={handleCancelClick}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" className="bg-[#84CC16] w-full">
+                    Save Changes
+                  </Button>
+                </div>
+              )}
             </form>
           </Form>
         </div>
