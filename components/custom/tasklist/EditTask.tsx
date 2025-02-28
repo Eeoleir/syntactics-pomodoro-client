@@ -182,6 +182,7 @@ const EditTask: React.FC<EditTaskProps> = ({
             placeholder=""
             className="w-20 text-[#52525B] dark:text-[#A1A1AA]"
             value={editInfo.taskCycle}
+            disabled={!isEditable}
             onChange={(e) => {
               setEditInfo({
                 ...editInfo,
