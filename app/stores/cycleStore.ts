@@ -27,9 +27,9 @@ export const useCycleStore = create<CycleState & CycleStateActions>((set) => ({
   // state properties
   durations: {
     // dapat mag query og data para ani
-    [Mode.FOCUS]: 2, // 1500
-    [Mode.SHORT_BREAK]: 2, // 300
-    [Mode.LONG_BREAK]: 2 // 900
+    [Mode.FOCUS]: 10, // 1500
+    [Mode.SHORT_BREAK]: 15, // 300
+    [Mode.LONG_BREAK]: 25 // 900
   },
   longBreakInterval: 4,
   longBreakIntervalCounter: 0,

@@ -67,6 +67,7 @@ export default function CircularTimer() {
   }, [time, isPaused, activateNextMode, durations, nextMode, setTimeLeft, prevTime, mockTaskCountdown, currentMode, cycleDone]);
 
   const styles = buildStyles({
+    pathTransition: 'stroke-dashoffset 0.15s ease-out 0s',
     pathColor: !cycleDone ? generateColor(currentMode) : "#f4f4f5",
     trailColor: darkMode ? "#27272a" : "#f4f4f5",
     strokeLinecap: "round",
