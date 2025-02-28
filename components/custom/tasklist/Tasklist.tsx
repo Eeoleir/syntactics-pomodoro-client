@@ -138,7 +138,7 @@ const TaskList = () => {
         <>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="iAmHere font-bold text-2xl text-black">
+              <h1 className="iAmHere font-bold text-2xl text-[#52525B] dark:text-[#A1A1AA]">
                 Task list
               </h1>
               <p className="text-[#71717A] font-normal text-base">
@@ -149,7 +149,7 @@ const TaskList = () => {
               <span className="h-6 w-6">🚀</span>
             </div>
           </div>
-          <hr className="my-6 w-full border border-[#E4E4E7]" />
+          <hr className="my-6 w-full border border-[#E4E4E7] dark:border-[#27272A]" />
 
           <ScrollArea className="flex flex-col justify-between h-[382px] overflow-y-auto">
             {Array.isArray(taskList) && taskList.length > 0 ? (
@@ -162,8 +162,21 @@ const TaskList = () => {
                         handleCheckboxChange(task.id, task.status)
                       }
                       id={`task-${task.id}`}
-                      className="bg-[#F4F4F5] border border-[#E4E4E7]"
-                    />
+                      className="peer bg-[#F4F4F5] dark:bg-[#27272A] border border-[#E4E4E7] dark:border-[#3F3F46] 
+             peer-checked:bg-blue-500 peer-checked:border-blue-500"
+                    >
+                      <svg
+                        className="hidden peer-checked:block w-4 h-4 text-white"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="blue"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    </Checkbox>
                     <span
                       className={`${
                         task.status === "completed" ? "line-through" : ""
@@ -196,7 +209,7 @@ const TaskList = () => {
                           viewBox="0 0 24 24"
                           strokeWidth="1.5"
                           stroke="blue"
-                          className="size-5"
+                          className="size-5 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-600 rounded-full"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleEditClick(
@@ -228,7 +241,7 @@ const TaskList = () => {
                               viewBox="0 0 24 24"
                               strokeWidth="1.5"
                               stroke="red"
-                              className="size-5 cursor-pointer"
+                              className="size-5 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-600 rounded-full"
                               onClick={(e) => {
                                 e.stopPropagation();
                               }}
@@ -290,7 +303,7 @@ const TaskList = () => {
                       viewBox="0 0 24 24"
                       strokeWidth="1.5"
                       stroke="currentColor"
-                      className={`size-5 transition-transform duration-500 ${
+                      className={`size-5 dark:text-[#71717A] hover:bg-slate-200 dark:hover:bg-slate-600 rounded-full cursor-pointer transition-transform duration-500 ${
                         activeTaskId === task.id ? "rotate-[180deg]" : ""
                       }`}
                     >
