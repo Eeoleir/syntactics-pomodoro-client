@@ -55,7 +55,7 @@ const EditTask: React.FC<EditTaskProps> = ({
         taskData.title,
         taskData.description,
         taskData.due_date,
-        String(taskData.estimated_cycles),
+        taskData.estimated_cycles,
         taskData.status
       ),
     onSuccess: () => {

@@ -14,7 +14,13 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import EditTask from "./EditTask";
-import { deleteTask, editTaskStatus, getTasks, Task } from "@/lib/task-queries";
+import {
+  deleteTask,
+  editTaskStatus,
+  finishFirstTask,
+  getTasks,
+  Task,
+} from "@/lib/task-queries";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const TaskList = () => {
@@ -25,6 +31,7 @@ const TaskList = () => {
   const [EditTaskActive, setEditTaskActive] = React.useState("default");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const queryClient = useQueryClient();
+  const [firstTask, setFirstTask] = React.useState<Task | null>(null);
 
   const [editInfo, setEditInfo] = React.useState({
     taskId: 0,
@@ -60,6 +67,73 @@ const TaskList = () => {
       setTaskList(fetchedTasks);
     }
   }, [fetchedTasks]);
+
+  const completeFirstListTask = useMutation({
+    mutationFn: (taskId: number) => finishFirstTask(taskId),
+    onMutate: async (taskId) => {
+      // Optimistic update
+      await queryClient.cancelQueries({ queryKey: ["tasks"] });
+      const previousTasks = queryClient.getQueryData<Task[]>(["tasks"]);
+
+      queryClient.setQueryData<Task[]>(["tasks"], (old) =>
+        old?.map((task) =>
+          task.id === taskId ? { ...task, status: "completed" } : task
+        )
+      );
+
+      return { previousTasks };
+    },
+    onError: (err, taskId, context) => {
+      // Revert on error
+      queryClient.setQueryData(["tasks"], context?.previousTasks);
+      toast.warning("Failed to mark task as completed");
+    },
+    onSettled: () => {
+      // Invalidate to refetch
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    },
+  });
+
+  useEffect(() => {
+    let intervalId; // Store the interval ID
+
+    if (taskList && taskList.length > 0) {
+      // Get the first task after sorting
+      const sortedTasks = [...taskList].sort((a, b) => {
+        if (a.status === "completed" && b.status !== "completed") return 1;
+        if (b.status === "completed" && a.status !== "completed") return -1;
+        return 0;
+      });
+
+      const first = sortedTasks[0];
+      setFirstTask({
+        id: first.id,
+        title: first.title,
+        description: first.description,
+        due_date: first.due_date,
+        estimated_cycles: first.estimated_cycles,
+        status: first.status,
+      });
+
+      // Only set interval if task is not completed
+      if (first.status !== "completed") {
+        intervalId = setInterval(() => {
+          completeFirstListTask.mutate(first.id);
+        }, 10000);
+      }
+
+      console.log("First task:", first);
+    } else {
+      setFirstTask(null);
+    }
+
+    // Cleanup function to clear interval when component unmounts or dependencies change
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [taskList]);
 
   const handleActionClick = (taskId: number) => {
     setIsSpinning(true);
@@ -153,63 +227,57 @@ const TaskList = () => {
 
           <ScrollArea className="flex flex-col justify-between h-[382px] overflow-y-auto">
             {Array.isArray(taskList) && taskList.length > 0 ? (
-              taskList.map((task) => (
-                <div key={task.id} className="flex justify-between mx-3">
-                  <div className="flex items-center gap-2 mb-6">
-                    <Checkbox
-                      checked={task.status === "completed"}
-                      onCheckedChange={() =>
-                        handleCheckboxChange(task.id, task.status)
-                      }
-                      id={`task-${task.id}`}
-                      className="peer bg-[#F4F4F5] dark:bg-[#27272A] border border-[#E4E4E7] dark:border-[#3F3F46] 
+              // Sort the taskList to put completed tasks at the bottom
+              [...taskList]
+                .sort((a, b) => {
+                  // If task a is completed and b is not, a should come after b
+                  if (a.status === "completed" && b.status !== "completed")
+                    return 1;
+                  // If task b is completed and a is not, b should come after a
+                  if (b.status === "completed" && a.status !== "completed")
+                    return -1;
+                  // Otherwise maintain the original order
+                  return 0;
+                })
+                .map((task, index) => (
+                  <div key={task.id}>
+                    <div
+                      className={`flex items-center justify-between mb-6 ${
+                        index === 0 && task.status !== "completed"
+                          ? "bg-[#84CC161A] border border-[#84CC16]"
+                          : ""
+                      }`}
+                    >
+                      <div className={`flex items-center gap-2 p-3 `}>
+                        <Checkbox
+                          checked={task.status === "completed"}
+                          onCheckedChange={() =>
+                            handleCheckboxChange(task.id, task.status)
+                          }
+                          id={`task-${task.id}`}
+                          className="peer bg-[#F4F4F5] dark:bg-[#27272A] border border-[#E4E4E7] dark:border-[#3F3F46] 
              peer-checked:bg-blue-500 peer-checked:border-blue-500"
-                    >
-                      <svg
-                        className="hidden peer-checked:block w-4 h-4 text-white"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="blue"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    </Checkbox>
-                    <span
-                      className={`${
-                        task.status === "completed" ? "line-through" : ""
-                      } text-[#71717A] text-base font-medium hover:underline cursor-pointer`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEditClick(
-                          task.id,
-                          task.title,
-                          task.description,
-                          task.due_date,
-                          task.estimated_cycles,
-                          task.status
-                        );
-                      }}
-                    >
-                      {task.title}
-                    </span>
-                  </div>
-                  <div
-                    className="burgerIcon flex items-center gap-4"
-                    onClick={() => handleActionClick(task.id)}
-                  >
-                    {activeTaskId === task.id && (
-                      <div className="flex items-center gap-4">
-                        <svg
-                          id="edit-task-button"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth="1.5"
-                          stroke="blue"
-                          className="size-5 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-600 rounded-full"
+                        >
+                          <svg
+                            className="hidden peer-checked:block w-4 h-4 text-white"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="blue"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        </Checkbox>
+                        <span
+                          className={`${
+                            task.status === "completed" ? "line-through" : ""
+                          } ${
+                            index === 0 && task.status !== "completed"
+                              ? "text-[#84CC16]"
+                              : "text-[#71717A]"
+                          } text-base font-medium hover:underline cursor-pointerr`}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleEditClick(
@@ -222,65 +290,58 @@ const TaskList = () => {
                             );
                           }}
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"
-                          />
-                        </svg>
-
-                        <Dialog
-                          open={isDeleteDialogOpen}
-                          onOpenChange={setIsDeleteDialogOpen}
-                        >
-                          <DialogTrigger asChild>
+                          {task.title}
+                        </span>
+                      </div>
+                      <div
+                        className="burgerIcon flex items-center gap-4 p-3"
+                        onClick={() => handleActionClick(task.id)}
+                      >
+                        {activeTaskId === task.id && (
+                          <div className="flex items-center gap-4">
                             <svg
-                              id="delete-task-button"
+                              id="edit-task-button"
                               xmlns="http://www.w3.org/2000/svg"
                               fill="none"
                               viewBox="0 0 24 24"
                               strokeWidth="1.5"
-                              stroke="red"
+                              stroke="blue"
                               className="size-5 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-600 rounded-full"
                               onClick={(e) => {
                                 e.stopPropagation();
+                                handleEditClick(
+                                  task.id,
+                                  task.title,
+                                  task.description,
+                                  task.due_date,
+                                  task.estimated_cycles,
+                                  task.status
+                                );
                               }}
                             >
                               <path
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
-                                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"
                               />
                             </svg>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>
-                                Are you sure you're gonna delete this task ?
-                              </DialogTitle>
-                              <DialogDescription>
-                                This action cannot be undone. This will
-                                permanently delete your task..
-                              </DialogDescription>
-                            </DialogHeader>
-                            <DialogFooter>
-                              <Button
-                                variant="outline"
-                                onClick={() => setIsDeleteDialogOpen(false)}
-                              >
-                                No, don't delete my task
-                              </Button>
-                              <Button
-                                className="bg-[#84CC16] hover:bg-[#669f10]"
-                                onClick={() => handleDeleteClick(task.id)}
-                              >
+
+                            <Dialog
+                              open={isDeleteDialogOpen}
+                              onOpenChange={setIsDeleteDialogOpen}
+                            >
+                              <DialogTrigger asChild>
                                 <svg
+                                  id="delete-task-button"
                                   xmlns="http://www.w3.org/2000/svg"
                                   fill="none"
                                   viewBox="0 0 24 24"
                                   strokeWidth="1.5"
-                                  stroke="currentColor"
-                                  className="size-6"
+                                  stroke="red"
+                                  className="size-5 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-600 rounded-full"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                  }}
                                 >
                                   <path
                                     strokeLinecap="round"
@@ -288,34 +349,83 @@ const TaskList = () => {
                                     d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
                                   />
                                 </svg>
-                                Yes, delete my task
-                              </Button>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
-                      </div>
-                    )}
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>
+                                    Are you sure you're gonna delete this task ?
+                                  </DialogTitle>
+                                  <DialogDescription>
+                                    This action cannot be undone. This will
+                                    permanently delete your task..
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <DialogFooter>
+                                  <Button
+                                    variant="outline"
+                                    onClick={() => setIsDeleteDialogOpen(false)}
+                                  >
+                                    No, don't delete my task
+                                  </Button>
+                                  <Button
+                                    className="bg-[#84CC16] hover:bg-[#669f10]"
+                                    onClick={() => handleDeleteClick(task.id)}
+                                  >
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      strokeWidth="1.5"
+                                      stroke="currentColor"
+                                      className="size-6"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                                      />
+                                    </svg>
+                                    Yes, delete my task
+                                  </Button>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
+                          </div>
+                        )}
 
-                    <svg
-                      id="burger-menu-icon"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth="1.5"
-                      stroke="currentColor"
-                      className={`size-5 dark:text-[#71717A] hover:bg-slate-200 dark:hover:bg-slate-600 rounded-full cursor-pointer transition-transform duration-500 ${
-                        activeTaskId === task.id ? "rotate-[180deg]" : ""
-                      }`}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-                      />
-                    </svg>
+                        <span
+                          className={`${
+                            index === 0 && task.status !== "completed"
+                              ? "text-[#84CC16]"
+                              : "text-[#71717A]"
+                          }`}
+                        >
+                          {" "}
+                          0/{task.estimated_cycles}
+                        </span>
+
+                        <svg
+                          id="burger-menu-icon"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth="1.5"
+                          stroke="currentColor"
+                          className={`size-5 dark:text-[#71717A] hover:bg-slate-200 dark:hover:bg-slate-600 rounded-full cursor-pointer transition-transform duration-500 ${
+                            activeTaskId === task.id ? "rotate-[180deg]" : ""
+                          }
+                            `}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+                          />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))
+                ))
             ) : (
               <div className="flex justify-center items-center h-full">
                 <p className="text-gray-500">
