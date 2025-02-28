@@ -117,12 +117,12 @@ const TaskList = () => {
 
   if (isLoading)
     return (
-      <div className="flex justify-center items-center w-full text-lg font-bold font-sans relative before:content-['Loading...'] before:block before:w-fit before:bg-[repeating-linear-gradient(90deg,currentColor_0_8%,transparent_0_10%)] before:bg-[200%_100%] before:bg-[length:200%_3px] before:bg-no-repeat before:animate-loading"></div>
+      <div className="flex justify-center items-center w-full text-lg font-bold font-sans relative before:content-['Loading...'] before:block before:w-fit before:bg-[repeating-linear-gradient(90deg,currentColor_0_8%,transparent_0_10%)] before:bg-[200%_100%] before:bg-[length:200%_3px] before:bg-no-repeat before:animate-loading dark:text-[#A1A1AA] "></div>
     );
 
   if (isError)
     return (
-      <div className="flex justify-center items-center w-full text-lg font-bold font-sans relative before:content-['Loading...'] before:block before:w-fit before:bg-[repeating-linear-gradient(90deg,currentColor_0_8%,transparent_0_10%)] before:bg-[200%_100%] before:bg-[length:200%_3px] before:bg-no-repeat before:animate-loading"></div>
+      <div className="flex justify-center items-center w-full text-lg font-bold font-sans relative before:content-['Loading...'] before:block before:w-fit before:bg-[repeating-linear-gradient(90deg,currentColor_0_8%,transparent_0_10%)] before:bg-[200%_100%] before:bg-[length:200%_3px] before:bg-no-repeat before:animate-loading dark:text-[#A1A1AA]"></div>
     );
 
   return (

@@ -125,25 +125,24 @@ const Dashboard = () => {
   const howToUseButton = () => {
     driverObj.drive();
   };
-  
+
+  React.useEffect(() => {
+    setTheme(settings.is_dark_mode ? "dark" : "light");
+  }, [settings.is_dark_mode, setTheme]);
 
   const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    setSettings({ is_dark_mode: !settings.is_dark_mode });
-    if (isDarkMode) {
-      setTheme("dark");
-    } else {
-      setTheme("light");
-    }
+    const newDarkMode = !settings.is_dark_mode;
+    setSettings({ is_dark_mode: newDarkMode });
+    setTheme(newDarkMode ? "dark" : "light");
   };
 
   return (
     <div className="min-w-screen min-h-screen bg-[#FAFAFA] dark:bg-[#18181B] text-black">
       <div className="p-10 w-full">
         <div className="flex flex-end items-center justify-between md:flex-row md:mt-4 flex-col">
-          <div className="flex items-center">
+          <div id="pomodoro-timer-card" className="flex items-center">
             <img src="/pomoLogo.svg" alt="pomoLogo" />
-            <div id="pomodoro-timer-card">
+            <div>
               <h1 className="font-extrabold text-4xl text-black dark:text-[#E4E4E7]">
                 Pomodoro
               </h1>
@@ -163,16 +162,18 @@ const Dashboard = () => {
             <Button
               onClick={toggleDarkMode}
               className={`${
-                isDarkMode ? "bg-[#F4F4F5] hover:bg-gray-200" : "bg-[#27272A] "
-              } h-8 w-8 `}
+                settings.is_dark_mode === true
+                  ? "bg-[#27272A]"
+                  : "bg-[#F4F4F5] hover:bg-gray-200"
+              } h-8 w-8`}
             >
-              {isDarkMode ? (
+              {settings.is_dark_mode === true ? (
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  fill="black"
+                  fill="white"
                   viewBox="0 0 24 24"
                   strokeWidth="1.5"
-                  stroke="black"
+                  stroke="white"
                   className="size-6"
                 >
                   <path

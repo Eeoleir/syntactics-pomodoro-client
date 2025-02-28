@@ -60,7 +60,7 @@ export async function deleteTask(taskId: number) {
   });
 
   if (response.status === 200) {
-    toast.success("Task deleted successfully. 🎉");
+    toast.success("Task deleted successfully.");
   } else {
     const error = await response.json();
     throw new Error(error.message || "Failed to delete task");
@@ -87,7 +87,7 @@ export async function getTasks(): Promise<Task[]> {
     }
 
     const responseData: { data: Task[] } = await response.json();
-    toast.success("Tasks fetched successfully. 🎉");
+    toast.success("Tasks fetched successfully. ");
     return responseData.data;
   } catch (error: any) {
     toast.warning(error.message || "Failed to fetch tasks");
@@ -128,7 +128,7 @@ export async function editTask(
       throw new Error(data.message || "Failed to update task");
     }
 
-    toast.success("Task updated successfully. 🎉");
+    toast.success("Task updated successfully.");
     return data;
   } catch (error: any) {
     toast.warning(error.message);
@@ -158,7 +158,7 @@ export async function editTaskStatus(id: number, status: string) {
       throw new Error(data.message || "Failed to update task status");
     }
 
-    toast.success("Task status updated successfully. 🎉");
+    toast.success("Task status updated successfully.");
     return data;
   } catch (error: any) {
     toast.warning(error.message);
