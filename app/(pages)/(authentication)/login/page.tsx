@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { signIn } from "../../../../lib/auth-queries";
 import useAuthStore from "@/app/stores/authStore";
+import { useEffect, useState } from "react";
 
 import {
   Form,
@@ -31,6 +32,7 @@ type FormValues = z.infer<typeof formSchema>;
 export default function Login() {
   const router = useRouter();
   const login = useAuthStore((state) => state.login);
+  const [errorKey, setErrorKey] = useState(0); // Used to retrigger animation
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -40,18 +42,28 @@ export default function Login() {
     },
   });
 
+  // Watch for changes in the root error to trigger animation
+  useEffect(() => {
+    if (form.formState.errors.root) {
+      setErrorKey(prev => prev + 1);
+    }
+  }, [form.formState.errors.root]);
+
   const mutation = useMutation({
     mutationFn: signIn,
     onSuccess: (data) => {
       console.log("Sign-in successful:", data);
       login(data.user, data.token);
       router.push("/dashboard");
-
+    },
+    onError: (error: any) => {
+      // Try to extract the specific error message from the server response
+      const errorMessage = error.response?.data?.message || 
+                           error.message || 
+                           "Incorrect email or password";
       
-    },
-    onError: (error: Error) => {
-      form.setError("root", { message: error.message || "Sign-in failed" });
-    },
+      form.setError("root", { message: errorMessage });
+    }
   });
 
   const onSubmit = (values: FormValues) => {
@@ -61,6 +73,28 @@ export default function Login() {
 
   return (
     <section className="content w-full h-screen mx-auto bg-[#18181B] text-[#FAFAFA] flex justify-center items-center">
+      {/* First, add the necessary keyframes to your global CSS or in your Tailwind config */}
+      <style jsx global>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+          20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-shake {
+          animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        
+        .animate-fade-in {
+          animation: fadeIn 0.3s ease-out forwards;
+        }
+      `}</style>
+
       <div className="flex h-fit w-[408px] border-[1px] rounded-xl bg-[#18181B] border-[#84CC16] flex-col">
         <div className="title flex flex-col h-auto p-6">
           <h2 className="text-2xl font-semibold">Log in</h2>
@@ -114,10 +148,23 @@ export default function Login() {
                 )}
               />
               {form.formState.errors.root && (
-                <p className="text-red-500 text-sm">
-                  {form.formState.errors.root.message}
-                </p>
+                <div 
+                  key={errorKey} 
+                  className="flex flex-row justify-between items-center animate-fade-in animate-shake"
+                >
+                  <p className="text-red-500 text-xs">
+                    {form.formState.errors.root.message}
+                  </p>
+                  <p>
+                    <Link href="/forgot-password">
+                      <span className="flex justify-end ml-2 text-xs text-[#84CC16]">
+                        Forgot Password?
+                      </span>
+                    </Link>
+                  </p>
+                </div>
               )}
+              
               <div className="loginBtn pt-5">
                 <Button
                   type="submit"
@@ -137,14 +184,6 @@ export default function Login() {
             <Link href="/register">
               <span className="underline ml-2 text-[#84CC16]">
                 Create Account
-              </span>
-            </Link>
-          </p>
-          <p>
-            Forgot Password?
-            <Link href="/forgot-password">
-              <span className="underline ml-2 text-[#84CC16]">
-                Reset Password
               </span>
             </Link>
           </p>
