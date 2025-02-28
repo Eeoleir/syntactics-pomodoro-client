@@ -41,7 +41,7 @@ export async function getPreferences(): Promise<Preference[]> {
 
     const responseData = await response.json();
     toast.success("Preferences fetched successfully. 🎉");
-    return responseData.data; 
+    return responseData.data;
   } catch (error: any) {
     toast.warning(error.message || "Failed to fetch preferences");
     return [];
@@ -71,7 +71,9 @@ export async function editPreference(
     const responseText = await response.text();
     if (!response.ok) {
       console.error("PATCH response error:", response.status, responseText);
-      throw new Error(`HTTP error! status: ${response.status}, response: ${responseText}`);
+      throw new Error(
+        `HTTP error! status: ${response.status}, response: ${responseText}`
+      );
     }
 
     try {
