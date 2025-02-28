@@ -80,26 +80,26 @@ export default function CircularTimer() {
 
   return (
     <div onMouseOver={handleMouseOver} onMouseOut={handleMouseOut} className="container w-full flex flex-row justify-center max-h-72 px-5 space-x-5">
-      <div className={`container w-6/12 flex xl:justify-center justify-start py-2 ${((isHovering || isPaused) && !cycleDone) ? 'blur-sm opacity-75' : ''} transition duration-200`}>
-        <div className="w-[250px]">
+      <div className={`container w-6/12 flex justify-center py-2`}>
+        <div className={`min-w-[250px] ${((isHovering || isPaused) && !cycleDone) ? 'blur-sm opacity-75' : ''} transition duration-200`}>
           <CircularProgressbarWithChildren strokeWidth={6.5} value={time} maxValue={durations[currentMode]} styles={styles}>
             <TimeTickerAnim prev={prevTime} current={formatTime(time)} seconds={time} textColor={`${darkMode ? (cycleDone ? "text-[#3f3f46]" : "text-white") : (cycleDone ? "text-[#d4d4d8]" : "text-[#52525b]")}`}/>
           </CircularProgressbarWithChildren>
         </div>
+        {(isHovering || isPaused) && !cycleDone && (
+          <AnimatePresence>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, marginTop: 5}}
+              animate={{ opacity: 1, scale: 1, marginTop: 0}}
+              exit={{ opacity: 0, scale: 0.95, marginTop: 5}}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="absolute w-2/6 flex justify-center p-6"
+            >
+              <TimerControls isPaused={isPaused} setPaused={setIsPaused} initialTime={durations[currentMode]} setTime={setTime}/>
+            </motion.div>
+          </AnimatePresence>
+        )}
       </div>
-      {(isHovering || isPaused) && !cycleDone && (
-        <AnimatePresence>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, marginTop: 5}}
-            animate={{ opacity: 1, scale: 1, marginTop: 0}}
-            exit={{ opacity: 0, scale: 0.95, marginTop: 5}}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            className="absolute w-2/6 flex justify-center p-6"
-          >
-            <TimerControls isPaused={isPaused} setPaused={setIsPaused} initialTime={durations[currentMode]} setTime={setTime}/>
-          </motion.div>
-        </AnimatePresence>
-      )}
       { (cycleDone) &&  (
         <div className="flex flex-col w-6/12 justify-start space-y-20">
           <div className="flex flex-col space-y-3">
