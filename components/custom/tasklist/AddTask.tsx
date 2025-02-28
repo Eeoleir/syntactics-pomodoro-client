@@ -62,14 +62,14 @@ const AddTask: React.FC<AddTaskProps> = ({ setAddTaskActive }) => {
             viewBox="0 0 24 24"
             strokeWidth="1.5"
             stroke="currentColor"
-            className="size-6 cursor-pointer"
+            className="size-6 dark:text-[#A1A1AA] cursor-pointer"
           >
             <path
               strokeLinecap="round"
               d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
             />
           </svg>
-          <h3 className="text-2xl font-bold text-[#52525B]">
+          <h3 className="text-2xl font-bold text-[#52525B] dark:text-[#A1A1AA]">
             What are you working on?
           </h3>
         </div>
@@ -80,12 +80,14 @@ const AddTask: React.FC<AddTaskProps> = ({ setAddTaskActive }) => {
             placeholder="Name of Task"
             value={taskName}
             onChange={(e) => setTaskName(e.target.value)}
+            className="text-[#52525B] dark:text-[#A1A1AA] placeholder:text-[#52525B] dark:placeholder:text-[#52525B]"
           />
           <Input
             type="text"
             placeholder="Description of your task"
             value={taskDescription}
             onChange={(e) => setTaskDescription(e.target.value)}
+            className="text-[#52525B] dark:text-[#A1A1AA] placeholder:text-[#52525B] dark:placeholder:text-[#52525B]"
           />
         </div>
         <Separator className="my-6" />
@@ -96,23 +98,23 @@ const AddTask: React.FC<AddTaskProps> = ({ setAddTaskActive }) => {
           <Input
             type="number"
             placeholder="0"
-            className="w-20"
             min="1"
             value={pomodoroCycles}
             onChange={(e) => setPomodoroCycles(e.target.value)}
+            className="w-20 text-[#52525B] dark:text-[#A1A1AA] placeholder:text-[#52525B] dark:placeholder:text-[#52525B]"
           />
         </div>
       </div>
       <div className="flex justify-between items-center gap-6 mt-6">
         <Button
           onClick={() => setAddTaskActive("default")}
-          className="w-full font-semibold text-sm bg-[#A1A1AA] hover:bg-[#878790]"
+          className="w-full font-semibold text-[#FAFAFA] text-sm bg-[#A1A1AA] hover:bg-[#878790]"
         >
           Cancel
         </Button>
         <Button
           onClick={handleSubmitTask}
-          className="w-full bg-[#84CC16] hover:bg-[#669f10] font-semibold text-sm"
+          className="w-full bg-[#84CC16] hover:bg-[#669f10] text-[#FAFAFA] font-semibold text-sm"
           disabled={!taskName || !taskDescription || !pomodoroCycles}
         >
           Save Task
