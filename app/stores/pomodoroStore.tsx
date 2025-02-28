@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 interface PomodoroState {
   settings: {
@@ -12,7 +12,9 @@ interface PomodoroState {
     is_auto_switch_tasks: boolean;
     is_dark_mode: boolean;
   };
-  setSettings: (settings: Partial<PomodoroState['settings']>) => void;
+  userId: number | null; // Add userId to the store
+  setSettings: (settings: Partial<PomodoroState["settings"]>) => void;
+  setUserId: (userId: number) => void; // Action to set userId
 }
 
 export const usePomodoroStore = create<PomodoroState>((set) => ({
@@ -25,10 +27,13 @@ export const usePomodoroStore = create<PomodoroState>((set) => ({
     is_auto_start_focus: false,
     is_auto_complete_tasks: false,
     is_auto_switch_tasks: false,
-    is_dark_mode: true,
+    is_dark_mode: false,
   },
-  setSettings: (newSettings) =>
+  userId: null, 
+  setSettings: (settings) =>
     set((state) => ({
-      settings: { ...state.settings, ...newSettings },
+      ...state,
+      settings: { ...state.settings, ...settings },
     })),
+  setUserId: (userId) => set({ userId }), 
 }));
