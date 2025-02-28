@@ -100,11 +100,19 @@ export async function editTask(
   title: string,
   description: string,
   due_date: string,
-  estimated_cycles: string,
+  estimated_cycles: number,
   status: string
 ) {
   const token = getToken();
   if (!token) throw new Error("No authentication token available");
+
+  // Create an object with only the changed fields
+  const updateData: any = {};
+  if (title) updateData.title = title;
+  if (description) updateData.description = description;
+  if (due_date) updateData.due_date = due_date;
+  if (estimated_cycles) updateData.estimated_cycles = estimated_cycles;
+  if (status) updateData.status = status;
 
   try {
     const response = await fetch(`${API_BASE_URL}tasks/${id}`, {
@@ -113,19 +121,14 @@ export async function editTask(
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({
-        title,
-        description,
-        due_date,
-        estimated_cycles,
-        status,
-      }),
+      body: JSON.stringify(updateData),
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || "Failed to update task");
+      throw new Error(data.message);
+      console.log("")
     }
 
     toast.success("Task updated successfully. 🎉");

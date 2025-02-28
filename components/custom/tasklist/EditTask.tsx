@@ -17,7 +17,7 @@ interface EditTaskProps {
     taskTitle: string;
     taskDesc: string;
     taskDueDate: string;
-    taskCycle: number;
+    taskCycle: string;
     taskStatus: string;
   };
 
@@ -27,16 +27,25 @@ interface EditTaskProps {
       taskTitle: string;
       taskDesc: string;
       taskDueDate: string;
-      taskCycle: number;
+      taskCycle: string;
       taskStatus: string;
     }>
   >;
+
+  originalTask: {
+    title: string;
+    description: string;
+    due_date: string;
+    estimated_cycles: number;
+    status: string;
+  };
 }
 const EditTask: React.FC<EditTaskProps> = ({
   EditTaskActive,
   setEditTaskActive,
   editInfo,
   setEditInfo,
+  originalTask,
 }) => {
   const [isEditable, setIsEditable] = React.useState(false);
   const queryClient = useQueryClient();
@@ -68,16 +77,23 @@ const EditTask: React.FC<EditTaskProps> = ({
   });
 
   const handleSubmitTask = () => {
-    console.log("Task submitted:", editInfo);
-
-    editMutation.mutate({
+    const changes: any = {
       id: editInfo.taskId,
-      title: editInfo.taskTitle,
-      description: editInfo.taskDesc,
-      due_date: editInfo.taskDueDate,
-      estimated_cycles: editInfo.taskCycle,
-      status: editInfo.taskStatus,
-    });
+    };
+
+    // Compare with original task data and only include changed fields
+    if (editInfo.taskTitle !== originalTask.title)
+      changes.title = editInfo.taskTitle;
+    if (editInfo.taskDesc !== originalTask.description)
+      changes.description = editInfo.taskDesc;
+    if (editInfo.taskDueDate !== originalTask.due_date)
+      changes.due_date = editInfo.taskDueDate;
+    if (editInfo.taskCycle !== originalTask.estimated_cycles.toString())
+      changes.estimated_cycles = Number(editInfo.taskCycle);
+    if (editInfo.taskStatus !== originalTask.status)
+      changes.status = editInfo.taskStatus;
+
+    editMutation.mutate(changes);
   };
 
   const handleGoBack = () => {
@@ -169,7 +185,7 @@ const EditTask: React.FC<EditTaskProps> = ({
             onChange={(e) => {
               setEditInfo({
                 ...editInfo,
-                taskCycle: Number(e.target.value),
+                taskCycle: e.target.value,
               });
             }}
             min="0"

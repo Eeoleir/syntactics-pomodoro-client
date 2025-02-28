@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { SetStateAction, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import AddTask from "./AddTask";
 import { Button } from "@/components/ui/button";
@@ -38,7 +38,7 @@ const TaskList = () => {
     taskTitle: "",
     taskDesc: "",
     taskDueDate: "",
-    taskCycle: 0,
+    taskCycle: "",
     taskStatus: "",
   });
 
@@ -95,7 +95,7 @@ const TaskList = () => {
   });
 
   useEffect(() => {
-    let intervalId; // Store the interval ID
+    let intervalId: string | number | NodeJS.Timeout | undefined; // Store the interval ID
 
     if (taskList && taskList.length > 0) {
       // Get the first task after sorting
@@ -104,7 +104,6 @@ const TaskList = () => {
         if (b.status === "completed" && a.status !== "completed") return -1;
         return 0;
       });
-
       const first = sortedTasks[0];
       setFirstTask({
         id: first.id,
@@ -113,6 +112,7 @@ const TaskList = () => {
         due_date: first.due_date,
         estimated_cycles: first.estimated_cycles,
         status: first.status,
+        user_id: first.user_id, // Add missing user_id field
       });
 
       // Only set interval if task is not completed
@@ -146,7 +146,7 @@ const TaskList = () => {
     taskTitle: string,
     taskDesc: string,
     taskDueDate: string,
-    taskCycle: number,
+    taskCycle: string,
     taskStatus: string
   ) => {
     setEditInfo({
@@ -154,7 +154,7 @@ const TaskList = () => {
       taskTitle,
       taskDesc,
       taskDueDate,
-      taskCycle,
+      taskCycle: taskCycle.toString(), // Convert number to string
       taskStatus,
     });
     setEditTaskActive("editTitle");
@@ -205,8 +205,12 @@ const TaskList = () => {
         <EditTask
           EditTaskActive={EditTaskActive}
           setEditTaskActive={setEditTaskActive}
-          editInfo={editInfo}
+          editInfo={{
+            ...editInfo,
+            taskCycle: editInfo.taskCycle.toString(),
+          }}
           setEditInfo={setEditInfo}
+          originalTask={taskList.find((task) => task.id === editInfo.taskId)!}
         />
       ) : AddTaskActive === "default" ? (
         <>
@@ -285,7 +289,7 @@ const TaskList = () => {
                               task.title,
                               task.description,
                               task.due_date,
-                              task.estimated_cycles,
+                              task.estimated_cycles.toString(),
                               task.status
                             );
                           }}
@@ -314,7 +318,7 @@ const TaskList = () => {
                                   task.title,
                                   task.description,
                                   task.due_date,
-                                  task.estimated_cycles,
+                                  task.estimated_cycles.toString(),
                                   task.status
                                 );
                               }}
