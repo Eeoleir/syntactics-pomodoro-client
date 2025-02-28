@@ -1,5 +1,6 @@
 import { IoCameraSharp } from "react-icons/io5";
 import React, { useRef } from "react";
+import { useRouter } from "next/navigation";
 
 interface ProfilePictureProps {
   size: "sm" | "md" | "lg";
@@ -30,8 +31,11 @@ export default function ProfilePicture({
     const file = event.target.files?.[0];
     if (file) {
       console.log("Selected file:", file);
-
     }
+  };
+
+  const handleGoBack = () => {
+    router.push("/dashboard");
   };
 
   return (

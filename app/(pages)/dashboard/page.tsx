@@ -18,9 +18,15 @@ import {
 import useAuthStore from "@/app/stores/authStore";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { usePomodoroStore } from "@/app/stores/pomodoroStore";
+import { useTheme } from "next-themes";
 
 const Dashboard = () => {
+  const { setTheme } = useTheme();
+
   const [isDarkMode, setIsDarkMode] = React.useState(false);
+  const { settings, setSettings } = usePomodoroStore();
+  console.log("Settings:", settings);
 
   const driverObj = driver({
     showProgress: true,
@@ -119,36 +125,54 @@ const Dashboard = () => {
   const howToUseButton = () => {
     driverObj.drive();
   };
+  
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
+    setSettings({ is_dark_mode: !settings.is_dark_mode });
+    if (isDarkMode) {
+      setTheme("dark");
+    } else {
+      setTheme("light");
+    }
   };
 
   return (
-    <div className="min-w-screen min-h-screen bg-[#FAFAFA] text-black">
+    <div className="min-w-screen min-h-screen bg-[#FAFAFA] dark:bg-[#18181B] text-black">
       <div className="p-10 w-full">
         <div className="flex flex-end items-center justify-between md:flex-row md:mt-4 flex-col">
-          <div id="pomodoro-timer-card">
-            <h1 className="font-extrabold text-5xl">Pomodoro</h1>
-            <p className="text-[#71717A] font-medium text-xl">
-              Manage your time in a magical way!
-            </p>
+          <div className="flex items-center">
+            <img src="/pomoLogo.svg" alt="pomoLogo" />
+            <div id="pomodoro-timer-card">
+              <h1 className="font-extrabold text-4xl text-black dark:text-[#E4E4E7]">
+                Pomodoro
+              </h1>
+              <p className="text-[#71717A] font-medium text-xl">
+                Manage your time in a magical way!
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-4">
-            <Button onClick={howToUseButton}>How to use</Button>
+            <Button
+              variant={"outline"}
+              onClick={howToUseButton}
+              className="dark:bg-[#18181B] text-[#52525B] dark:text-[#A1A1AA]"
+            >
+              How to use
+            </Button>
             <Button
               onClick={toggleDarkMode}
               className={`${
-                isDarkMode ? "bg-black" : "bg-[#F4F4F5] hover:bg-gray-200"
+                isDarkMode ? "bg-[#F4F4F5] hover:bg-gray-200" : "bg-[#27272A] "
               } h-8 w-8 `}
             >
               {isDarkMode ? (
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
+                  fill="black"
                   viewBox="0 0 24 24"
                   strokeWidth="1.5"
-                  stroke="white"
+                  stroke="black"
                   className="size-6"
                 >
                   <path
@@ -162,7 +186,7 @@ const Dashboard = () => {
                   fill="none"
                   viewBox="0 0 24 24"
                   strokeWidth="1.5"
-                  stroke="black"
+                  stroke="#71717A"
                   className="size-6"
                 >
                   <path
@@ -203,7 +227,7 @@ const Dashboard = () => {
           <div className="xl:w-3/6 2xl:w-5/12 lg:w-full">
             <PomodoroTimerCard />
           </div>
-          <div className="flex flex-row xl:w-3/6 2xl:w-7/12 lg:w-full w-full border border-[#E4E4E7] rounded-xl">
+          <div className="flex flex-row xl:w-3/6 2xl:w-7/12 lg:w-full w-full border border-[#E4E4E7] dark:border-[#27272A] rounded-xl">
             <TaskList />
           </div>
         </div>
