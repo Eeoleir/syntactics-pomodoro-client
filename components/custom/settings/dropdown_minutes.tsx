@@ -13,16 +13,28 @@ import { HiMiniChevronUpDown } from "react-icons/hi2";
 interface TimeDropdownProps {
   value: number;
   onValueChange: (value: string) => void;
+  disabled?: boolean; 
 }
 
-export function TimeDropdown({ value, onValueChange }: TimeDropdownProps) {
+export function TimeDropdown({
+  value,
+  onValueChange,
+  disabled = false,
+}: TimeDropdownProps) {
   const timeOptions = [5, 10, 15, 20, 25, 30, 45, 60];
 
   return (
-    <DropdownMenu >
+    <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="w-[120px] justify-between bg-[#3F3F46] border-[1px] border-[#27272A]">
-          {value} mins <span className="ml-2"><HiMiniChevronUpDown/></span>
+        <Button
+          variant="outline"
+          className="w-[120px] justify-between bg-[#3F3F46] border-[1px] border-[#27272A]"
+          disabled={disabled} 
+        >
+          {value} mins{" "}
+          <span className="ml-2">
+            <HiMiniChevronUpDown />
+          </span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-[120px]">
