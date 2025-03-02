@@ -202,8 +202,8 @@ const Dashboard = () => {
               onValueChange={(value) => {
                 if (value === "logout") {
                   useAuthStore.getState().logout();
-                  router.push("/login");
                   toast.success("Logout successfully!");
+                  router.push("/login");
                 }
                 if (value === "settings") {
                   router.push("/user-settings");

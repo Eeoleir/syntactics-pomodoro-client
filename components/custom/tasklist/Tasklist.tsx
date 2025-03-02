@@ -22,6 +22,7 @@ import {
   Task,
 } from "@/lib/task-queries";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCycleStore } from "@/app/stores/cycleStore";
 
 const TaskList = () => {
   const [activeTaskId, setActiveTaskId] = React.useState<number | null>(null);
@@ -32,6 +33,7 @@ const TaskList = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const queryClient = useQueryClient();
   const [firstTask, setFirstTask] = React.useState<Task | null>(null);
+  const { isTimerPaused } = useCycleStore();
 
   const [editInfo, setEditInfo] = React.useState({
     taskId: 0,
@@ -97,7 +99,7 @@ const TaskList = () => {
   useEffect(() => {
     let intervalId: string | number | NodeJS.Timeout | undefined; // Store the interval ID
 
-    if (taskList && taskList.length > 0) {
+    if (taskList && taskList.length > 0 && !isTimerPaused) {
       // Get the first task after sorting
       const sortedTasks = [...taskList].sort((a, b) => {
         if (a.status === "completed" && b.status !== "completed") return 1;
@@ -133,7 +135,11 @@ const TaskList = () => {
         clearInterval(intervalId);
       }
     };
-  }, [taskList]);
+  }, [taskList, isTimerPaused]);
+
+  useEffect(() => {
+    console.log("Timer Status:", isTimerPaused ? "Paused ⏸️" : "Playing ▶️");
+  }, [isTimerPaused]);
 
   const handleActionClick = (taskId: number) => {
     setIsSpinning(true);
