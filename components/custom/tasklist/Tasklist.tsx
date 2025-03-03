@@ -22,7 +22,8 @@ import {
   Task,
 } from "@/lib/task-queries";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCycleStore } from "@/app/stores/cycleStore";
+
+import { useCycleStore, Mode } from "@/app/stores/cycleStore";
 
 const TaskList = () => {
   const [activeTaskId, setActiveTaskId] = React.useState<number | null>(null);
@@ -33,7 +34,13 @@ const TaskList = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const queryClient = useQueryClient();
   const [firstTask, setFirstTask] = React.useState<Task | null>(null);
-  const { isTimerPaused, activateNextMode } = useCycleStore();
+
+  const [completedCycles, setCompletedCycles] = React.useState<number>(0);
+  const currentMode = useCycleStore((state) => state.currentMode);
+  const nextMode = useCycleStore((state) => state.nextMode);
+  const [lastCompletedMode, setLastCompletedMode] = React.useState<Mode | null>(
+    null
+  );
 
   const [editInfo, setEditInfo] = React.useState({
     taskId: 0,
@@ -97,17 +104,14 @@ const TaskList = () => {
   });
 
   useEffect(() => {
-    let intervalId: NodeJS.Timeout | undefined;
-    let unsubscribe: (() => void) | undefined;
+    let intervalId: string | number | NodeJS.Timeout | undefined;
 
-    if (taskList && taskList.length > 0 && !isTimerPaused) {
-      // Sort tasks to get the first one
+    if (taskList && taskList.length > 0) {
       const sortedTasks = [...taskList].sort((a, b) => {
         if (a.status === "completed" && b.status !== "completed") return 1;
         if (b.status === "completed" && a.status !== "completed") return -1;
         return 0;
       });
-
       const first = sortedTasks[0];
       setFirstTask({
         id: first.id,
@@ -119,50 +123,43 @@ const TaskList = () => {
         user_id: first.user_id,
       });
 
-      console.log("First task:", first);
-
-      // Only proceed if the task is not completed
+      // Only track cycles if task is not completed
       if (first.status !== "completed") {
-        let cycleCounter = 0;
-        const totalCycles = 3; // FOCUS → SHORT_BREAK → LONG_BREAK
-
-        unsubscribe = useCycleStore.subscribe((state) => {
-          if (!state.isTimerPaused) {
-            if (
-              state.currentMode === "long_break" && // Long break means full cycle is done
-              cycleCounter === totalCycles - 1 // Ensure it only runs after the full cycle
-            ) {
-              clearInterval(intervalId);
-              completeFirstListTask.mutate(first.id);
-              unsubscribe?.(); // Unsubscribe after completion
-            } else {
-              cycleCounter++;
-            }
-          }
-        });
-
-        // Set interval for safety (optional, runs every 10s if cycle fails)
         intervalId = setInterval(() => {
-          if (cycleCounter >= totalCycles) {
-            completeFirstListTask.mutate(first.id);
-            clearInterval(intervalId);
+          // Check if we completed a full cycle (Focus + either type of break)
+          if (
+            currentMode === Mode.FOCUS &&
+            (lastCompletedMode === Mode.SHORT_BREAK ||
+              lastCompletedMode === Mode.LONG_BREAK)
+          ) {
+            setCompletedCycles((prev) => {
+              const newCount = prev + 1;
+              // Complete task when cycles match estimated_cycles
+              if (newCount >= first.estimated_cycles) {
+                completeFirstListTask.mutate(first.id);
+                return 0; // Reset counter after completion
+              }
+              return newCount;
+            });
+            setLastCompletedMode(null); // Reset for next cycle
+          } else if (
+            currentMode === Mode.SHORT_BREAK ||
+            currentMode === Mode.LONG_BREAK
+          ) {
+            setLastCompletedMode(currentMode);
           }
-        });
+        }, 1000); // Check every second for mode changes
       }
     } else {
       setFirstTask(null);
     }
 
-    // Cleanup
     return () => {
-      if (intervalId) clearInterval(intervalId);
-      unsubscribe?.(); // Unsubscribe from Zustand store updates
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
     };
-  }, [taskList, isTimerPaused]);
-
-  useEffect(() => {
-    console.log("Timer Status:", isTimerPaused ? "Paused ⏸️" : "Playing ▶️");
-  }, [isTimerPaused]);
+  }, [taskList, currentMode, nextMode, lastCompletedMode]);
 
   const handleActionClick = (taskId: number) => {
     setIsSpinning(true);
@@ -434,7 +431,8 @@ const TaskList = () => {
                           }`}
                         >
                           {" "}
-                          0/{task.estimated_cycles}
+                          {index === 0 ? completedCycles : 0}/
+                          {task.estimated_cycles}
                         </span>
 
                         <svg
