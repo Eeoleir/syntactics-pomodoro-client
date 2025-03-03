@@ -103,7 +103,7 @@ export async function editDarkMode(id: number, is_dark_mode: number) {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        is_dark_mode: is_dark_mode ? 1 : 0,
+        is_dark_mode: is_dark_mode,
       }),
     });
 
