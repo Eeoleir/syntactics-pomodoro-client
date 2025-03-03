@@ -18,6 +18,7 @@ type CycleState = {
   currentTimeLeft: number;
   nextMode: Mode;
   isTimerPaused: boolean;
+  noAvailableTasks: boolean;
 };
 
 type CycleStateActions = {
@@ -27,6 +28,7 @@ type CycleStateActions = {
   setTimeLeft: (mode: Mode, timeLeft: number) => void; //one action for both current time left and current mode
   activateNextMode: () => void;
   setIsPaused: (paused: boolean) => void;
+  setNoAvailableTasks: (noAvailableTasks: boolean) => void;
 };
 
 export const useCycleStore = create<CycleState & CycleStateActions>((set) => ({
@@ -44,6 +46,7 @@ export const useCycleStore = create<CycleState & CycleStateActions>((set) => ({
   currentTimeLeft: 1500,
   nextMode: Mode.SHORT_BREAK,
   isTimerPaused: true,
+  noAvailableTasks: false,
 
   // actions
   setDurations: (newDurations: { [keys in Mode]: number }) =>
@@ -84,4 +87,6 @@ export const useCycleStore = create<CycleState & CycleStateActions>((set) => ({
       };
     }),
   setIsPaused: (paused: boolean) => set(() => ({ isTimerPaused: paused })),
+  setNoAvailableTasks: (noAvailableTasks: boolean) =>
+    set(() => ({ noAvailableTasks: noAvailableTasks })),
 }));

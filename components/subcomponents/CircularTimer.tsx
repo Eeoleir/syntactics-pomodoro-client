@@ -244,6 +244,8 @@ const TimerControls = ({
     setIsPaused(!isTimerPaused);
   };
 
+  const noAvailableTasks = useCycleStore((state) => state.noAvailableTasks);
+
   const containerStyles = `container w-full h-64 blurred-background flex items-end justify-center`;
 
   const secondaryBtnLayout = "w-[56px] h-[56px] shadow-none";
@@ -282,9 +284,11 @@ const TimerControls = ({
           />
         </Button>
         {/* ---- pause / start timer ----- */}
+
         <Button
           className={`${primaryButtonStyle} ${primaryBtnLayout}`}
           onClick={togglePause}
+          disabled={noAvailableTasks}
         >
           <Image
             src={`/timer_control_icons/${
