@@ -33,7 +33,7 @@ const TaskList = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const queryClient = useQueryClient();
   const [firstTask, setFirstTask] = React.useState<Task | null>(null);
-  const { isTimerPaused } = useCycleStore();
+  const { isTimerPaused, activateNextMode } = useCycleStore();
 
   const [editInfo, setEditInfo] = React.useState({
     taskId: 0,
@@ -97,15 +97,17 @@ const TaskList = () => {
   });
 
   useEffect(() => {
-    let intervalId: string | number | NodeJS.Timeout | undefined; // Store the interval ID
+    let intervalId: NodeJS.Timeout | undefined;
+    let unsubscribe: (() => void) | undefined;
 
     if (taskList && taskList.length > 0 && !isTimerPaused) {
-      // Get the first task after sorting
+      // Sort tasks to get the first one
       const sortedTasks = [...taskList].sort((a, b) => {
         if (a.status === "completed" && b.status !== "completed") return 1;
         if (b.status === "completed" && a.status !== "completed") return -1;
         return 0;
       });
+
       const first = sortedTasks[0];
       setFirstTask({
         id: first.id,
@@ -114,26 +116,47 @@ const TaskList = () => {
         due_date: first.due_date,
         estimated_cycles: first.estimated_cycles,
         status: first.status,
-        user_id: first.user_id, // Add missing user_id field
+        user_id: first.user_id,
       });
 
-      // Only set interval if task is not completed
-      if (first.status !== "completed") {
-        intervalId = setInterval(() => {
-          completeFirstListTask.mutate(first.id);
-        }, 10000);
-      }
-
       console.log("First task:", first);
+
+      // Only proceed if the task is not completed
+      if (first.status !== "completed") {
+        let cycleCounter = 0;
+        const totalCycles = 3; // FOCUS → SHORT_BREAK → LONG_BREAK
+
+        unsubscribe = useCycleStore.subscribe((state) => {
+          if (!state.isTimerPaused) {
+            if (
+              state.currentMode === "long_break" && // Long break means full cycle is done
+              cycleCounter === totalCycles - 1 // Ensure it only runs after the full cycle
+            ) {
+              clearInterval(intervalId);
+              completeFirstListTask.mutate(first.id);
+              unsubscribe?.(); // Unsubscribe after completion
+            } else {
+              cycleCounter++;
+            }
+          }
+        });
+
+        // Set interval for safety (optional, runs every 10s if cycle fails)
+        intervalId = setInterval(() => {
+          if (cycleCounter >= totalCycles) {
+            completeFirstListTask.mutate(first.id);
+            clearInterval(intervalId);
+          }
+        });
+      }
     } else {
       setFirstTask(null);
     }
 
-    // Cleanup function to clear interval when component unmounts or dependencies change
+    // Cleanup
     return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
+      if (intervalId) clearInterval(intervalId);
+      unsubscribe?.(); // Unsubscribe from Zustand store updates
     };
   }, [taskList, isTimerPaused]);
 
