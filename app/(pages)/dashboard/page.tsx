@@ -139,9 +139,9 @@ const Dashboard = () => {
   const howToUseButton = () => {
     driverObj.drive();
   };
-
   const darkModeMutation = useMutation({
-    mutationFn: editDarkMode,
+    mutationFn: (params: { id: number; is_dark_mode: number }) => 
+      editDarkMode(params.id, params.is_dark_mode),
     onSuccess: () => {
       toast.success("Theme preference updated successfully!");
     },
@@ -162,9 +162,10 @@ const Dashboard = () => {
 
     setSettings({ is_dark_mode: newDarkMode });
     setTheme(newDarkMode ? "dark" : "light");
-
     console.log("Sending payload:", newDarkMode ? 1 : 0);
-    darkModeMutation.mutate(userId, newDarkMode ? 1 : 0);
+    if (userId) {
+      darkModeMutation.mutate({ id: userId, is_dark_mode: newDarkMode ? 1 : 0 });
+    }
   };
 
   return (
