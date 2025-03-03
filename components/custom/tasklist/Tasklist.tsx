@@ -289,7 +289,7 @@ const TaskList = () => {
 
           <DragDropContext onDragEnd={handleDragEnd}>
             <Droppable droppableId="tasks">
-              {(provided) => (
+              {(provided: any) => (
                 <ScrollArea className="flex flex-col justify-between h-[382px] overflow-y-auto">
                   <div
                     {...provided.droppableProps}
@@ -303,7 +303,7 @@ const TaskList = () => {
                           draggableId={task.id.toString()}
                           index={index}
                         >
-                          {(provided, snapshot) => (
+                          {(provided: any, snapshot: any) => (
                             <div
                               ref={provided.innerRef}
                               {...provided.draggableProps}
