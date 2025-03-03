@@ -163,6 +163,62 @@
       "long-break" : {
         "title" : "Long Break"
       }
+    },
+    "task-list" : {
+      "header" : "Task list",
+      "subheader" : "Your goals for this session",
+      "delete-task" : {
+        "header" : "Are you sure you're gonna delete this task?",
+        "message" : "This action cannot be undone. This will permanently delete your task...",
+        "buttons" : {
+          "cancel" : {
+            "text" : "No, don't delete my task"
+          },
+          "confirm" : {
+            "text" : "Yes, delete my task"
+          }
+        }
+      }
+    },
+    "add-task" : {
+      "header" : "What are you working on?",
+      "fields" : {
+        "task-name" : {
+          "placeholder" : "Name of Task"
+        },
+        "task-description" : {
+          "placeholder" : "Description of your task"
+        },
+        "est-pomodoro-cycle" : {
+          "title" : "Est. # of Pomodoro Cycle"
+        }
+      },
+      "buttons" : {
+        "cancel" : {
+          "text" : "Cancel"
+        },
+        "submit" : {
+          "text" : "Save Task"
+        }
+      }
+    },
+    "edit-task" : {
+      "fields" : {
+        "task-description" : {
+          "placeholder" : "Type your description here."
+        },
+        "est-pomodoro-cycle" : {
+          "title" : "Est. # of Pomodoro Cycle"
+        }
+      },
+      "buttons" : {
+        "cancel" : {
+          "text" : "Go Back"
+        },
+        "submit" : {
+          "text" : "Save Changes"
+        }
+      }
     }
   }
 }

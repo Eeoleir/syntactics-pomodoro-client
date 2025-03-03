@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { editTask } from "@/lib/task-queries";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 
 interface EditTaskProps {
   EditTaskActive: string;
@@ -49,6 +50,7 @@ const EditTask: React.FC<EditTaskProps> = ({
 }) => {
   const [isEditable, setIsEditable] = React.useState(false);
   const queryClient = useQueryClient();
+  const componentTranslations = useTranslations('components.edit-task');
 
   const editMutation = useMutation({
     mutationFn: (taskData: {
@@ -159,7 +161,7 @@ const EditTask: React.FC<EditTaskProps> = ({
 
         <div className="mt-1">
           <Textarea
-            placeholder="Type your description here."
+            placeholder={componentTranslations('fields.task-description.placeholder')}
             className="text-[#52525B] dark:text-[#A1A1AA]"
             disabled={!isEditable}
             value={editInfo.taskDesc}
@@ -175,7 +177,7 @@ const EditTask: React.FC<EditTaskProps> = ({
 
         <div className="flex items-center justify-between">
           <span className="font-medium text-base text-[#71717A]">
-            Est. # of Pomodoro Cycle
+            {componentTranslations('fields.est-pomodoro-cycle.title')}
           </span>
           <Input
             type="number"
@@ -198,7 +200,7 @@ const EditTask: React.FC<EditTaskProps> = ({
           onClick={(e) => handleGoBack()}
           className="w-full font-semibold text-sm bg-[#A1A1AA] hover:bg-[#878790]"
         >
-          Go Back
+          {componentTranslations('buttons.cancel.text')}
         </Button>
         <Button
           onClick={() => {
@@ -206,7 +208,7 @@ const EditTask: React.FC<EditTaskProps> = ({
           }}
           className="w-full bg-[#84CC16] hover:bg-[#669f10] font-semibold text-sm"
         >
-          Save Changes
+          {componentTranslations('buttons.submit.text')}
         </Button>
       </div>
     </div>
