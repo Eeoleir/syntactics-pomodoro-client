@@ -50,17 +50,37 @@ export async function editProfile(
   const token = getToken();
   if (!token) throw new Error("No authentication token available");
 
-  const payload = Object.fromEntries(
-    Object.entries(updatedProfile).filter(([_, value]) => value !== undefined)
-  );
+  // Create new FormData
+  const formData = new FormData();
+
+  // Add each property explicitly
+  if (updatedProfile.name) formData.append("name", updatedProfile.name);
+  if (updatedProfile.email) formData.append("email", updatedProfile.email);
+
+  // Debug the file
+  if (updatedProfile.profile_photo_file) {
+    console.log("File type:", updatedProfile.profile_photo_file.type);
+    console.log("File size:", updatedProfile.profile_photo_file.size);
+
+    // Add the file - be explicit about the third parameter
+    formData.append(
+      "profile_photo_file",
+      updatedProfile.profile_photo_file,
+      updatedProfile.profile_photo_file.name
+    );
+  }
+
+  // Debug the formData
+  for (let pair of formData.entries()) {
+    console.log(`${pair[0]}: ${pair[1]}`);
+  }
 
   const response = await fetch(`${API_BASE_URL}profile-management/patch-user`, {
-    method: "PATCH",
+    method: "POST", // Use POST instead of PATCH for file uploads
     headers: {
-      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify(payload),
+    body: formData,
   });
 
   if (!response.ok) {

@@ -58,23 +58,24 @@ export default function Login() {
   const mutation = useMutation({
     mutationFn: signIn,
     onSuccess: async (data) => {
-      console.log("Sign-in successful:", data);
+      console.log("Sign-in successful - Auth Data:", data); // Log the auth data (user, token)
       login(data.user, data.token);
 
       try {
         const fetchedProfile = await fetchProfile();
+        console.log("Profile Data Loaded:", fetchedProfile); // Log the profile data
         setProfile({
           name: fetchedProfile.name,
           email: fetchedProfile.email,
           profile_photo: fetchedProfile.profile_photo,
         });
-        console.log("Profile loaded into store:", fetchedProfile);
       } catch (error) {
         console.error("Failed to fetch profile after login:", error);
       }
 
       try {
         const preferences = await getPreferences();
+        console.log("Preferences Data Loaded:", preferences); // Log the preferences data
         if (preferences.length > 0) {
           const pref = preferences[0];
           setUserId(pref.user_id);
@@ -90,6 +91,7 @@ export default function Login() {
             is_dark_mode: pref.is_dark_mode,
           });
         } else {
+          console.log("No preferences found for the user.");
         }
       } catch (error) {
         console.error("Failed to fetch preferences after login:", error);
@@ -107,7 +109,7 @@ export default function Login() {
   });
 
   const onSubmit = (values: FormValues) => {
-    console.log("Form data:", values);
+    console.log("Form data submitted:", values); // Log the form data before mutation
     mutation.mutate(values);
   };
 

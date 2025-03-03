@@ -21,6 +21,9 @@ import { toast } from "sonner";
 import { usePomodoroStore } from "@/app/stores/pomodoroStore";
 import { useTheme } from "next-themes";
 import { useTranslations } from "next-intl";
+import { useMutation } from "@tanstack/react-query";
+import { editDarkMode } from "@/lib/preference-queries";
+import { useProfileStore } from "@/app/stores/profileStore"; // Import the profile store
 
 const Dashboard = () => {
   const { setTheme } = useTheme();
@@ -30,7 +33,11 @@ const Dashboard = () => {
   const toastTranslations = useTranslations('components.toasts')
 
   const [isDarkMode, setIsDarkMode] = React.useState(false);
+
   const { settings, setSettings } = usePomodoroStore();
+  const { profile, setProfile } = useProfileStore(); // Access the profile store
+  const router = useRouter();
+  const userId = usePomodoroStore((state) => state.userId);
 
   const guideTranslations = useTranslations('contextual-guide');
   const driverObj = driver({
@@ -107,7 +114,19 @@ const Dashboard = () => {
       },
     ],
   });
-  const router = useRouter();
+
+  useEffect(() => {
+    // Log userId from store
+    console.log("UserId from store:", userId);
+
+    // Log data from localStorage
+    const persistedPreferences = localStorage.getItem("pomodoro-storage");
+    if (persistedPreferences) {
+      const parsedData = JSON.parse(persistedPreferences);
+      console.log("Persisted pomodoro data:", parsedData);
+      console.log("Persisted userId:", parsedData.state?.userId);
+    }
+  }, [userId]);
 
   useEffect(() => {
     const firstTimeUser = JSON.parse(
@@ -123,14 +142,36 @@ const Dashboard = () => {
     driverObj.drive();
   };
 
+  const darkModeMutation = useMutation({
+    mutationFn: (params: { id: number; is_dark_mode: number }) =>
+      editDarkMode(params.id, params.is_dark_mode),
+    onSuccess: () => {
+      toast.success("Theme preference updated successfully!");
+    },
+    onError: (error) => {
+      toast.error("Failed to update theme preference");
+      console.error("Error updating dark mode:", error);
+    },
+  });
+
   React.useEffect(() => {
     setTheme(settings.is_dark_mode ? "dark" : "light");
+    console.log("settings.is_dark_mode", settings.is_dark_mode);
   }, [settings.is_dark_mode, setTheme]);
 
   const toggleDarkMode = () => {
     const newDarkMode = !settings.is_dark_mode;
+    console.log("Toggling Dark Mode:", newDarkMode); // Debugging log
+
     setSettings({ is_dark_mode: newDarkMode });
     setTheme(newDarkMode ? "dark" : "light");
+    console.log("Sending payload:", newDarkMode ? 1 : 0);
+    if (userId) {
+      darkModeMutation.mutate({
+        id: userId,
+        is_dark_mode: newDarkMode ? 1 : 0,
+      });
+    }
   };
 
   return (
@@ -209,8 +250,12 @@ const Dashboard = () => {
             >
               <SelectTrigger className="border-none focus:ring-0 focus:outline-none">
                 <Avatar>
-                  <AvatarImage src="https://github.com/shadcn.png" />
-                  <AvatarFallback>U</AvatarFallback>
+                  <AvatarImage
+                    src={
+                      profile?.profile_photo || "https://github.com/shadcn.png"
+                    }
+                  />
+                  <AvatarFallback>{profile?.name?.[0] || "U"}</AvatarFallback>
                 </Avatar>
               </SelectTrigger>
               <SelectContent>

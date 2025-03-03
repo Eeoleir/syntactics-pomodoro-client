@@ -1,5 +1,6 @@
+// app/layout.tsx
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter, Rajdhani } from "next/font/google";
+import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import "animate.css";
@@ -17,24 +18,14 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+import ClientThemeWrapper from "./ClientThemeWrapper"; // Import the new client component
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
 });
 
-const rajdhani = Rajdhani({
-  variable: "--font-rajdhani",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "700"],
-});
-
-// const foco = Foco({
-//   subsets: ["latin"],
-//   weight: ["400", "700"],
-//   variable: "--font-foco",
-// });
-
+// Export metadata for SEO and page config
 export const metadata: Metadata = {
   title: "POMODORO APP",
   description: "SYCN POMODORO",
@@ -49,9 +40,9 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale}>
+    <html lang={locale} suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${rajdhani.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased`}
       >
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider

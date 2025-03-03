@@ -1,3 +1,5 @@
+"use client";
+
 import { create } from "zustand";
 import Cookies from "js-cookie";
 
@@ -10,18 +12,16 @@ interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
   token: string | null;
-  preferences: any | null; 
+  preferences: any | null;
   login: (user: User, token: string) => void;
   logout: () => void;
   setPreferences: (preferences: any) => void;
 }
 
-
 const getInitialAuthState = (() => {
   let cachedState: { isAuthenticated: boolean; token: string | null } | null =
     null;
   return () => {
- 
     if (typeof window === "undefined") {
       return { isAuthenticated: false, token: null };
     }
@@ -40,7 +40,7 @@ const useAuthStore = create<AuthState>((set) => {
   const initialState = getInitialAuthState();
   return {
     isAuthenticated: initialState.isAuthenticated,
-    user: null, 
+    user: null,
     token: initialState.token,
     preferences: null,
 

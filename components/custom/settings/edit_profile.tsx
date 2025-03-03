@@ -39,6 +39,7 @@ function EditProfileComponent({
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | undefined>(undefined);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<FormValues>({
@@ -49,7 +50,6 @@ function EditProfileComponent({
     },
   });
 
-
   useEffect(() => {
     if (profile) {
       console.log("Syncing form with profile:", profile);
@@ -57,6 +57,7 @@ function EditProfileComponent({
         name: profile.name || "",
         email: profile.email || "",
       });
+      setPreviewUrl(profile.profile_photo); // Set initial preview from profile
     }
   }, [profile, form]);
 
@@ -73,6 +74,7 @@ function EditProfileComponent({
         console.log("Updated profile received:", updatedProfile);
         setIsEditing(false);
         setSelectedFile(null);
+        setPreviewUrl(updatedProfile.profile_photo);
         if (fileInputRef.current) fileInputRef.current.value = "";
 
         form.reset({
@@ -94,6 +96,7 @@ function EditProfileComponent({
   const handleCancelClick = () => {
     setIsEditing(false);
     setSelectedFile(null);
+    setPreviewUrl(profile?.profile_photo);
     if (fileInputRef.current) fileInputRef.current.value = "";
     form.reset({ name: profile?.name || "", email: profile?.email || "" });
   };
@@ -102,6 +105,8 @@ function EditProfileComponent({
     const file = event.target.files?.[0];
     if (file) {
       setSelectedFile(file);
+      const localUrl = URL.createObjectURL(file);
+      setPreviewUrl(localUrl);
       console.log("Selected file:", file);
     }
   };
@@ -112,6 +117,14 @@ function EditProfileComponent({
     }
   };
 
+  useEffect(() => {
+    return () => {
+      if (previewUrl && previewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error loading profile: {error.message}</div>;
 
@@ -121,11 +134,7 @@ function EditProfileComponent({
         <ProfilePicture
           size="lg"
           editable={isEditing}
-          src={
-            profile?.profile_photo
-              ? `${profile.profile_photo}?t=${Date.now()}`
-              : undefined
-          }
+          src={previewUrl}
           onFileChange={isEditing ? triggerFileInput : undefined}
         />
         <input
