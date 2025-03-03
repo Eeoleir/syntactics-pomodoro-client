@@ -41,7 +41,9 @@ const TaskList = () => {
   const [lastCompletedMode, setLastCompletedMode] = React.useState<Mode | null>(
     null
   );
-  const setNoAvailableTasks = useCycleStore((state) => state.setNoAvailableTasks);
+  const setNoAvailableTasks = useCycleStore(
+    (state) => state.setNoAvailableTasks
+  );
   const noAvailableTasks = useCycleStore((state) => state.noAvailableTasks);
   const isTimerPaused = useCycleStore((state) => state.isTimerPaused);
   const setIsPaused = useCycleStore((state) => state.setIsPaused);
@@ -63,10 +65,6 @@ const TaskList = () => {
     queryKey: ["tasks"],
     queryFn: getTasks,
   });
-
-  useEffect(() => {
-    console.log("isTimerPaused", isTimerPaused);
-  }, [isTimerPaused]);
 
   const deleteMutation = useMutation({
     mutationFn: (taskId: number) => deleteTask(taskId),
@@ -159,10 +157,8 @@ const TaskList = () => {
           }
         }); // Check every second for mode changes
       } else {
-        console.log("no task list available");
-        toast.warning("All tasks completed!");
+        toast.success("All tasks completed!");
         setNoAvailableTasks(true);
-        console.log("noAvailableTasks", noAvailableTasks);
       }
     } else {
       setFirstTask(null);

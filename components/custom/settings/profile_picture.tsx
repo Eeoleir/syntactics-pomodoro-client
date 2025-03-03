@@ -18,6 +18,7 @@ export default function ProfilePicture({
     md: "w-[120px] h-[120px]",
     lg: "w-[150px] h-[150px]",
   };
+  const router = useRouter();
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 

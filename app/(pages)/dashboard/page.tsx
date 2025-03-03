@@ -26,7 +26,6 @@ const Dashboard = () => {
 
   const [isDarkMode, setIsDarkMode] = React.useState(false);
   const { settings, setSettings } = usePomodoroStore();
-  console.log("Settings:", settings);
 
   const driverObj = driver({
     showProgress: true,
