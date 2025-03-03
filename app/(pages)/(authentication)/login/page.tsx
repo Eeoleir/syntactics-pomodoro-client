@@ -11,7 +11,10 @@ import { useMutation } from "@tanstack/react-query";
 import { signIn } from "../../../../lib/auth-queries";
 import useAuthStore from "@/app/stores/authStore";
 import { useEffect, useState } from "react";
-
+import { getPreferences } from "../../../../lib/preference-queries";
+import { usePomodoroStore } from "@/app/stores/pomodoroStore";
+import { fetchProfile } from "../../../../lib/profile-queries";
+import { useProfileStore } from "@/app/stores/profileStore";
 import {
   Form,
   FormControl,
@@ -32,7 +35,9 @@ type FormValues = z.infer<typeof formSchema>;
 export default function Login() {
   const router = useRouter();
   const login = useAuthStore((state) => state.login);
-  const [errorKey, setErrorKey] = useState(0); // Used to retrigger animation
+  const { setSettings, setUserId } = usePomodoroStore();
+  const { setProfile } = useProfileStore();
+  const [errorKey, setErrorKey] = useState(0);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -42,28 +47,61 @@ export default function Login() {
     },
   });
 
-  // Watch for changes in the root error to trigger animation
   useEffect(() => {
     if (form.formState.errors.root) {
-      setErrorKey(prev => prev + 1);
+      setErrorKey((prev) => prev + 1);
     }
   }, [form.formState.errors.root]);
 
   const mutation = useMutation({
     mutationFn: signIn,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       console.log("Sign-in successful:", data);
       login(data.user, data.token);
+
+      try {
+        const fetchedProfile = await fetchProfile();
+        setProfile({
+          name: fetchedProfile.name,
+          email: fetchedProfile.email,
+          profile_photo: fetchedProfile.profile_photo,
+        });
+        console.log("Profile loaded into store:", fetchedProfile);
+      } catch (error) {
+        console.error("Failed to fetch profile after login:", error);
+      }
+
+      try {
+        const preferences = await getPreferences();
+        if (preferences.length > 0) {
+          const pref = preferences[0];
+          setUserId(pref.user_id);
+          setSettings({
+            focus_duration: pref.focus_duration,
+            short_break_duration: pref.short_break_duration,
+            long_break_duration: pref.long_break_duration,
+            cycles_before_long_break: pref.cycles_before_long_break,
+            is_auto_start_breaks: pref.is_auto_start_breaks,
+            is_auto_start_focus: pref.is_auto_start_focus,
+            is_auto_complete_tasks: pref.is_auto_complete_tasks,
+            is_auto_switch_tasks: pref.is_auto_switch_tasks,
+            is_dark_mode: pref.is_dark_mode,
+          });
+        } else {
+        }
+      } catch (error) {
+        console.error("Failed to fetch preferences after login:", error);
+      }
+
       router.push("/dashboard");
     },
     onError: (error: any) => {
-      // Try to extract the specific error message from the server response
-      const errorMessage = error.response?.data?.message || 
-                           error.message || 
-                           "Incorrect email or password";
-      
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Incorrect email or password";
       form.setError("root", { message: errorMessage });
-    }
+    },
   });
 
   const onSubmit = (values: FormValues) => {
@@ -73,23 +111,42 @@ export default function Login() {
 
   return (
     <section className="content w-full h-screen mx-auto bg-[#18181B] text-[#FAFAFA] flex justify-center items-center">
-      {/* First, add the necessary keyframes to your global CSS or in your Tailwind config */}
       <style jsx global>{`
         @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-          20%, 40%, 60%, 80% { transform: translateX(5px); }
+          0%,
+          100% {
+            transform: translateX(0);
+          }
+          10%,
+          30%,
+          50%,
+          70%,
+          90% {
+            transform: translateX(-5px);
+          }
+          20%,
+          40%,
+          60%,
+          80% {
+            transform: translateX(5px);
+          }
         }
-        
+
         @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(-10px); }
-          to { opacity: 1; transform: translateY(0); }
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
-        
+
         .animate-shake {
-          animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both;
+          animation: shake 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
         }
-        
+
         .animate-fade-in {
           animation: fadeIn 0.3s ease-out forwards;
         }
@@ -148,8 +205,8 @@ export default function Login() {
                 )}
               />
               {form.formState.errors.root && (
-                <div 
-                  key={errorKey} 
+                <div
+                  key={errorKey}
                   className="flex flex-row justify-between items-center animate-fade-in animate-shake"
                 >
                   <p className="text-red-500 text-xs">
@@ -164,7 +221,7 @@ export default function Login() {
                   </p>
                 </div>
               )}
-              
+
               <div className="loginBtn pt-5">
                 <Button
                   type="submit"

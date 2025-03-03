@@ -1,6 +1,8 @@
+// @/app/stores/pomodoroStore.ts
 import { create } from "zustand";
 
-interface PomodoroState {
+export interface PomodoroState {
+  // Added 'export'
   settings: {
     focus_duration: number;
     short_break_duration: number;
@@ -12,7 +14,7 @@ interface PomodoroState {
     is_auto_switch_tasks: boolean;
     is_dark_mode: boolean;
   };
-  userId: number | null; // Removed the stray 'A'
+  userId: number | null;
   setSettings: (settings: Partial<PomodoroState["settings"]>) => void;
   setUserId: (userId: number) => void;
 }
