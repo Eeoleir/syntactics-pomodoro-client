@@ -1,11 +1,12 @@
 import { IoCameraSharp } from "react-icons/io5";
 import React from "react";
+import { useRouter } from "next/navigation";
 
 interface ProfilePictureProps {
   size: "sm" | "md" | "lg";
   editable?: boolean;
   src?: string;
-  onFileChange?: () => void; // Callback to trigger file input in parent
+  onFileChange?: () => void; 
 }
 
 export default function ProfilePicture({
