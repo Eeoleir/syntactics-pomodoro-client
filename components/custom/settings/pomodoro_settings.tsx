@@ -14,9 +14,8 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
-import { useEffect, useState } from "react"; // Added useState
-import { getPreferences, editPreference } from "@/lib/preference-queries";
-import { usePomodoroStore } from "@/app/stores/pomodoroStore";
+import { useState, useEffect } from "react"; // Added useEffect
+import PomodoroDataProvider from "@/components/hooks/fetchPreference";
 
 interface PomodoroFormData {
   focusMin: number;
@@ -29,9 +28,20 @@ interface PomodoroFormData {
   autoSwitchTasks: boolean;
 }
 
-export default function PomodoroSettings() {
-  const { settings, setSettings, userId, setUserId } = usePomodoroStore();
-  const [isEditing, setIsEditing] = useState(false); // State to track editing mode
+function PomodoroSettingsComponent({
+  settings,
+  userId,
+  isLoading,
+  error,
+  updateSettings,
+}: {
+  settings: any;
+  userId: number | null;
+  isLoading: boolean;
+  error: Error | null;
+  updateSettings: (data: Partial<any>) => Promise<void>;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
 
   const form = useForm<PomodoroFormData>({
     defaultValues: {
@@ -46,57 +56,36 @@ export default function PomodoroSettings() {
     },
   });
 
+  // Update form values when settings change
   useEffect(() => {
-    const loadPreferences = async () => {
-      try {
-        const preferences = await getPreferences();
+    form.reset({
+      focusMin: settings.focus_duration,
+      shortBreakMin: settings.short_break_duration,
+      longBreakMin: settings.long_break_duration,
+      cycles: settings.cycles_before_long_break,
+      autoStartBreaks: settings.is_auto_start_breaks,
+      autoStartFocus: settings.is_auto_start_focus,
+      autoCheckTasks: settings.is_auto_complete_tasks,
+      autoSwitchTasks: settings.is_auto_switch_tasks,
+    });
+  }, [form, settings]); // Depend on settings so it updates when settings change
 
-        if (preferences.length > 0) {
-          const pref = preferences[0];
-
-          setUserId(pref.user_id);
-
-          const newSettings = {
-            focus_duration: pref.focus_duration,
-            short_break_duration: pref.short_break_duration,
-            long_break_duration: pref.long_break_duration,
-            cycles_before_long_break: pref.cycles_before_long_break,
-            is_auto_start_breaks: pref.is_auto_start_breaks,
-            is_auto_start_focus: pref.is_auto_start_focus,
-            is_auto_complete_tasks: pref.is_auto_complete_tasks,
-            is_auto_switch_tasks: pref.is_auto_switch_tasks,
-            is_dark_mode: pref.is_dark_mode,
-          };
-
-          setSettings(newSettings);
-
-          form.reset({
-            focusMin: pref.focus_duration,
-            shortBreakMin: pref.short_break_duration,
-            longBreakMin: pref.long_break_duration,
-            cycles: pref.cycles_before_long_break,
-            autoStartBreaks: pref.is_auto_start_breaks,
-            autoStartFocus: pref.is_auto_start_focus,
-            autoCheckTasks: pref.is_auto_complete_tasks,
-            autoSwitchTasks: pref.is_auto_switch_tasks,
-          });
-        }
-      } catch (error) {
-        console.error("Failed to load preferences:", error);
-      }
-    };
-    loadPreferences();
-  }, [form, setSettings, setUserId]);
-
-  // Toggle editing mode on pencil button click
   const handleEditClick = () => {
     setIsEditing(true);
   };
 
-  // Disable editing mode on cancel button click
   const handleCancelClick = () => {
     setIsEditing(false);
-    form.reset(); // Reset form to initial values
+    form.reset({
+      focusMin: settings.focus_duration,
+      shortBreakMin: settings.short_break_duration,
+      longBreakMin: settings.long_break_duration,
+      cycles: settings.cycles_before_long_break,
+      autoStartBreaks: settings.is_auto_start_breaks,
+      autoStartFocus: settings.is_auto_start_focus,
+      autoCheckTasks: settings.is_auto_complete_tasks,
+      autoSwitchTasks: settings.is_auto_switch_tasks,
+    });
   };
 
   async function onSubmit(data: PomodoroFormData) {
@@ -115,45 +104,23 @@ export default function PomodoroSettings() {
         is_auto_start_focus: data.autoStartFocus,
         is_auto_complete_tasks: data.autoCheckTasks,
         is_auto_switch_tasks: data.autoSwitchTasks,
-        is_dark_mode: settings.is_dark_mode,
       };
 
-      const response = await editPreference(userId, updatedSettings);
-      const updatedPref = response.data;
-
-      setSettings({
-        focus_duration: updatedPref.focus_duration,
-        short_break_duration: updatedPref.short_break_duration,
-        long_break_duration: updatedPref.long_break_duration,
-        cycles_before_long_break: updatedPref.cycles_before_long_break,
-        is_auto_start_breaks: updatedPref.is_auto_start_breaks,
-        is_auto_start_focus: updatedPref.is_auto_start_focus,
-        is_auto_complete_tasks: updatedPref.is_auto_complete_tasks,
-        is_auto_switch_tasks: updatedPref.is_auto_switch_tasks,
-        is_dark_mode: updatedPref.is_dark_mode,
-      });
-      form.reset({
-        focusMin: updatedPref.focus_duration,
-        shortBreakMin: updatedPref.short_break_duration,
-        longBreakMin: updatedPref.long_break_duration,
-        cycles: updatedPref.cycles_before_long_break,
-        autoStartBreaks: updatedPref.is_auto_start_breaks,
-        autoStartFocus: updatedPref.is_auto_start_focus,
-        autoCheckTasks: updatedPref.is_auto_complete_tasks,
-        autoSwitchTasks: updatedPref.is_auto_switch_tasks,
-      });
-
-      setIsEditing(false); 
+      await updateSettings(updatedSettings);
+      setIsEditing(false);
     } catch (error) {
       console.error("Failed to save preferences:", error);
     }
   }
 
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+
   return (
     <div className="appSettings w-full lg:w-2/3 flex border-[1px] border-[#27272A] flex-col p-4 sm:p-6 md:p-[24px] gap-3 md:gap-[12px] rounded-[12px] text-[#A1A1AA]">
       <div className="top flex flex-row items-center justify-between w-full h-auto">
         <h2 className="text-[24px] font-[700]">Pomodoro Settings</h2>
-        {!isEditing && ( 
+        {!isEditing && (
           <Button
             className="pencil ml-auto bg-[#84CC16] p-3 rounded-[12px] h-fit text-white"
             onClick={handleEditClick}
@@ -183,7 +150,7 @@ export default function PomodoroSettings() {
                           onValueChange={(value) =>
                             field.onChange(parseInt(value.replace(" mins", "")))
                           }
-                          disabled={!isEditing} // Disable when not editing
+                          disabled={!isEditing}
                         />
                       </FormControl>
                     </FormItem>
@@ -333,7 +300,7 @@ export default function PomodoroSettings() {
                   )}
                 />
               </div>
-              {isEditing && ( // Show buttons only when editing
+              {isEditing && (
                 <div className="loginBtn flex-col gap-2 flex h-full pt-24 md:flex-row">
                   <Button
                     type="button"
@@ -352,5 +319,21 @@ export default function PomodoroSettings() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PomodoroSettings() {
+  return (
+    <PomodoroDataProvider>
+      {({ settings, userId, isLoading, error, updateSettings }) => (
+        <PomodoroSettingsComponent
+          settings={settings}
+          userId={userId}
+          isLoading={isLoading}
+          error={error}
+          updateSettings={updateSettings}
+        />
+      )}
+    </PomodoroDataProvider>
   );
 }

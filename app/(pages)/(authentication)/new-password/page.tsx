@@ -8,22 +8,37 @@ import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { IoArrowBack } from "react-icons/io5";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
-
-
+import { useMutation } from "@tanstack/react-query";
+import { resetPassword } from "../../../../lib/auth-queries";
+import { useState, useEffect } from "react";
 
 const formSchema = z
   .object({
-    password: z.string().min(6),
+    password: z.string().min(6, "Password must be at least 6 characters"),
     repassword: z.string().min(6),
   })
   .refine((data) => data.password === data.repassword, {
     path: ["repassword"],
+    message: "Passwords don't match",
   });
 
-  type FormValues = z.infer<typeof formSchema>;
+type FormValues = z.infer<typeof formSchema>;
 
 export default function NewPassword() {
   const router = useRouter();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+
+  // Get token from localStorage
+  useEffect(() => {
+    const storedToken = localStorage.getItem("resetToken");
+    if (!storedToken) {
+      router.push("/forgot-password"); // Redirect if no token
+    } else {
+      setToken(storedToken);
+    }
+  }, [router]);
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -32,9 +47,32 @@ export default function NewPassword() {
     },
   });
 
+  const mutation = useMutation({
+    mutationFn: (values: FormValues) =>
+      resetPassword({
+        password: values.password,
+        password_confirmation: values.repassword,
+        token: token || "",
+      }),
+    onSuccess: (data) => {
+      console.log("Password reset successfully:", data);
+      localStorage.removeItem("resetToken"); // Clean up
+      router.push("/login");
+    },
+    onError: (error: any) => {
+      const errorMsg = error.message || "Failed to reset password";
+      setErrorMessage(errorMsg);
+    },
+  });
+
   const onSubmit = (values: FormValues) => {
+    if (!token) {
+      setErrorMessage("Reset token is missing");
+      return;
+    }
+    setErrorMessage(null);
     console.log("Form data:", values);
-    router.push("/login");
+    mutation.mutate(values);
   };
 
   return (
@@ -51,7 +89,7 @@ export default function NewPassword() {
           <div className="text pb-6 space-y-[10px]">
             <h2 className="text-2xl font-semibold">New Password</h2>
             <p className="text-zinc-400 text-[16px] font-[700]">
-            Please create a new password that you don’t use  on any other site.
+              Please create a new password that you don’t use on any other site.
             </p>
           </div>
           <Form {...form}>
@@ -73,6 +111,11 @@ export default function NewPassword() {
                         {...field}
                       />
                     </FormControl>
+                    {form.formState.errors.password && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {form.formState.errors.password.message}
+                      </p>
+                    )}
                   </FormItem>
                 )}
               />
@@ -90,20 +133,29 @@ export default function NewPassword() {
                         {...field}
                       />
                     </FormControl>
+                    {form.formState.errors.repassword && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {form.formState.errors.repassword.message}
+                      </p>
+                    )}
                   </FormItem>
                 )}
               />
+              {errorMessage && (
+                <p className="text-red-500 text-xs">{errorMessage}</p>
+              )}
               <div className="Request-btn pt-3 pb-6">
-                <Button type="submit" className="bg-[#84CC16] w-full">
-                  Continue
+                <Button
+                  type="submit"
+                  className="bg-[#84CC16] w-full"
+                  disabled={mutation.isPending}
+                >
+                  {mutation.isPending ? "Resetting..." : "Continue"}
                 </Button>
               </div>
             </form>
-
-            
           </Form>
         </div>
-        
       </div>
     </section>
   );

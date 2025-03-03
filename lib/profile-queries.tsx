@@ -45,23 +45,23 @@ export async function fetchProfile(): Promise<Profile> {
 }
 
 export async function editProfile(
-  updatedProfile: Partial<Profile>
+  updatedProfile: Partial<Profile> & { profile_photo_file?: File }
 ): Promise<Profile> {
   const token = getToken();
   if (!token) throw new Error("No authentication token available");
 
-  const response = await fetch(
-    `${API_BASE_URL}profile-management/get-user-profile`,
-    {
-      // Verify PATCH endpoint
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(updatedProfile),
-    }
+  const payload = Object.fromEntries(
+    Object.entries(updatedProfile).filter(([_, value]) => value !== undefined)
   );
+
+  const response = await fetch(`${API_BASE_URL}profile-management/patch-user`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
 
   if (!response.ok) {
     const errorText = await response.text();
@@ -72,9 +72,10 @@ export async function editProfile(
   const data = await response.json();
   console.log("API raw response (edit):", data);
 
+  const user = data.user || {};
   return {
-    name: data.name || "",
-    email: data.email || "",
-    profile_photo: data.profile_photo || "",
+    name: user.name || "",
+    email: user.email || "",
+    profile_photo: user.profile_photo || "",
   };
 }

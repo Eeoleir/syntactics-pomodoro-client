@@ -1,41 +1,23 @@
 import { IoCameraSharp } from "react-icons/io5";
-import React, { useRef } from "react";
-import { useRouter } from "next/navigation";
+import React from "react";
 
 interface ProfilePictureProps {
   size: "sm" | "md" | "lg";
   editable?: boolean;
-  src?: string; // Add src prop to accept the profile photo URL
+  src?: string;
+  onFileChange?: () => void; // Callback to trigger file input in parent
 }
 
 export default function ProfilePicture({
   size = "md",
   editable = false,
   src,
+  onFileChange,
 }: ProfilePictureProps) {
   const sizeStyles = {
     sm: "w-[100px] h-[100px]",
     md: "w-[120px] h-[120px]",
     lg: "w-[150px] h-[150px]",
-  };
-
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  const handleClick = () => {
-    if (editable && fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      console.log("Selected file:", file);
-    }
-  };
-
-  const handleGoBack = () => {
-    router.push("/dashboard");
   };
 
   return (
@@ -51,36 +33,21 @@ export default function ProfilePicture({
           overflow-hidden
           ${editable ? "cursor-pointer hover:opacity-80" : ""}
         `}
-        onClick={handleClick}
+        onClick={editable ? onFileChange : undefined} // Trigger file input via parent
       >
-
         {src ? (
-          <img
-            src={src}
-            alt="Profile"
-            className="w-full h-full object-cover"
-          />
+          <img src={src} alt="Profile" className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full bg-green-500 flex items-center justify-center">
             <IoCameraSharp className="size-6 text-white" />
           </div>
         )}
-     
         {editable && src && (
           <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
             <IoCameraSharp className="size-6 text-white" />
           </div>
         )}
       </div>
-      {editable && (
-        <input
-          type="file"
-          ref={fileInputRef}
-          className="hidden"
-          onChange={handleFileChange}
-          accept="image/*"
-        />
-      )}
     </div>
   );
 }
