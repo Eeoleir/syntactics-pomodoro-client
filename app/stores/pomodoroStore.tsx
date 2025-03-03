@@ -1,5 +1,6 @@
 // @/app/stores/pomodoroStore.ts
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 export interface PomodoroState {
   // Added 'export'
@@ -19,23 +20,30 @@ export interface PomodoroState {
   setUserId: (userId: number) => void;
 }
 
-export const usePomodoroStore = create<PomodoroState>((set) => ({
-  settings: {
-    focus_duration: 25,
-    short_break_duration: 5,
-    long_break_duration: 15,
-    cycles_before_long_break: 4,
-    is_auto_start_breaks: false,
-    is_auto_start_focus: false,
-    is_auto_complete_tasks: false,
-    is_auto_switch_tasks: false,
-    is_dark_mode: false,
-  },
-  userId: null,
-  setSettings: (settings) =>
-    set((state) => ({
-      ...state,
-      settings: { ...state.settings, ...settings },
-    })),
-  setUserId: (userId) => set({ userId }),
-}));
+export const usePomodoroStore = create<PomodoroState>()(
+  persist(
+    (set) => ({
+      settings: {
+        focus_duration: 25,
+        short_break_duration: 5,
+        long_break_duration: 15,
+        cycles_before_long_break: 4,
+        is_auto_start_breaks: false,
+        is_auto_start_focus: false,
+        is_auto_complete_tasks: false,
+        is_auto_switch_tasks: false,
+        is_dark_mode: false,
+      },
+      userId: null,
+      setSettings: (settings) =>
+        set((state) => ({
+          ...state,
+          settings: { ...state.settings, ...settings },
+        })),
+      setUserId: (userId) => set({ userId }),
+    }),
+    {
+      name: "pomodoro-preferences-storage", // unique name for localStorage key
+    }
+  )
+);

@@ -1,7 +1,9 @@
+"use client";
 import Cookies from "js-cookie";
 import useAuthStore from "@/app/stores/authStore";
 import API_BASE_URL from "./api_url";
 import { toast } from "sonner";
+import { usePomodoroStore } from "@/app/stores/pomodoroStore";
 
 export interface Preference {
   user_id: number;
@@ -24,6 +26,7 @@ function getToken(): string | null {
 
 export async function getPreferences(): Promise<Preference[]> {
   const token = getToken();
+
   if (!token) throw new Error("No authentication token available");
 
   try {
@@ -84,6 +87,35 @@ export async function editPreference(
       throw new Error("Invalid JSON response from server");
     }
   } catch (error: any) {
+    throw error;
+  }
+}
+
+export async function editDarkMode(id: number, is_dark_mode: number) {
+  const token = getToken();
+  if (!token) throw new Error("No authentication token available");
+
+  try {
+    const response = await fetch(`${API_BASE_URL}preferences/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        is_dark_mode: is_dark_mode ? 1 : 0,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to complete task");
+    }
+
+    return data;
+  } catch (error: any) {
+    toast.warning(error.message);
     throw error;
   }
 }

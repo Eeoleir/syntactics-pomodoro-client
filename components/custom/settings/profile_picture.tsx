@@ -1,5 +1,6 @@
 import { IoCameraSharp } from "react-icons/io5";
 import React from "react";
+import { useRouter } from "next/navigation";
 
 interface ProfilePictureProps {
   size: "sm" | "md" | "lg";
