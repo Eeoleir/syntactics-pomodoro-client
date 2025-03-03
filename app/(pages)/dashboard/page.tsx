@@ -22,11 +22,15 @@ import { usePomodoroStore } from "@/app/stores/pomodoroStore";
 import { useTheme } from "next-themes";
 import { useMutation } from "@tanstack/react-query";
 import { editDarkMode } from "@/lib/preference-queries";
+import { useProfileStore } from "@/app/stores/profileStore"; // Import the profile store
 
 const Dashboard = () => {
   const { setTheme } = useTheme();
 
   const { settings, setSettings } = usePomodoroStore();
+  const { profile, setProfile } = useProfileStore(); // Access the profile store
+  const router = useRouter();
+  const userId = usePomodoroStore((state) => state.userId);
 
   const driverObj = driver({
     showProgress: true,
@@ -110,8 +114,6 @@ const Dashboard = () => {
       },
     ],
   });
-  const router = useRouter();
-  const userId = usePomodoroStore((state) => state.userId);
 
   useEffect(() => {
     // Log userId from store
@@ -139,8 +141,9 @@ const Dashboard = () => {
   const howToUseButton = () => {
     driverObj.drive();
   };
+
   const darkModeMutation = useMutation({
-    mutationFn: (params: { id: number; is_dark_mode: number }) => 
+    mutationFn: (params: { id: number; is_dark_mode: number }) =>
       editDarkMode(params.id, params.is_dark_mode),
     onSuccess: () => {
       toast.success("Theme preference updated successfully!");
@@ -164,7 +167,10 @@ const Dashboard = () => {
     setTheme(newDarkMode ? "dark" : "light");
     console.log("Sending payload:", newDarkMode ? 1 : 0);
     if (userId) {
-      darkModeMutation.mutate({ id: userId, is_dark_mode: newDarkMode ? 1 : 0 });
+      darkModeMutation.mutate({
+        id: userId,
+        is_dark_mode: newDarkMode ? 1 : 0,
+      });
     }
   };
 
@@ -244,8 +250,12 @@ const Dashboard = () => {
             >
               <SelectTrigger className="border-none focus:ring-0 focus:outline-none">
                 <Avatar>
-                  <AvatarImage src="https://github.com/shadcn.png" />
-                  <AvatarFallback>U</AvatarFallback>
+                  <AvatarImage
+                    src={
+                      profile?.profile_photo || "https://github.com/shadcn.png"
+                    }
+                  />
+                  <AvatarFallback>{profile?.name?.[0] || "U"}</AvatarFallback>
                 </Avatar>
               </SelectTrigger>
               <SelectContent>

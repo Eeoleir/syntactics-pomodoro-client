@@ -1,9 +1,8 @@
-// @/app/stores/pomodoroStore.ts
+
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 export interface PomodoroState {
-  // Added 'export'
   settings: {
     focus_duration: number;
     short_break_duration: number;
@@ -43,7 +42,7 @@ export const usePomodoroStore = create<PomodoroState>()(
       setUserId: (userId) => set({ userId }),
     }),
     {
-      name: "pomodoro-preferences-storage", // unique name for localStorage key
+      name: "pomodoro-preferences-storage", 
     }
   )
 );
