@@ -20,22 +20,27 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { usePomodoroStore } from "@/app/stores/pomodoroStore";
 import { useTheme } from "next-themes";
+import { useTranslations } from "next-intl";
 
 const Dashboard = () => {
   const { setTheme } = useTheme();
 
+  // translations
+  const pageTranslations = useTranslations('dashboard');
+  const toastTranslations = useTranslations('components.toasts')
+
   const [isDarkMode, setIsDarkMode] = React.useState(false);
   const { settings, setSettings } = usePomodoroStore();
 
+  const guideTranslations = useTranslations('contextual-guide');
   const driverObj = driver({
     showProgress: true,
     steps: [
       {
         element: "#pomodoro-timer-card",
         popover: {
-          title: "Pomodoro Timer",
-          description:
-            "This is your Pomodoro Timer. Use it to stay focused! Track the time remaining in your session and manage breaks effectively.",
+          title: guideTranslations('pomodoro-timer.title'),
+          description: guideTranslations('pomodoro-timer.description'),
           side: "bottom",
           align: "start",
         },
@@ -43,9 +48,8 @@ const Dashboard = () => {
       {
         element: ".long-break-button",
         popover: {
-          title: "Break Option",
-          description:
-            "Feeling overwhelmed? Click here to take a short or long break and recharge before your next session.",
+          title: guideTranslations('break-option.title'),
+          description: guideTranslations('break-option.description')  ,
           side: "right",
           align: "start",
         },
@@ -53,9 +57,8 @@ const Dashboard = () => {
       {
         element: "#task-list",
         popover: {
-          title: "Task List",
-          description:
-            "Here you can manage your tasks while using the timer. Add new tasks, edit existing ones, and delete completed tasks.",
+          title: guideTranslations('task-list.title'),
+          description: guideTranslations('task-list.description'),
           side: "top",
           align: "start",
         },
@@ -63,9 +66,8 @@ const Dashboard = () => {
       {
         element: "#add-task-button",
         popover: {
-          title: "Add New Task",
-          description:
-            "Click here to add a new task to your list. Organize your work efficiently!",
+          title: guideTranslations('add-new-task.title'),
+          description: guideTranslations('add-new-task.description'),
           side: "left",
           align: "start",
         },
@@ -73,9 +75,8 @@ const Dashboard = () => {
       {
         element: "#burger-menu-icon",
         popover: {
-          title: "Task Options",
-          description:
-            "Click this menu icon to proceed and to reveal options like edit and delete.",
+          title: guideTranslations('task-options.title'),
+          description: guideTranslations('task-options.description'),
           side: "right",
           align: "start",
         },
@@ -83,9 +84,8 @@ const Dashboard = () => {
       {
         element: "#edit-task-button",
         popover: {
-          title: "Edit Task",
-          description:
-            "Need to make changes? Click on a task to edit its details and update your plan.",
+          title: guideTranslations('edit-task.title'),
+          description: guideTranslations('edit-task.description'),
           side: "left",
           align: "start",
         },
@@ -93,18 +93,16 @@ const Dashboard = () => {
       {
         element: "#delete-task-button",
         popover: {
-          title: "Delete Task",
-          description:
-            "Finished or no longer needed? Remove tasks from your list with this option.",
+          title: guideTranslations('delete-task.title'),
+          description: guideTranslations('delete-task.description'),
           side: "bottom",
           align: "start",
         },
       },
       {
         popover: {
-          title: "You're All Set!",
-          description:
-            "Now you're ready to maximize your productivity with the Pomodoro Timer and Task List. Happy working!",
+          title: guideTranslations('all-set.title'),
+          description: guideTranslations('all-set.description'),
         },
       },
     ],
@@ -143,10 +141,10 @@ const Dashboard = () => {
             <img src="/pomoLogo.svg" alt="pomoLogo" />
             <div>
               <h1 className="font-extrabold text-4xl text-black dark:text-[#E4E4E7]">
-                Pomodoro
+                {pageTranslations('page-title')}
               </h1>
               <p className="text-[#71717A] font-medium text-xl">
-                Manage your time in a magical way!
+                {pageTranslations('page-subtitle')}
               </p>
             </div>
           </div>
@@ -156,7 +154,7 @@ const Dashboard = () => {
               onClick={howToUseButton}
               className="dark:bg-[#18181B] text-[#52525B] dark:text-[#A1A1AA]"
             >
-              How to use
+              {guideTranslations('buttons.start-guide')}
             </Button>
             <Button
               onClick={toggleDarkMode}
@@ -216,13 +214,12 @@ const Dashboard = () => {
                 </Avatar>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="settings">Settings</SelectItem>
-                <SelectItem value="logout">Logout</SelectItem>
+                <SelectItem value="settings">{pageTranslations('buttons.settings.text')}</SelectItem>
+                <SelectItem value="logout">{pageTranslations('buttons.logout.text')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
-
         <div className="flex flex-col lg:flex-row mt-12 border-[#E4E4E7] gap-9">
           <div className="xl:w-3/6 2xl:w-5/12 lg:w-full">
             <PomodoroTimerCard />

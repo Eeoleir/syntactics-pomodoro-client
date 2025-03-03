@@ -1,5 +1,6 @@
 import { IoCameraSharp } from "react-icons/io5";
 import React from "react";
+import { useRouter } from "next/navigation";
 
 interface ProfilePictureProps {
   size: "sm" | "md" | "lg";
@@ -25,9 +26,9 @@ export default function ProfilePicture({
     <div className="flex flex-col items-center gap-2">
       <div
         className={`
-          ${sizeStyles[size]} 
-          rounded-full 
-          border-[#84CC16] 
+          ${sizeStyles[size]}
+          rounded-full
+          border-[#84CC16]
           border-[3px]
           flex items-center justify-center
           relative

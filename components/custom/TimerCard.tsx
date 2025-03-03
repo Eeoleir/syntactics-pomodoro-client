@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import CircularTimer from "../subcomponents/CircularTimer";
 import { Button } from "../ui/button";
 import { Mode, useCycleStore } from "@/app/stores/cycleStore";
@@ -148,9 +149,10 @@ const ModeBadge = ({ mode }: { mode: Mode }) => {
     shadow-none
     `;
 
+  const badgeTranslations = useTranslations('components.mode-badges')
   const badgeProperties = {
     [Mode.FOCUS]: {
-      title: "Focus",
+      title: badgeTranslations('focus.title'),
       style: `
         border-[#84cc16]
         text-[#84cc16]
@@ -159,7 +161,7 @@ const ModeBadge = ({ mode }: { mode: Mode }) => {
         `,
     },
     [Mode.LONG_BREAK]: {
-      title: "Long Break",
+      title: badgeTranslations('long-break.title'),
       style: `
         border-[#06b6d4]
         text-[#06b6d4]
@@ -168,7 +170,7 @@ const ModeBadge = ({ mode }: { mode: Mode }) => {
       `,
     },
     [Mode.SHORT_BREAK]: {
-      title: "Short Break",
+      title: badgeTranslations('short-break.title'),
       style: `
         text-[#f59e0b]
         border-[#f59e0b]

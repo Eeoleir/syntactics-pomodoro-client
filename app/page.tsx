@@ -1,5 +1,6 @@
 "use client";
 import { useEffect } from "react";
+import LocaleInitializer from "./stores/localeStore";
 
 export default function Home() {
   useEffect(() => {
@@ -14,6 +15,7 @@ export default function Home() {
 
   return (
     <div className="flex items-center justify-center h-screen">
+      <LocaleInitializer/>
       <h1>LOADING PAGE</h1>
     </div>
   );
