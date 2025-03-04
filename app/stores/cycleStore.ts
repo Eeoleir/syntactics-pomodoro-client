@@ -2,8 +2,8 @@ import { create } from "zustand";
 
 export enum Mode {
   FOCUS = "focus",
-  SHORT_BREAK = "short_break",
-  LONG_BREAK = "long_break",
+  SHORT_BREAK = "short-break",
+  LONG_BREAK = "long-break",
 }
 
 type Tasks = {

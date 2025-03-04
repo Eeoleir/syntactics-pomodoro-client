@@ -158,13 +158,16 @@
     },
     "mode-badges" : {
       "focus" : {
-        "title" : "Focus"
+        "title" : "Focus",
+        "description": "Minimize distractions and stay on task with a dedicated focus session. Perfect for deep work and concentration."
       },
       "short-break" : {
-        "title" : "Short Break"
+        "title" : "Short Break",
+        "description": "A quick pause to rest and refresh between focus sessions. Helps maintain productivity without losing momentum."
       },
       "long-break" : {
-        "title" : "Long Break"
+        "title" : "Long Break",
+        "description": "Take an extended break to recharge after multiple focus sessions. Ideal for deep relaxation before your next work cycle."
       }
     },
     "task-list" : {
