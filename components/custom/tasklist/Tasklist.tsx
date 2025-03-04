@@ -24,8 +24,9 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { useCycleStore, Mode } from "@/app/stores/cycleStore";
-import { pauseTimerRequest, playTimerRequest } from "@/lib/timer-queries";
+
 import { usePomodoroStore } from "@/app/stores/pomodoroStore";
+import { pauseTimerRequest, playTimerRequest } from "@/lib/time-queries";
 
 const TaskList = () => {
   const [activeTaskId, setActiveTaskId] = React.useState<number | null>(null);
@@ -225,13 +226,37 @@ const TaskList = () => {
               const newCount = prev + 1;
               // Complete task when cycles match estimated_cycles
               if (newCount >= first.estimated_cycles) {
-                completeFirstListTask.mutate(first.id);
-                setIsPaused(true);
+                if (
+                  usePomodoroStore.getState().settings.is_auto_complete_tasks
+                ) {
+                  completeFirstListTask.mutate(first.id, {
+                    onSuccess: () => {
+                      if (
+                        usePomodoroStore.getState().settings
+                          .is_auto_start_breaks
+                      ) {
+                        setIsPaused(true);
+                      } else {
+                        setIsPaused(false);
+                      }
+                    },
+                  });
+                } else {
+                  // If auto-complete is off, just handle the timer state
+                  if (
+                    usePomodoroStore.getState().settings.is_auto_start_breaks
+                  ) {
+                    setIsPaused(true);
+                  } else {
+                    setIsPaused(false);
+                  }
+                }
+
                 return 0; // Reset counter after completion
               }
               return newCount;
             });
-            setLastCompletedMode(null); // Reset for next cycle
+            setLastCompletedMode(null);
           } else if (
             currentMode === Mode.SHORT_BREAK ||
             currentMode === Mode.LONG_BREAK
@@ -303,6 +328,16 @@ const TaskList = () => {
         task.id === taskId ? { ...task, status: newStatus } : task
       )
     );
+
+    // Check if there are any pending tasks after the status change
+    const hasUncompletedTasks = taskList.some((task) =>
+      task.id === taskId
+        ? newStatus !== "completed"
+        : task.status !== "completed"
+    );
+
+    // Update noAvailableTasks state based on whether there are any pending tasks
+    setNoAvailableTasks(!hasUncompletedTasks);
 
     // Make API request to update status
     editStatusMutation.mutate({ id: taskId, status: newStatus });
@@ -536,10 +571,13 @@ const TaskList = () => {
 
                                   <span
                                     className={`${
-                                      index === 0 && task.status !== "completed"
+                                      task.status === "completed"
+                                        ? "hidden"
+                                        : index === 0
                                         ? "text-[#84CC16]"
                                         : "text-[#71717A]"
-                                    }`}
+                                    }
+                                        `}
                                   >
                                     {" "}
                                     {index === 0 ? completedCycles : 0}/

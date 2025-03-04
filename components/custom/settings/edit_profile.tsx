@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/form";
 import UserDataProvider from "@/components/hooks/fetchUserData";
 import { Profile } from "@/lib/profile-queries";
+import { usePomodoroStore } from "@/app/stores/pomodoroStore";
 
 const formSchema = z.object({
   name: z.string().min(6, { message: "Name must be at least 6 characters" }),
@@ -41,6 +42,8 @@ function EditProfileComponent({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | undefined>(undefined);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { settings } = usePomodoroStore();
+  const isDarkMode = settings.is_dark_mode;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -57,7 +60,7 @@ function EditProfileComponent({
         name: profile.name || "",
         email: profile.email || "",
       });
-      setPreviewUrl(profile.profile_photo); // Set initial preview from profile
+      setPreviewUrl(profile.profile_photo);
     }
   }, [profile, form]);
 
@@ -157,7 +160,11 @@ function EditProfileComponent({
                   <FormControl>
                     <Input
                       disabled={!isEditing}
-                      className="w-full bg-[#3D4142] border-none px-3 py-1"
+                      className={`w-full ${
+                        isDarkMode
+                          ? "bg-[#3D4142] text-white border-[#27272A]"
+                          : "bg-[white] text-[##71717A] border-[#E4E4E7]"
+                      } border px-3 py-1`}
                       placeholder="Name"
                       {...field}
                       value={field.value || ""}
@@ -174,7 +181,11 @@ function EditProfileComponent({
                   <FormControl>
                     <Input
                       disabled={!isEditing}
-                      className="w-full bg-[#3D4142] border-none px-3 py-1"
+                      className={`w-full ${
+                        isDarkMode
+                          ? "bg-[#3D4142] text-white border-[#27272A]"
+                          : "bg-[white] text-[##71717A] border-[#E4E4E7]"
+                      } border px-3 py-1`}
                       placeholder="m@example.com"
                       {...field}
                       value={field.value || ""}

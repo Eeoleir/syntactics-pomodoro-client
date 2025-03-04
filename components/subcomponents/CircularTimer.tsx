@@ -3,25 +3,27 @@ import {
   CircularProgressbarWithChildren,
 } from "react-circular-progressbar";
 import { useEffect, useRef, useState } from "react";
-
 import { Rajdhani } from "next/font/google";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "../ui/button";
 import Image from "next/image";
 import { formatTime, generateColor } from "@/lib/utils";
 import { Mode, useCycleStore } from "@/app/stores/cycleStore";
+import { useTranslations } from "next-intl";
+
 const rajdhani = Rajdhani({ subsets: ["latin"], weight: ["700"] });
 
-// DUMMY VALUES FOR FEATURES THAT ARE NOT YET IMPLEMENTED
-const darkMode = false;
-const autoStart = true; // from settings
+interface CircularTimerProps {
+  isDarkMode: boolean;
+}
 
-export default function CircularTimer() {
-  // DUMMY STATE FOR CYCLE DONE
+export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
+
   const [cycleDone, setCycleDone] = useState(false);
   const [mockTaskCountdown, setMockTaskCountDown] = useState(4);
 
-  // mode context for the color of the timer
+  const timerTranslations = useTranslations('components.timer');
+
   const {
     currentMode,
     durations,
@@ -34,7 +36,7 @@ export default function CircularTimer() {
 
   // countdown state variable
   const [time, setTime] = useState(durations[currentMode]);
-  const intervalRef = useRef<NodeJS.Timeout>(null); // prevents re-renders, save resource
+  const intervalRef = useRef<NodeJS.Timeout>(null);
 
   // important for countdown animation
   const [prevTime, setPrevTime] = useState("");
@@ -57,7 +59,7 @@ export default function CircularTimer() {
         }
       }
 
-      if (!cycleDone && autoStart) {
+      if (!cycleDone) {
         activateNextMode();
         setTimeLeft(nextMode, durations[nextMode]);
         setTime(durations[nextMode]);
@@ -85,7 +87,7 @@ export default function CircularTimer() {
   const styles = buildStyles({
     pathTransition: "stroke-dashoffset 0.15s ease-out 0s",
     pathColor: !cycleDone ? generateColor(currentMode) : "#f4f4f5",
-    trailColor: darkMode ? "#27272a" : "#f4f4f5",
+    trailColor: isDarkMode ? "#27272a" : "#f4f4f5", // Use isDarkMode for trail color
     strokeLinecap: "round",
   });
 
@@ -123,6 +125,7 @@ export default function CircularTimer() {
               current={formatTime(time)}
               seconds={time}
               textColor={`dark:text-[#3f3f46] dark:text-white text-[#d4d4d8] text-[#52525b]`}
+
             />
           </CircularProgressbarWithChildren>
         </div>
@@ -138,6 +141,7 @@ export default function CircularTimer() {
               <TimerControls
                 initialTime={durations[currentMode]}
                 setTime={setTime}
+                isDarkMode={isDarkMode} // Pass isDarkMode to TimerControls
               />
             </motion.div>
           </AnimatePresence>
@@ -148,18 +152,20 @@ export default function CircularTimer() {
           <div className="flex flex-col space-y-3">
             <h3
               className={`font-sans text-[32px] font-bold dark:text-[#f4f4f5] text-[#3f3f46]`}
+
             >
-              Congratulations!
+              {timerTranslations('cycle-finish.header')}
             </h3>
             <h6
               className={`${
-                darkMode ? "text-[#f4f4f5]" : "text-[#71717a]"
+                isDarkMode ? "text-[#f4f4f5]" : "text-[#71717a]"
               } text-[18px]`}
             >
-              You have reached the end of another cycle in this session!
+              {timerTranslations('cycle-finish.message')}
             </h6>
           </div>
-          <OnFinishedCycleButton />
+          <OnFinishedCycleButton isDarkMode={isDarkMode} />{" "}
+          {/* Pass isDarkMode */}
         </div>
       )}
     </div>
@@ -224,9 +230,11 @@ const TimeTickerAnim = ({
 const TimerControls = ({
   initialTime,
   setTime,
+  isDarkMode,
 }: {
   initialTime: number;
   setTime: CallableFunction;
+  isDarkMode: boolean; // Add isDarkMode prop
 }) => {
   const { isTimerPaused, setIsPaused } = useCycleStore();
 
@@ -243,6 +251,7 @@ const TimerControls = ({
 
   const primaryBtnLayout = "w-[72px] h-[72px]";
   const primaryButtonStyle = `dark:bg-[#52525b] dark:hover:bg-[#393940] bg-[#e4e4e7] hover:bg-[#cdcdd1]`;
+
 
   const reset = () => {
     setTime(initialTime);
@@ -302,17 +311,22 @@ const TimerControls = ({
   );
 };
 
-const OnFinishedCycleButton = (
-  {
-    /* nextMode */
-  }
-) => {
+const OnFinishedCycleButton = ({
+  isDarkMode,
+}: {
+  isDarkMode: boolean; // Add isDarkMode prop
+}) => {
+  const modeTranslations = useTranslations('components.mode-badges')
+  const timerTranslations = useTranslations('components.timer')
+
   return (
     <Button
-      className="text-[18px] font-semibold py-[30px] bg-[#84cc16] shadow-none"
+      className={`text-[18px] font-semibold py-[30px] shadow-none ${
+        isDarkMode ? "bg-[#84cc16] text-white" : "bg-[#84cc16] text-black"
+      }`}
       onClick={() => {}}
     >
-      Start: Focus
+      {timerTranslations('cycle-finish.buttons.start-focus.text')} {modeTranslations('focus.title')}
     </Button>
   );
 };
