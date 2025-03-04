@@ -57,7 +57,7 @@ export function HistoryAccordion({
   paginatedData,
   goToPage,
 }: HistoryAccordionProps) {
-  const translations = useTranslations('components.session-data');
+  const translations = useTranslations("components.session-data");
 
   return (
     <div
@@ -72,7 +72,7 @@ export function HistoryAccordion({
         value={isHistoryOpen ? "history" : undefined}
       >
         <AccordionItem value="history">
-          <AccordionTrigger className="hidden" />{" "}
+          <AccordionTrigger className="hidden" />
           <AccordionContent>
             <div className="mb-4 flex justify-end">
               <Select
@@ -85,39 +85,69 @@ export function HistoryAccordion({
                   <SelectValue placeholder="Select Category" />
                 </SelectTrigger>
                 <SelectContent className="dark:bg-[#27272a] dark:border-[#27272A] dark:text-[#a1a1aa]">
-                  <SelectItem value="Focus Cycles">{translations('fields.focused-field-selections.focus-cycles')}</SelectItem>
-                  <SelectItem value="Break Minutes">{translations('fields.focused-field-selections.break-minutes')}</SelectItem>
-                  <SelectItem value="Focus Minutes">{translations('fields.focused-field-selections.focus-minutes')}</SelectItem>
+                  <SelectItem value="Focus Cycles">
+                    {translations(
+                      "fields.focused-field-selections.focus-cycles"
+                    )}
+                  </SelectItem>
+                  <SelectItem value="Break Minutes">
+                    {translations(
+                      "fields.focused-field-selections.break-minutes"
+                    )}
+                  </SelectItem>
+                  <SelectItem value="Focus Minutes">
+                    {translations(
+                      "fields.focused-field-selections.focus-minutes"
+                    )}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="flex flex-col space-y-4">
+            {/* History Table */}
+            <div className="flex flex-col">
+              {/* Column Headers */}
+              <div className="grid grid-cols-3 gap-4 p-4 border-b dark:border-[#27272A] border-[#e4e4e7] font-semibold">
+                <span className={primaryTextStyles(isDarkMode)}>
+                  Date
+                </span>
+                <span className={primaryTextStyles(isDarkMode)}>
+                  Title
+                </span>
+                <span className={`${primaryTextStyles(isDarkMode)} text-right`}>
+                  {selectedCategory} 
+                </span>
+              </div>
+
+              {/* Table Rows */}
               {paginatedData.map((item) => (
                 <div
                   key={item.id}
-                  className="flex flex-row justify-between items-center p-4 border-b dark:border-[#27272A] border-[#e4e4e7]"
+                  className="grid grid-cols-3 gap-4 p-4 border-b dark:border-[#27272A] border-[#e4e4e7]"
                 >
-                  <div className="flex flex-col">
-                    <span className={primaryTextStyles(isDarkMode)}>
-                      {item.taskName}
-                    </span>
-                    <span className={secondaryTextStyles(isDarkMode)}>
-                      {item.date}
-                    </span>
-                  </div>
-                  <div className="flex flex-col items-end">
-                    <span className={secondaryTextStyles(isDarkMode)}>
-                      {selectedCategory === "Focus Cycles"
-                        ? `${translations('fields.focused-field-selections.focus-cycles')}: ${item.focusCycles}`
-                        : selectedCategory === "Break Minutes"
-                        ? `${translations('fields.focused-field-selections.break-minutes')}: ${item.breakMinutes} ${translations('general.minutes')}`
-                        : `${translations('fields.focused-field-selections.focus-minutes')}: ${item.focusMinutes} ${translations('general.minutes')}`}
-                    </span>
-                  </div>
+                  <span className={secondaryTextStyles(isDarkMode)}>
+                    {item.date}
+                  </span>
+                  <span className={primaryTextStyles(isDarkMode)}>
+                    {item.taskName}
+                  </span>
+                  <span
+                    className={`${secondaryTextStyles(isDarkMode)} text-right`}
+                  >
+                    {selectedCategory === "Focus Cycles"
+                      ? `${item.focusCycles}`
+                      : selectedCategory === "Break Minutes"
+                      ? `${item.breakMinutes} ${translations(
+                          "general.minutes"
+                        )}`
+                      : `${item.focusMinutes} ${translations(
+                          "general.minutes"
+                        )}`}
+                  </span>
                 </div>
               ))}
             </div>
+
             {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex justify-center items-center gap-2 mt-4">
@@ -131,7 +161,7 @@ export function HistoryAccordion({
                       : "bg-[#F4F4F5] text-[#52525B] border-[#E4E4E7]"
                   }`}
                 >
-                  {translations('buttons.previous.text')}
+                  {translations("buttons.previous.text")}
                 </Button>
                 {Array.from({ length: totalPages }, (_, i) => (
                   <Button
@@ -165,7 +195,7 @@ export function HistoryAccordion({
                       : "bg-[#F4F4F5] text-[#52525B] border-[#E4E4E7]"
                   }`}
                 >
-                  {translations('buttons.next.text')}
+                  {translations("buttons.next.text")}
                 </Button>
               </div>
             )}
