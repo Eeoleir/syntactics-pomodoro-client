@@ -22,6 +22,7 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
+import { useTranslations } from "next-intl";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -38,6 +39,7 @@ export default function Login() {
   const { setSettings, setUserId } = usePomodoroStore();
   const { setProfile } = useProfileStore();
   const [errorKey, setErrorKey] = useState(0);
+  const pageTranslations = useTranslations('login-page');
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -156,9 +158,9 @@ export default function Login() {
 
       <div className="flex h-fit w-[408px] border-[1px] rounded-xl bg-[#18181B] border-[#84CC16] flex-col">
         <div className="title flex flex-col h-auto p-6">
-          <h2 className="text-2xl font-semibold">Log in</h2>
+          <h2 className="text-2xl font-semibold">{pageTranslations('login-header')}</h2>
           <p className="text-[14px] mt-1 text-zinc-400 font-normal">
-            Enter your account details to log in
+            {pageTranslations('login-subheader')}
           </p>
         </div>
         <div className="form text-[14px] p-6 pt-0">
@@ -173,13 +175,13 @@ export default function Login() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="font-bold text-[14px]">
-                      Email
+                      {pageTranslations('text-fields.email-field.title')}
                     </FormLabel>
                     <FormControl>
                       <Input
                         required
                         className="w-full bg-[#3D4142] border-none px-3 py-1"
-                        placeholder="Enter your email"
+                        placeholder={pageTranslations('text-fields.email-field.placeholder')}
                         {...field}
                       />
                     </FormControl>
@@ -192,13 +194,13 @@ export default function Login() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="font-bold text-[14px]">
-                      Password
+                      {pageTranslations('text-fields.password-field.title')}
                     </FormLabel>
                     <FormControl>
                       <Input
                         required
                         className="w-full bg-[#3D4142] border-none px-3 py-1"
-                        placeholder="Enter your password"
+                        placeholder={pageTranslations('text-fields.password-field.placeholder')}
                         type="password"
                         {...field}
                       />
@@ -217,7 +219,7 @@ export default function Login() {
                   <p>
                     <Link href="/forgot-password">
                       <span className="flex justify-end ml-2 text-xs text-[#84CC16]">
-                        Forgot Password?
+                        {pageTranslations('links.forgot-password-notice.text')}
                       </span>
                     </Link>
                   </p>
@@ -230,7 +232,7 @@ export default function Login() {
                   className="bg-[#84CC16] w-full"
                   disabled={mutation.isPending}
                 >
-                  {mutation.isPending ? "Logging In..." : "Login"}
+                  {mutation.isPending ? pageTranslations('buttons.submit-button.on-click') : pageTranslations('buttons.submit-button.text')}
                 </Button>
               </div>
             </form>
@@ -239,10 +241,10 @@ export default function Login() {
 
         <div className="links text-zinc-400 px-6 pb-6 flex flex-col text-sm space-y-1 justify-center items-center">
           <p>
-            New to Pomodoro?
+            {pageTranslations('links.create-account-notice.text')}
             <Link href="/register">
               <span className="underline ml-2 text-[#84CC16]">
-                Create Account
+                {pageTranslations('links.create-account-notice.link-text')}
               </span>
             </Link>
           </p>

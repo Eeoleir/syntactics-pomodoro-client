@@ -4,24 +4,26 @@ import {
 } from "react-circular-progressbar";
 import { useEffect, useRef, useState } from "react";
 import { Rajdhani } from "next/font/google";
-import { AnimatePresence, motion } from "framer-motion"; 
+import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "../ui/button";
 import Image from "next/image";
 import { formatTime, generateColor } from "@/lib/utils";
 import { Mode, useCycleStore } from "@/app/stores/cycleStore";
+import { useTranslations } from "next-intl";
 
 const rajdhani = Rajdhani({ subsets: ["latin"], weight: ["700"] });
 
 interface CircularTimerProps {
-  isDarkMode: boolean; 
+  isDarkMode: boolean;
 }
 
 export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
- 
+
   const [cycleDone, setCycleDone] = useState(false);
   const [mockTaskCountdown, setMockTaskCountDown] = useState(4);
 
-  
+  const timerTranslations = useTranslations('components.timer');
+
   const {
     currentMode,
     durations,
@@ -34,7 +36,7 @@ export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
 
   // countdown state variable
   const [time, setTime] = useState(durations[currentMode]);
-  const intervalRef = useRef<NodeJS.Timeout>(null); 
+  const intervalRef = useRef<NodeJS.Timeout>(null);
 
   // important for countdown animation
   const [prevTime, setPrevTime] = useState("");
@@ -160,14 +162,14 @@ export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
                 isDarkMode ? "text-[#f4f4f5]" : "text-[#3f3f46]"
               }`}
             >
-              Congratulations!
+              {timerTranslations('cycle-finish.header')}
             </h3>
             <h6
               className={`${
                 isDarkMode ? "text-[#f4f4f5]" : "text-[#71717a]"
               } text-[18px]`}
             >
-              You have reached the end of another cycle in this session!
+              {timerTranslations('cycle-finish.message')}
             </h6>
           </div>
           <OnFinishedCycleButton isDarkMode={isDarkMode} />{" "}
@@ -327,6 +329,9 @@ const OnFinishedCycleButton = ({
 }: {
   isDarkMode: boolean; // Add isDarkMode prop
 }) => {
+  const modeTranslations = useTranslations('components.mode-badges')
+  const timerTranslations = useTranslations('components.timer')
+
   return (
     <Button
       className={`text-[18px] font-semibold py-[30px] shadow-none ${
@@ -334,7 +339,7 @@ const OnFinishedCycleButton = ({
       }`}
       onClick={() => {}}
     >
-      Start: Focus
+      {timerTranslations('cycle-finish.buttons.start-focus.text')} {modeTranslations('focus.title')}
     </Button>
   );
 };

@@ -17,6 +17,7 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
+import { useTranslations } from "next-intl";
 
 const formSchema = z
   .object({
@@ -40,6 +41,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 export default function Register() {
   const router = useRouter();
+  const pageTranslations = useTranslations('create-account-page');
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -73,9 +75,9 @@ export default function Register() {
     <section className="content w-full h-screen mx-auto bg-[#18181B] text-[#FAFAFA] flex justify-center items-center">
       <div className="flex h-[519px] w-[408px] border-[1px] rounded-xl bg-[#18181B] border-[#84CC16] flex-col">
         <div className="title flex flex-col p-6 pb-5">
-          <h2 className="text-2xl font-semibold">Create an Account</h2>
+          <h2 className="text-2xl font-semibold">{pageTranslations('create-account-header')}</h2>
           <p className="text-[14px] mt-1 text-zinc-400">
-            Enter your email below to create your account
+            {pageTranslations('create-account-subheader')}
           </p>
         </div>
         <div className="form text-[14px] p-6 pt-0">
@@ -87,12 +89,12 @@ export default function Register() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="font-bold text-[14px]">
-                      Username
+                      {pageTranslations('text-fields.username-field.title')}
                     </FormLabel>
                     <FormControl>
                       <Input
                         className="w-full bg-[#3D4142] border-none px-3 py-1"
-                        placeholder="Enter your username"
+                        placeholder={pageTranslations('text-fields.username-field.placeholder')}
                         required
                         {...field}
                       />
@@ -106,12 +108,12 @@ export default function Register() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="font-bold text-[14px]">
-                      Email
+                      {pageTranslations('text-fields.email-field.title')}
                     </FormLabel>
                     <FormControl>
                       <Input
                         className="w-full bg-[#3D4142] border-none px-3 py-1"
-                        placeholder="Enter your email"
+                        placeholder={pageTranslations('text-fields.email-field.placeholder')}
                         required
                         {...field}
                       />
@@ -125,12 +127,12 @@ export default function Register() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="font-bold text-[14px]">
-                      Password
+                      {pageTranslations('text-fields.password-field.title')}
                     </FormLabel>
                     <FormControl>
                       <Input
                         className="w-full bg-[#3D4142] border-none px-3 py-1"
-                        placeholder="Enter your password"
+                        placeholder={pageTranslations('text-fields.password-field.placeholder')}
                         type="password"
                         required
                         {...field}
@@ -145,12 +147,12 @@ export default function Register() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="font-bold text-[14px]">
-                      Re-enter Password
+                      {pageTranslations('text-fields.re-password-field.title')}
                     </FormLabel>
                     <FormControl>
                       <Input
                         className="w-full bg-[#3D4142] border-none px-3 py-1"
-                        placeholder="Re-enter your password"
+                        placeholder={pageTranslations('text-fields.re-password-field.placeholder')}
                         type="password"
                         required
                         {...field}
@@ -166,7 +168,7 @@ export default function Register() {
                   className="bg-[#84CC16] w-full flex"
                   disabled={mutation.isPending}
                 >
-                  {mutation.isPending ? "Registering..." : "Register"}
+                  {mutation.isPending ? pageTranslations('buttons.submit-button.on-click') : pageTranslations('buttons.submit-button.text')}
                 </Button>
               </div>
             </form>
@@ -174,9 +176,9 @@ export default function Register() {
         </div>
         <div className="links text-zinc-400 px-6 pb-6 flex flex-col items-center text-sm space-y-1">
           <p>
-            Already have an account?
+            {pageTranslations('links.login-instead.text')}
             <Link href={"/login"}>
-              <span className="underline ml-2 text-[#84CC16]">Log in</span>
+              <span className="underline ml-2 text-[#84CC16]">{pageTranslations('links.login-instead.link-text')}</span>
             </Link>
           </p>
         </div>

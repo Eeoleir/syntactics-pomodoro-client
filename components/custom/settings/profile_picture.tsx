@@ -26,9 +26,9 @@ export default function ProfilePicture({
     <div className="flex flex-col items-center gap-2">
       <div
         className={`
-          ${sizeStyles[size]} 
-          rounded-full 
-          border-[#84CC16] 
+          ${sizeStyles[size]}
+          rounded-full
+          border-[#84CC16]
           border-[3px]
           flex items-center justify-center
           relative

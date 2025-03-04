@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Button } from "../ui/button";
+import { useTranslations } from "next-intl";
 
 interface HistoryItem {
   id: number;
@@ -56,6 +57,8 @@ export function HistoryAccordion({
   paginatedData,
   goToPage,
 }: HistoryAccordionProps) {
+  const translations = useTranslations('components.session-data');
+
   return (
     <div
       className={`transition-all duration-300 ease-in-out ${
@@ -82,9 +85,9 @@ export function HistoryAccordion({
                   <SelectValue placeholder="Select Category" />
                 </SelectTrigger>
                 <SelectContent className="dark:bg-[#27272a] dark:border-[#27272A] dark:text-[#a1a1aa]">
-                  <SelectItem value="Focus Cycles">Focus Cycles</SelectItem>
-                  <SelectItem value="Break Minutes">Break Minutes</SelectItem>
-                  <SelectItem value="Focus Minutes">Focus Minutes</SelectItem>
+                  <SelectItem value="Focus Cycles">{translations('fields.focused-field-selections.focus-cycles')}</SelectItem>
+                  <SelectItem value="Break Minutes">{translations('fields.focused-field-selections.break-minutes')}</SelectItem>
+                  <SelectItem value="Focus Minutes">{translations('fields.focused-field-selections.focus-minutes')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -106,10 +109,10 @@ export function HistoryAccordion({
                   <div className="flex flex-col items-end">
                     <span className={secondaryTextStyles(isDarkMode)}>
                       {selectedCategory === "Focus Cycles"
-                        ? `Focus Cycles: ${item.focusCycles}`
+                        ? `${translations('fields.focused-field-selections.focus-cycles')}: ${item.focusCycles}`
                         : selectedCategory === "Break Minutes"
-                        ? `Break Minutes: ${item.breakMinutes} minutes`
-                        : `Focus Minutes: ${item.focusMinutes} minutes`}
+                        ? `${translations('fields.focused-field-selections.break-minutes')}: ${item.breakMinutes} ${translations('general.minutes')}`
+                        : `${translations('fields.focused-field-selections.focus-minutes')}: ${item.focusMinutes} ${translations('general.minutes')}`}
                     </span>
                   </div>
                 </div>
@@ -128,7 +131,7 @@ export function HistoryAccordion({
                       : "bg-[#F4F4F5] text-[#52525B] border-[#E4E4E7]"
                   }`}
                 >
-                  Previous
+                  {translations('buttons.previous.text')}
                 </Button>
                 {Array.from({ length: totalPages }, (_, i) => (
                   <Button
@@ -162,7 +165,7 @@ export function HistoryAccordion({
                       : "bg-[#F4F4F5] text-[#52525B] border-[#E4E4E7]"
                   }`}
                 >
-                  Next
+                  {translations('buttons.next.text')}
                 </Button>
               </div>
             )}
