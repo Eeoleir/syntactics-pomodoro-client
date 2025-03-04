@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/form";
 import UserDataProvider from "@/components/hooks/fetchUserData";
 import { Profile } from "@/lib/profile-queries";
+import { useTranslations } from "next-intl";
 
 const formSchema = z.object({
   name: z.string().min(6, { message: "Name must be at least 6 characters" }),
@@ -41,6 +42,7 @@ function EditProfileComponent({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | undefined>(undefined);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const translations = useTranslations('components.edit-profile')
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -153,12 +155,12 @@ function EditProfileComponent({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-bold text-[14px]">Name</FormLabel>
+                  <FormLabel className="font-bold text-[14px]">{translations('fields.name.title')}</FormLabel>
                   <FormControl>
                     <Input
                       disabled={!isEditing}
                       className="w-full bg-[#3D4142] border-none px-3 py-1"
-                      placeholder="Name"
+                      placeholder={translations('fields.name.placeholder')}
                       {...field}
                       value={field.value || ""}
                     />
@@ -170,12 +172,12 @@ function EditProfileComponent({
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-bold text-[14px]">Email</FormLabel>
+                  <FormLabel className="font-bold text-[14px]">{translations('fields.email.title')}</FormLabel>
                   <FormControl>
                     <Input
                       disabled={!isEditing}
                       className="w-full bg-[#3D4142] border-none px-3 py-1"
-                      placeholder="m@example.com"
+                      placeholder={translations('fields.email.placeholder')}
                       {...field}
                       value={field.value || ""}
                     />
@@ -190,13 +192,13 @@ function EditProfileComponent({
                   className="w-full py-3 sm:py-4 px-4 bg-[#CC8484]"
                   onClick={handleCancelClick}
                 >
-                  Cancel
+                  {translations('buttons.cancel.text')}
                 </Button>
                 <Button
                   type="submit"
                   className="w-full py-3 sm:py-4 px-4 bg-[#84CC16]"
                 >
-                  Save Changes
+                  {translations('buttons.submit-changes.text')}
                 </Button>
               </div>
             )}

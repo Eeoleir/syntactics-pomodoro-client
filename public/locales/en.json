@@ -90,6 +90,21 @@
       }
     }
   },
+  "dashboard" : {
+    "page-title" : "Pomodoro",
+    "page-subtitle" : "Manage your time in a magical way!",
+    "buttons" : {
+      "settings" : {
+        "text" : "Settings"
+      },
+      "logout" : {
+        "text" : "Logout"
+      }
+    }
+  },
+  "settings-page" : {
+    "page-title" : "Settings"
+  },
   "contextual-guide" : {
     "buttons" : {
       "start-guide" : "How to use",
@@ -129,18 +144,6 @@
     "all-set" : {
       "title" : "You're All Set!",
       "description" : "Now you're ready to maximize your productivity with the Pomodoro Timer and Task List. Happy working!"
-    }
-  },
-  "dashboard" : {
-    "page-title" : "Pomodoro",
-    "page-subtitle" : "Manage your time in a magical way!",
-    "buttons" : {
-      "settings" : {
-        "text" : "Settings"
-      },
-      "logout" : {
-        "text" : "Logout"
-      }
     }
   },
   "components" : {
@@ -216,6 +219,80 @@
           "text" : "Go Back"
         },
         "submit" : {
+          "text" : "Save Changes"
+        }
+      }
+    },
+    "edit-profile" : {
+      "fields" : {
+        "name" : {
+          "title" : "Name",
+          "placeholder" : "Name"
+        },
+        "email" : {
+          "title" : "Email",
+          "placeholder" : "m@example.com"
+        }
+      },
+      "buttons" : {
+        "edit-profile" : {
+          "text" : "Edit Profile "
+        },
+        "logout" : {
+          "text" : "Logout"
+        },
+        "cancel" : {
+          "text" : "Cancel"
+        },
+        "submit-changes" : {
+          "text" : "Save Changes"
+        }
+      }
+    },
+    "pomodoro-settings" : {
+      "header" : "Pomodoro Settings",
+      "timer" : {
+        "title" : "Timer",
+        "fields" : {
+          "focus" : {
+            "title" : "Focus",
+            "mins" : "mins"
+          },
+          "short-break" : {
+            "title" : "Short Break",
+            "mins" : "mins"
+          },
+          "long-break" : {
+            "title" : "Long Break",
+            "mins" : "mins"
+          },
+          "auto-start-breaks" : {
+            "title" : "Auto Start Breaks"
+          },
+          "auto-start-focus" : {
+            "title" : "Auto Start Focus"
+          },
+          "cycles-before-long-break" : {
+            "title" : "Cycles Before Long Break"
+          }
+        }
+      },
+      "tasks" : {
+        "title" : "Tasks",
+        "fields" : {
+          "auto-check-tasks" : {
+            "title" : "Auto Check Tasks"
+          },
+          "auto-switch-tasks" : {
+            "title" : "Auto Switch Tasks"
+          }
+        }
+      },
+      "buttons" : {
+        "cancel" : {
+          "text" : "Cancel"
+        },
+        "submit-changes" : {
           "text" : "Save Changes"
         }
       }
