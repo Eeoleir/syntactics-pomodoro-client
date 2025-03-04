@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { Locale } from "@/next-intl-services/config";
 import { getUserLocale, setUserLocale } from "@/services/locale";
@@ -9,7 +9,7 @@ import { create } from "zustand";
 export const locales = {
   ENGLISH: "en",
   PORTUGUESE: "pt",
-  JAPANESE: "ja"
+  JAPANESE: "ja",
 } as const;
 
 type LocaleState = {
@@ -32,10 +32,10 @@ export const useLocaleStore = create<LocaleState & LocaleActions>((set) => ({
   },
 
   initializeLocale: async () => {
-    const userLocale = await getUserLocale();
+    const userLocale = (await getUserLocale()) as Locale; 
     set({ currentLocale: userLocale, initialized: true });
   },
-}))
+}));
 
 export default function LocaleInitializer() {
   const { initializeLocale, initialized } = useLocaleStore();

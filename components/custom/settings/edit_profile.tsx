@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/form";
 import UserDataProvider from "@/components/hooks/fetchUserData";
 import { Profile } from "@/lib/profile-queries";
-import { useTranslations } from "next-intl";
+import { usePomodoroStore } from "@/app/stores/pomodoroStore";
 
 const formSchema = z.object({
   name: z.string().min(6, { message: "Name must be at least 6 characters" }),
@@ -42,7 +42,8 @@ function EditProfileComponent({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | undefined>(undefined);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const translations = useTranslations('components.edit-profile')
+  const { settings } = usePomodoroStore();
+  const isDarkMode = settings.is_dark_mode;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -59,7 +60,7 @@ function EditProfileComponent({
         name: profile.name || "",
         email: profile.email || "",
       });
-      setPreviewUrl(profile.profile_photo); // Set initial preview from profile
+      setPreviewUrl(profile.profile_photo);
     }
   }, [profile, form]);
 
@@ -155,12 +156,16 @@ function EditProfileComponent({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-bold text-[14px]">{translations('fields.name.title')}</FormLabel>
+                  <FormLabel className="font-bold text-[14px]">Name</FormLabel>
                   <FormControl>
                     <Input
                       disabled={!isEditing}
-                      className="w-full bg-[#3D4142] border-none px-3 py-1"
-                      placeholder={translations('fields.name.placeholder')}
+                      className={`w-full ${
+                        isDarkMode
+                          ? "bg-[#3D4142] text-white border-[#27272A]"
+                          : "bg-[white] text-[##71717A] border-[#E4E4E7]"
+                      } border px-3 py-1`}
+                      placeholder="Name"
                       {...field}
                       value={field.value || ""}
                     />
@@ -172,12 +177,16 @@ function EditProfileComponent({
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-bold text-[14px]">{translations('fields.email.title')}</FormLabel>
+                  <FormLabel className="font-bold text-[14px]">Email</FormLabel>
                   <FormControl>
                     <Input
                       disabled={!isEditing}
-                      className="w-full bg-[#3D4142] border-none px-3 py-1"
-                      placeholder={translations('fields.email.placeholder')}
+                      className={`w-full ${
+                        isDarkMode
+                          ? "bg-[#3D4142] text-white border-[#27272A]"
+                          : "bg-[white] text-[##71717A] border-[#E4E4E7]"
+                      } border px-3 py-1`}
+                      placeholder="m@example.com"
                       {...field}
                       value={field.value || ""}
                     />
@@ -192,13 +201,13 @@ function EditProfileComponent({
                   className="w-full py-3 sm:py-4 px-4 bg-[#CC8484]"
                   onClick={handleCancelClick}
                 >
-                  {translations('buttons.cancel.text')}
+                  Cancel
                 </Button>
                 <Button
                   type="submit"
                   className="w-full py-3 sm:py-4 px-4 bg-[#84CC16]"
                 >
-                  {translations('buttons.submit-changes.text')}
+                  Save Changes
                 </Button>
               </div>
             )}
@@ -212,10 +221,10 @@ function EditProfileComponent({
             className="w-full py-3 sm:py-4 px-4 bg-[#71717A]"
             onClick={handleEditClick}
           >
-            {translations('buttons.edit-profile.text')}
+            Edit Profile
           </Button>
           <Button className="w-full py-3 sm:py-4 px-4 bg-[#84CC16]">
-            {translations('buttons.logout.text')}
+            Logout
           </Button>
         </div>
       )}
