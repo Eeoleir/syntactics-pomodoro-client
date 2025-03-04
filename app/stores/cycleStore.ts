@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { usePomodoroStore } from "./pomodoroStore";
 
 export enum Mode {
   FOCUS = "focus",
@@ -34,13 +35,14 @@ type CycleStateActions = {
 export const useCycleStore = create<CycleState & CycleStateActions>((set) => ({
   // state properties
   durations: {
-    // dapat mag query og data para ani
-
-    [Mode.FOCUS]: 5, // 1500
-    [Mode.SHORT_BREAK]: 5, // 300
-    [Mode.LONG_BREAK]: 5, // 900
+    [Mode.FOCUS]: usePomodoroStore.getState().settings.focus_duration * 60, // convert minutes to seconds
+    [Mode.SHORT_BREAK]:
+      usePomodoroStore.getState().settings.short_break_duration * 60,
+    [Mode.LONG_BREAK]:
+      usePomodoroStore.getState().settings.long_break_duration * 60,
   },
-  longBreakInterval: 4,
+  longBreakInterval:
+    usePomodoroStore.getState().settings.cycles_before_long_break,
   longBreakIntervalCounter: 0,
   currentMode: Mode.FOCUS,
   currentTimeLeft: 1500,
@@ -90,3 +92,15 @@ export const useCycleStore = create<CycleState & CycleStateActions>((set) => ({
   setNoAvailableTasks: (noAvailableTasks: boolean) =>
     set(() => ({ noAvailableTasks: noAvailableTasks })),
 }));
+
+// Subscribe to pomodoroStore changes
+usePomodoroStore.subscribe((state) => {
+  useCycleStore.getState().setDurations({
+    [Mode.FOCUS]: state.settings.focus_duration * 60,
+    [Mode.SHORT_BREAK]: state.settings.short_break_duration * 60,
+    [Mode.LONG_BREAK]: state.settings.long_break_duration * 60,
+  });
+  useCycleStore
+    .getState()
+    .setLongBreakInterval(state.settings.cycles_before_long_break);
+});

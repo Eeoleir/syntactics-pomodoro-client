@@ -24,6 +24,8 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { useCycleStore, Mode } from "@/app/stores/cycleStore";
+import { pauseTimerRequest, playTimerRequest } from "@/lib/timer-queries";
+import { usePomodoroStore } from "@/app/stores/pomodoroStore";
 
 const TaskList = () => {
   const [activeTaskId, setActiveTaskId] = React.useState<number | null>(null);
@@ -47,6 +49,7 @@ const TaskList = () => {
   const noAvailableTasks = useCycleStore((state) => state.noAvailableTasks);
   const isTimerPaused = useCycleStore((state) => state.isTimerPaused);
   const setIsPaused = useCycleStore((state) => state.setIsPaused);
+  const [timer_id, setTimerId] = React.useState<number | null>(null);
 
   const [editInfo, setEditInfo] = React.useState({
     taskId: 0,
@@ -119,6 +122,39 @@ const TaskList = () => {
     },
   });
 
+  const pauseTimerMutation = useMutation({
+    mutationFn: ({ status, timer_id }: { status: string; timer_id: number }) =>
+      pauseTimerRequest(status, timer_id),
+    onSuccess: () => {
+      toast.success("Timer paused successfully");
+    },
+    onError: (error) => {
+      toast.error("Failed to pause timer");
+      console.error("Timer pause error:", error);
+    },
+  });
+
+  const playTimerMutation = useMutation({
+    mutationFn: ({
+      task_id,
+      session_type,
+      duration,
+    }: {
+      task_id: number;
+      session_type: string;
+      duration: number;
+    }) => playTimerRequest(task_id, session_type, duration),
+    onSuccess: (response) => {
+      setTimerId(response.data.id);
+      toast.success("Timer play successfully");
+      console.log("Timer response:", response);
+    },
+    onError: (error) => {
+      toast.error("Failed to play timer");
+      console.error("Timer play error:", error);
+    },
+  });
+
   useEffect(() => {
     let intervalId: string | number | NodeJS.Timeout | undefined;
 
@@ -138,6 +174,43 @@ const TaskList = () => {
         status: first.status,
         user_id: first.user_id,
       });
+      if (!isTimerPaused) {
+        playTimerMutation.mutate(
+          {
+            task_id: first.id,
+            session_type:
+              currentMode === Mode.FOCUS
+                ? "focus"
+                : currentMode === Mode.SHORT_BREAK
+                ? "short_break"
+                : currentMode === Mode.LONG_BREAK
+                ? "long_break"
+                : "",
+            duration: Number(
+              currentMode === Mode.FOCUS
+                ? usePomodoroStore.getState().settings.focus_duration * 60
+                : currentMode === Mode.SHORT_BREAK
+                ? usePomodoroStore.getState().settings.short_break_duration * 60
+                : currentMode === Mode.LONG_BREAK
+                ? usePomodoroStore.getState().settings.long_break_duration * 60
+                : 0
+            ),
+          },
+          {
+            onSuccess: (response) => {
+              setTimerId(response.data.id);
+              console.log("Timer response in useEffect:", response);
+            },
+          }
+        );
+      } else if (isTimerPaused) {
+        if (timer_id !== null) {
+          pauseTimerMutation.mutate({
+            status: "paused",
+            timer_id: timer_id,
+          });
+        }
+      }
 
       // Only track cycles if task is not completed
       if (first.status !== "completed") {
@@ -179,7 +252,7 @@ const TaskList = () => {
         clearInterval(intervalId);
       }
     };
-  }, [taskList, currentMode, nextMode, lastCompletedMode]);
+  }, [taskList, currentMode, nextMode, lastCompletedMode, isTimerPaused]);
 
   const handleActionClick = (taskId: number) => {
     setIsSpinning(true);
@@ -290,7 +363,7 @@ const TaskList = () => {
           <DragDropContext onDragEnd={handleDragEnd}>
             <Droppable droppableId="tasks">
               {(provided: any) => (
-                <ScrollArea className="flex flex-col justify-between h-[382px] overflow-y-auto">
+                <ScrollArea className="flex flex-col justify-between h-[340px] overflow-y-auto">
                   <div
                     {...provided.droppableProps}
                     ref={provided.innerRef}

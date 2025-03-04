@@ -43,8 +43,8 @@ const AddTask: React.FC<AddTaskProps> = ({ setAddTaskActive }) => {
     const newTask = {
       title: taskName,
       description: taskDescription,
-      due_date: formattedDate, 
-      estimated_cycles: parseInt(pomodoroCycles, 10), 
+      due_date: formattedDate,
+      estimated_cycles: parseInt(pomodoroCycles, 10),
       status: "pending",
     };
 

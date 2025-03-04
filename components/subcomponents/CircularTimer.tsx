@@ -122,15 +122,7 @@ export default function CircularTimer() {
               prev={prevTime}
               current={formatTime(time)}
               seconds={time}
-              textColor={`${
-                darkMode
-                  ? cycleDone
-                    ? "text-[#3f3f46]"
-                    : "text-white"
-                  : cycleDone
-                  ? "text-[#d4d4d8]"
-                  : "text-[#52525b]"
-              }`}
+              textColor={`dark:text-[#3f3f46] dark:text-white text-[#d4d4d8] text-[#52525b]`}
             />
           </CircularProgressbarWithChildren>
         </div>
@@ -155,9 +147,7 @@ export default function CircularTimer() {
         <div className="flex flex-col w-6/12 justify-start space-y-20">
           <div className="flex flex-col space-y-3">
             <h3
-              className={`font-sans text-[32px] font-bold ${
-                darkMode ? "text-[#f4f4f5]" : "text-[#3f3f46]"
-              }`}
+              className={`font-sans text-[32px] font-bold dark:text-[#f4f4f5] text-[#3f3f46]`}
             >
               Congratulations!
             </h3>
@@ -249,18 +239,10 @@ const TimerControls = ({
   const containerStyles = `container w-full h-64 blurred-background flex items-end justify-center`;
 
   const secondaryBtnLayout = "w-[56px] h-[56px] shadow-none";
-  const secondaryBtnStyles = `${
-    darkMode
-      ? "bg-[#3f3f46] hover:bg-[#2e2e33]"
-      : "bg-[#f4f4f5] hover:bg-[#dedee0]"
-  }`;
+  const secondaryBtnStyles = `dark:bg-[#3f3f46] dark:hover:bg-[#2e2e33] bg-[#f4f4f5] hover:bg-[#dedee0]`;
 
   const primaryBtnLayout = "w-[72px] h-[72px]";
-  const primaryButtonStyle = `${
-    darkMode
-      ? "bg-[#52525b] hover:bg-[#393940]"
-      : "bg-[#e4e4e7] hover:bg-[#cdcdd1]"
-  }`;
+  const primaryButtonStyle = `dark:bg-[#52525b] dark:hover:bg-[#393940] bg-[#e4e4e7] hover:bg-[#cdcdd1]`;
 
   const reset = () => {
     setTime(initialTime);
@@ -274,6 +256,7 @@ const TimerControls = ({
         <Button
           className={`${secondaryBtnStyles} ${secondaryBtnLayout}`}
           onClick={reset}
+          disabled={noAvailableTasks}
         >
           <Image
             src={`/timer_control_icons/restart.svg`}
@@ -304,6 +287,7 @@ const TimerControls = ({
         <Button
           className={`${secondaryBtnStyles} ${secondaryBtnLayout}`}
           onClick={() => {}}
+          disabled={noAvailableTasks}
         >
           <Image
             src={`/timer_control_icons/next_session.svg`}
