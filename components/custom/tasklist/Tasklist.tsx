@@ -142,7 +142,6 @@ const TaskList = () => {
       // Only track cycles if task is not completed
       if (first.status !== "completed") {
         intervalId = setInterval(() => {
-          // Check if we completed a full cycle (Focus + either type of break)
           if (
             currentMode === Mode.FOCUS &&
             (lastCompletedMode === Mode.SHORT_BREAK ||
@@ -150,22 +149,21 @@ const TaskList = () => {
           ) {
             setCompletedCycles((prev) => {
               const newCount = prev + 1;
-              // Complete task when cycles match estimated_cycles
               if (newCount >= first.estimated_cycles) {
                 completeFirstListTask.mutate(first.id);
                 setIsPaused(true);
-                return 0; // Reset counter after completion
+                return 0;
               }
               return newCount;
             });
-            setLastCompletedMode(null); // Reset for next cycle
+            setLastCompletedMode(null);
           } else if (
             currentMode === Mode.SHORT_BREAK ||
             currentMode === Mode.LONG_BREAK
           ) {
             setLastCompletedMode(currentMode);
           }
-        }); // Check every second for mode changes
+        }, 1000);
       } else {
         toast.success("All tasks completed!");
         setNoAvailableTasks(true);

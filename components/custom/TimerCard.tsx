@@ -3,39 +3,29 @@
 import { Button } from "../ui/button";
 import { Mode, useCycleStore } from "@/app/stores/cycleStore";
 import { useState, useEffect } from "react";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "../ui/accordion"; // Assuming Shadcn UI Accordion
 import CircularTimer from "../subcomponents/CircularTimer";
-import { usePomodoroStore } from "@/app/stores/pomodoroStore"; // Import the store
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select"; // Import Shadcn UI Select components
+import { usePomodoroStore } from "@/app/stores/pomodoroStore";
+import { HistoryAccordion } from "./HistoryAccordion";
+import { useQuery } from "@tanstack/react-query";
+import { fetchPomodoroHistory, HistoryItem } from "@/lib/history-queries";
 
 const primaryTextStyles = (isDarkMode: boolean) => `
   ${isDarkMode ? "text-[#a1a1aa]" : "text-[#52525b] dark:text-[#a1a1aa]"}
   font-bold
   font-sans
-  `;
+`;
 
 const secondaryTextStyles = (isDarkMode: boolean) => `
   ${isDarkMode ? "text-[#71717a]" : "text-[#71717a]"}
   font-sans
-  `;
+`;
 
 export default function PomodoroTimerCard() {
-  const { settings, setSettings } = usePomodoroStore(); // Access the store
-  const [isDarkMode, setIsDarkMode] = useState(settings.is_dark_mode); // Sync with store
+  const { settings, setSettings } = usePomodoroStore();
+  const [isDarkMode, setIsDarkMode] = useState(settings.is_dark_mode);
 
   useEffect(() => {
-    setIsDarkMode(settings.is_dark_mode); // Update local state when store changes
+    setIsDarkMode(settings.is_dark_mode);
   }, [settings.is_dark_mode]);
 
   const containerLayout =
@@ -56,58 +46,51 @@ export default function PomodoroTimerCard() {
 
 function CardTop({ isDarkMode }: { isDarkMode: boolean }) {
   const { currentMode, nextMode } = useCycleStore();
-
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] =
-    useState<string>("Focus Cycles"); // Default to "Focus Cycles"
+    useState<string>("Focus Cycles");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const containerStyles = `
     flex flex-row
     items-center justify-between
     font-sans
-    `;
-
-  // Example task history data (replace with real data from your store or API)
-  const taskHistory = [
-    {
-      id: 1,
-      date: "02/28/25",
-      taskName: "Task Name",
-      focusCycles: 0,
-      focusMinutes: 25,
-      breakMinutes: 5,
-    },
-    {
-      id: 2,
-      date: "02/28/25",
-      taskName: "Task Name",
-      focusCycles: 0,
-      focusMinutes: 50,
-      breakMinutes: 10,
-    },
-    {
-      id: 3,
-      date: "02/28/25",
-      taskName: "Task Name",
-      focusCycles: 0,
-      focusMinutes: 25,
-      breakMinutes: 5,
-    },
-    {
-      id: 4,
-      date: "02/28/25",
-      taskName: "Task Name",
-      focusCycles: 0,
-      focusMinutes: 75,
-      breakMinutes: 15,
-    },
-  ];
+  `;
 
   const itemsPerPage = 3;
-  const { currentPage, totalPages, paginatedData, goToPage } = usePagination(
-    taskHistory,
-    itemsPerPage
-  );
+
+  // Fetch history data with TanStack Query
+  const {
+    data: taskHistory = [],
+    isLoading,
+    error,
+    isFetching,
+  } = useQuery({
+    queryKey: ["pomodoroHistory", currentPage],
+    queryFn: () => fetchPomodoroHistory(currentPage),
+    placeholderData: (previousData) => previousData ?? [],
+  });
+
+  // For now, we'll assume totalPages is based on fetched data length
+  // If you need meta.total, you'll need to fetch it separately or adjust the API response handling
+  const totalPages = Math.ceil(taskHistory.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedData = taskHistory.slice(startIndex, endIndex);
+
+  const goToPage = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  if (isLoading && !isFetching) {
+    return <div>Loading history...</div>;
+  }
+
+  if (error) {
+    return <div>Error loading history: {(error as Error).message}</div>;
+  }
 
   return (
     <div className="flex flex-col w-full">
@@ -125,7 +108,7 @@ function CardTop({ isDarkMode }: { isDarkMode: boolean }) {
               isDarkMode
             )}`}
           >
-           Track the next cycles
+            Track the next cycles
           </h6>
         </div>
         <HistoryButton
@@ -134,125 +117,18 @@ function CardTop({ isDarkMode }: { isDarkMode: boolean }) {
         />
       </div>
 
-      {/* ---- history accordion (slides up/down) ---- */}
-      <div
-        className={`transition-all duration-300 ease-in-out ${
-          isHistoryOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
-        } overflow-hidden`}
-      >
-        <Accordion
-          type="single"
-          collapsible
-          className="w-full mt-[24px]"
-          value={isHistoryOpen ? "history" : undefined}
-        >
-          <AccordionItem value="history">
-            <AccordionTrigger className="hidden" />{" "}
-            {/* Hidden trigger for animation */}
-            <AccordionContent>
-              {/* Category Select Dropdown (placed at the top) */}
-              <div className="mb-4 flex justify-end">
-                <Select
-                  value={selectedCategory}
-                  onValueChange={(value) => setSelectedCategory(value)}
-                >
-                  <SelectTrigger
-                    className={`w-[200px] border dark:border-[#27272A] border-[#e4e4e7] dark:bg-[#27272a] bg-[#f4f4f5] text-[#71717a] dark:text-[#a1a1aa] rounded-md`}
-                  >
-                    <SelectValue placeholder="Select Category" />
-                  </SelectTrigger>
-                  <SelectContent className="dark:bg-[#27272a] dark:border-[#27272A] dark:text-[#a1a1aa]">
-                    <SelectItem value="Focus Cycles">Focus Cycles</SelectItem>
-                    <SelectItem value="Break Minutes">Break Minutes</SelectItem>
-                    <SelectItem value="Focus Minutes">Focus Minutes</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+      <HistoryAccordion
+        isDarkMode={isDarkMode}
+        isHistoryOpen={isHistoryOpen}
+        taskHistory={taskHistory}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        paginatedData={paginatedData}
+        goToPage={goToPage}
+      />
 
-              <div className="flex flex-col space-y-4">
-                {paginatedData.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex flex-row justify-between items-center p-4 border-b dark:border-[#27272A] border-[#e4e4e7]"
-                  >
-                    <div className="flex flex-col">
-                      <span className={primaryTextStyles(isDarkMode)}>
-                        {item.taskName}
-                      </span>
-                      <span className={secondaryTextStyles(isDarkMode)}>
-                        {item.date}
-                      </span>
-                    </div>
-                    <div className="flex flex-col items-end">
-                      <span className={secondaryTextStyles(isDarkMode)}>
-                        {selectedCategory === "Focus Cycles"
-                          ? `Focus Cycles: ${item.focusCycles}`
-                          : selectedCategory === "Break Minutes"
-                          ? `Break Minutes: ${item.breakMinutes}`
-                          : `Focus Minutes: ${item.focusMinutes}`}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex justify-center items-center gap-2 mt-4">
-                  <Button
-                    onClick={() => goToPage(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    variant="outline"
-                    className={`${
-                      isDarkMode
-                        ? "dark:bg-[#27272a] dark:text-[#A1A1AA] dark:border-[#27272A]"
-                        : "bg-[#F4F4F5] text-[#52525B] border-[#E4E4E7]"
-                    }`}
-                  >
-                    Previous
-                  </Button>
-                  {Array.from({ length: totalPages }, (_, i) => (
-                    <Button
-                      key={i + 1}
-                      onClick={() => goToPage(i + 1)}
-                      variant={currentPage === i + 1 ? "default" : "outline"}
-                      className={`${
-                        isDarkMode
-                          ? `dark:bg-[#27272a] dark:text-[#A1A1AA] dark:border-[#27272A] ${
-                              currentPage === i + 1
-                                ? "dark:bg-[#3f3f46]"
-                                : "dark:hover:bg-[#3f3f46]"
-                            }`
-                          : `bg-[#F4F4F5] text-[#52525B] border-[#E4E4E7] ${
-                              currentPage === i + 1
-                                ? "bg-[#E4E4E7]"
-                                : "hover:bg-gray-200"
-                            }`
-                      }
-                      }`}
-                    >
-                      {i + 1}
-                    </Button>
-                  ))}
-                  <Button
-                    onClick={() => goToPage(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    variant="outline"
-                    className={`${
-                      isDarkMode
-                        ? "dark:bg-[#27272a] dark:text-[#A1A1AA] dark:border-[#27272A]"
-                        : "bg-[#F4F4F5] text-[#52525B] border-[#E4E4E7]"
-                    }`}
-                  >
-                    Next
-                  </Button>
-                </div>
-              )}
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-      </div>
-
-      {/* ---- cycles (always visible, but adjusted layout when history is open) ---- */}
       <div
         className={`flex flex-col space-y-[24px] text-[#71717A] dark:text-[#A1A1AA] mt-[24px] ${
           isHistoryOpen ? "mt-[24px]" : "mt-[24px]"
@@ -270,21 +146,19 @@ function CardTop({ isDarkMode }: { isDarkMode: boolean }) {
         />
       </div>
 
-      {/* ---- clock (visible only when history is closed) ---- */}
       {!isHistoryOpen && (
         <div
           id="clock-container"
           className="flex w-full justify-center items-center mt-[64px]"
         >
-          <CircularTimer isDarkMode={isDarkMode} />{" "}
-          {/* Pass dark mode to CircularTimer if needed */}
+          <CircularTimer isDarkMode={isDarkMode} />
         </div>
       )}
     </div>
   );
 }
 
-// HistoryButton Component
+// HistoryButton, CycleIndicator, ModeBadge remain unchanged
 function HistoryButton({
   onClick,
   isDarkMode,
@@ -309,24 +183,6 @@ function HistoryButton({
   );
 }
 
-// Pagination Hook (Example, you might need to adjust or use a library like react-paginate)
-function usePagination(data: any[], itemsPerPage: number) {
-  const [currentPage, setCurrentPage] = useState(1);
-
-  const totalPages = Math.ceil(data.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedData = data.slice(startIndex, endIndex);
-
-  const goToPage = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
-  };
-
-  return { currentPage, totalPages, paginatedData, goToPage };
-}
-
 const CycleIndicator = ({
   title,
   subText,
@@ -339,12 +195,10 @@ const CycleIndicator = ({
   return (
     <div className="flex flex-row justify-between">
       <div className="flex flex-col">
-        <h4 className={`${primaryTextStyles(true)} text-[18px]`}>{title}</h4>{" "}
-        {/* Use dark mode styles for consistency */}
+        <h4 className={`${primaryTextStyles(true)} text-[18px]`}>{title}</h4>
         <h6 className={`${secondaryTextStyles(true)} text-[14px]`}>
           {subText}
-        </h6>{" "}
-        {/* Use dark mode styles for consistency */}
+        </h6>
       </div>
       <div className="flex items-center">{modeBadge}</div>
     </div>
@@ -369,7 +223,7 @@ const ModeBadge = ({
     rounded-[5px]
     text-[14px]
     shadow-none
-    `;
+  `;
 
   const badgeProperties = {
     [Mode.FOCUS]: {
@@ -379,7 +233,7 @@ const ModeBadge = ({
         text-[#84cc16]
         bg-[#84cc16]/10
         hover:bg-transparent
-        `,
+      `,
     },
     [Mode.LONG_BREAK]: {
       title: "Long Break",
