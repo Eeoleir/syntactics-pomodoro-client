@@ -3,7 +3,7 @@ import Cookies from "js-cookie";
 import useAuthStore from "@/app/stores/authStore";
 import API_BASE_URL from "./api_url";
 import { toast } from "sonner";
-import { usePomodoroStore } from "@/app/stores/pomodoroStore";
+
 
 export interface Preference {
   user_id: number;
@@ -41,9 +41,7 @@ export async function getPreferences(): Promise<Preference[]> {
     if (!response.ok) {
       throw new Error(`Error: ${response.status}`);
     }
-
     const responseData = await response.json();
-    toast.success("Preferences fetched successfully.");
 
     return responseData.data;
   } catch (error: any) {
@@ -81,6 +79,7 @@ export async function editPreference(
 
     try {
       const data = JSON.parse(responseText);
+      toast.success("Preferences updated successfully.");
       return data;
     } catch (e) {
       console.error("Failed to parse response as JSON:", responseText);
@@ -115,7 +114,6 @@ export async function editDarkMode(id: number, is_dark_mode: number) {
 
     return data;
   } catch (error: any) {
-    toast.warning(error.message);
     throw error;
   }
 }
