@@ -41,7 +41,7 @@ const Dashboard = () => {
   const [isDarkMode, setIsDarkMode] = React.useState(false);
 
   const { settings, setSettings } = usePomodoroStore();
-  const { profile, setProfile } = useProfileStore(); // Access the profile store
+  const { profile, setProfile } = useProfileStore(); 
   const router = useRouter();
   const userId = usePomodoroStore((state) => state.userId);
 
