@@ -14,12 +14,11 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
-import { useState, useMemo } from "react"; 
+import { useState, useMemo } from "react";
 import PomodoroDataProvider from "@/components/hooks/fetchPreference";
 
 import { usePomodoroStore } from "@/app/stores/pomodoroStore";
 import { useTranslations } from "next-intl";
-
 
 interface PomodoroFormData {
   focusMin: number;
@@ -48,10 +47,12 @@ function PomodoroSettingsComponent({
   const [isEditing, setIsEditing] = useState(false);
 
   const { settings: pomodoroSettings } = usePomodoroStore();
-  const isDarkMode = useMemo(() => pomodoroSettings.is_dark_mode, [pomodoroSettings.is_dark_mode]); 
-  
+  const isDarkMode = useMemo(
+    () => pomodoroSettings.is_dark_mode,
+    [pomodoroSettings.is_dark_mode]
+  );
 
-  const translations = useTranslations('components.pomodoro-settings')
+  const translations = useTranslations("components.pomodoro-settings");
 
   const form = useForm<PomodoroFormData>({
     defaultValues: {
@@ -137,7 +138,7 @@ function PomodoroSettingsComponent({
       }`}
     >
       <div className="top flex flex-row items-center justify-between w-full h-auto">
-        <h2 className="text-[24px] font-[700]">{translations('header')}</h2>
+        <h2 className="text-[24px] font-[700]">{translations("header")}</h2>
         {!isEditing && (
           <Button
             className="pencil ml-auto bg-[#84CC16] p-3 rounded-[12px] h-fit text-white"
@@ -156,7 +157,9 @@ function PomodoroSettingsComponent({
           } border-b-[1px] pb-2`}
         >
           <CiClock2 className="size-[24px]" />
-          <h3 className="text-[20px] font-[700]">{translations('timer.title')}</h3>
+          <h3 className="text-[20px] font-[700]">
+            {translations("timer.title")}
+          </h3>
         </div>
         <div className="form w-full">
           <Form {...form}>
@@ -167,15 +170,23 @@ function PomodoroSettingsComponent({
                   name="focusMin"
                   render={({ field }) => (
                     <FormItem className="flex flex-col gap-[8px]">
-                      <FormLabel>{translations('timer.fields.focus.title')}</FormLabel>
+                      <FormLabel>
+                        {translations("timer.fields.focus.title")}
+                      </FormLabel>
                       <FormControl>
                         <TimeDropdown
                           value={field.value}
                           onValueChange={(value) =>
-                            field.onChange(parseInt(value.replace(` ${translations('timer.fields.focus.mins')}`, "")))
+                            field.onChange(
+                              parseInt(
+                                value.replace(
+                                  ` ${translations("timer.fields.focus.mins")}`,
+                                  ""
+                                )
+                              )
+                            )
                           }
                           disabled={!isEditing}
-                          isDarkMode={isDarkMode}
                         />
                       </FormControl>
                     </FormItem>
@@ -186,15 +197,25 @@ function PomodoroSettingsComponent({
                   name="shortBreakMin"
                   render={({ field }) => (
                     <FormItem className="flex flex-col gap-[8px]">
-                      <FormLabel>{translations('timer.fields.short-break.title')}</FormLabel>
+                      <FormLabel>
+                        {translations("timer.fields.short-break.title")}
+                      </FormLabel>
                       <FormControl>
                         <TimeDropdown
                           value={field.value}
                           onValueChange={(value) =>
-                            field.onChange(parseInt(value.replace(` ${translations('timer.fields.short-break.mins')}`, "")))
+                            field.onChange(
+                              parseInt(
+                                value.replace(
+                                  ` ${translations(
+                                    "timer.fields.short-break.mins"
+                                  )}`,
+                                  ""
+                                )
+                              )
+                            )
                           }
                           disabled={!isEditing}
-                          isDarkMode={isDarkMode}
                         />
                       </FormControl>
                     </FormItem>
@@ -205,15 +226,25 @@ function PomodoroSettingsComponent({
                   name="longBreakMin"
                   render={({ field }) => (
                     <FormItem className="flex flex-col gap-[8px]">
-                      <FormLabel>{translations('timer.fields.long-break.title')}</FormLabel>
+                      <FormLabel>
+                        {translations("timer.fields.long-break.title")}
+                      </FormLabel>
                       <FormControl>
                         <TimeDropdown
                           value={field.value}
                           onValueChange={(value) =>
-                            field.onChange(parseInt(value.replace(` ${translations('timer.fields.long-break.mins')}`, "")))
+                            field.onChange(
+                              parseInt(
+                                value.replace(
+                                  ` ${translations(
+                                    "timer.fields.long-break.mins"
+                                  )}`,
+                                  ""
+                                )
+                              )
+                            )
                           }
                           disabled={!isEditing}
-                          isDarkMode={isDarkMode}
                         />
                       </FormControl>
                     </FormItem>
@@ -228,7 +259,11 @@ function PomodoroSettingsComponent({
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center justify-between rounded-lg shadow-sm mt-2">
                         <div>
-                          <FormLabel>{translations('timer.fields.auto-start-breaks.title')}</FormLabel>
+                          <FormLabel>
+                            {translations(
+                              "timer.fields.auto-start-breaks.title"
+                            )}
+                          </FormLabel>
                         </div>
                         <FormControl>
                           <Switch
@@ -247,7 +282,11 @@ function PomodoroSettingsComponent({
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center justify-between rounded-lg shadow-sm">
                         <div>
-                          <FormLabel>{translations('timer.fields.auto-start-focus.title')}</FormLabel>
+                          <FormLabel>
+                            {translations(
+                              "timer.fields.auto-start-focus.title"
+                            )}
+                          </FormLabel>
                         </div>
                         <FormControl>
                           <Switch
@@ -265,7 +304,11 @@ function PomodoroSettingsComponent({
                     name="cycles"
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center gap-[8px] justify-between">
-                        <FormLabel>{translations('timer.fields.cycles-before-long-break.title')}</FormLabel>
+                        <FormLabel>
+                          {translations(
+                            "timer.fields.cycles-before-long-break.title"
+                          )}
+                        </FormLabel>
                         <FormControl className="flex ml-auto">
                           <select
                             value={field.value}
@@ -299,7 +342,9 @@ function PomodoroSettingsComponent({
                 } border-b-[1px] pb-2`}
               >
                 <FaCheck className="size-[24px]" />
-                <h3 className="text-[20px] font-[700]">{translations('tasks.title')}</h3>
+                <h3 className="text-[20px] font-[700]">
+                  {translations("tasks.title")}
+                </h3>
               </div>
               <div className="flex flex-col w-4/5 gap-[8px]">
                 <FormField
@@ -308,7 +353,9 @@ function PomodoroSettingsComponent({
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-lg shadow-sm mt-2">
                       <div>
-                        <FormLabel>{translations('tasks.fields.auto-check-tasks.title')}</FormLabel>
+                        <FormLabel>
+                          {translations("tasks.fields.auto-check-tasks.title")}
+                        </FormLabel>
                       </div>
                       <FormControl>
                         <Switch
@@ -327,7 +374,9 @@ function PomodoroSettingsComponent({
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-lg shadow-sm">
                       <div>
-                        <FormLabel>{translations('tasks.fields.auto-switch-tasks.title')}</FormLabel>
+                        <FormLabel>
+                          {translations("tasks.fields.auto-switch-tasks.title")}
+                        </FormLabel>
                       </div>
                       <FormControl>
                         <Switch
@@ -348,16 +397,16 @@ function PomodoroSettingsComponent({
                     className="bg-[#71717A] w-full text-white"
                     onClick={handleCancelClick}
                   >
-                    {translations('buttons.cancel.text')}
+                    {translations("buttons.cancel.text")}
                   </Button>
 
                   <Button
                     type="submit"
                     className="bg-[#84CC16] w-full text-white"
                   >
-                    {translations('buttons.submit-changes.text')}
+                    {translations("buttons.submit-changes.text")}
                     Save Changes
-
+                  </Button>
                 </div>
               )}
             </form>
