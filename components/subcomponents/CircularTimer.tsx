@@ -18,15 +18,15 @@ interface CircularTimerProps {
 }
 
 export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
-
   const [cycleDone, setCycleDone] = useState(false);
   const [mockTaskCountdown, setMockTaskCountDown] = useState(4);
 
-  const timerTranslations = useTranslations('components.timer');
+  const timerTranslations = useTranslations("components.timer");
 
   const {
     currentMode,
     durations,
+    currentTimeLeft,
     setTimeLeft,
     nextMode,
     activateNextMode,
@@ -35,7 +35,7 @@ export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
   } = useCycleStore();
 
   // countdown state variable
-  const [time, setTime] = useState(durations[currentMode]);
+  const [time, setTime] = useState(currentTimeLeft);
   const intervalRef = useRef<NodeJS.Timeout>(null);
 
   // important for countdown animation
@@ -84,6 +84,10 @@ export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
     cycleDone,
   ]);
 
+  useEffect(() => {
+    setTime(currentTimeLeft);
+  }, [currentTimeLeft]);
+
   const styles = buildStyles({
     pathTransition: "stroke-dashoffset 0.15s ease-out 0s",
     pathColor: !cycleDone ? generateColor(currentMode) : "#f4f4f5",
@@ -125,7 +129,6 @@ export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
               current={formatTime(time)}
               seconds={time}
               textColor={`dark:text-[#3f3f46] dark:text-white text-[#d4d4d8] text-[#52525b]`}
-
             />
           </CircularProgressbarWithChildren>
         </div>
@@ -152,20 +155,18 @@ export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
           <div className="flex flex-col space-y-3">
             <h3
               className={`font-sans text-[32px] font-bold dark:text-[#f4f4f5] text-[#3f3f46]`}
-
             >
-              {timerTranslations('cycle-finish.header')}
+              {timerTranslations("cycle-finish.header")}
             </h3>
             <h6
               className={`${
                 isDarkMode ? "text-[#f4f4f5]" : "text-[#71717a]"
               } text-[18px]`}
             >
-              {timerTranslations('cycle-finish.message')}
+              {timerTranslations("cycle-finish.message")}
             </h6>
           </div>
           <OnFinishedCycleButton isDarkMode={isDarkMode} />{" "}
-          {/* Pass isDarkMode */}
         </div>
       )}
     </div>
@@ -252,7 +253,6 @@ const TimerControls = ({
   const primaryBtnLayout = "w-[72px] h-[72px]";
   const primaryButtonStyle = `dark:bg-[#52525b] dark:hover:bg-[#393940] bg-[#e4e4e7] hover:bg-[#cdcdd1]`;
 
-
   const reset = () => {
     setTime(initialTime);
     setIsPaused(true);
@@ -316,8 +316,8 @@ const OnFinishedCycleButton = ({
 }: {
   isDarkMode: boolean; // Add isDarkMode prop
 }) => {
-  const modeTranslations = useTranslations('components.mode-badges')
-  const timerTranslations = useTranslations('components.timer')
+  const modeTranslations = useTranslations("components.mode-badges");
+  const timerTranslations = useTranslations("components.timer");
 
   return (
     <Button
@@ -326,7 +326,8 @@ const OnFinishedCycleButton = ({
       }`}
       onClick={() => {}}
     >
-      {timerTranslations('cycle-finish.buttons.start-focus.text')} {modeTranslations('focus.title')}
+      {timerTranslations("cycle-finish.buttons.start-focus.text")}{" "}
+      {modeTranslations("focus.title")}
     </Button>
   );
 };
