@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { HiMiniChevronUpDown } from "react-icons/hi2";
-import { usePomodoroStore } from "@/app/stores/pomodoroStore"; 
+import { usePomodoroStore } from "@/app/stores/pomodoroStore";
 
 interface TimeDropdownProps {
   value: number;
@@ -23,7 +23,7 @@ export function TimeDropdown({
   disabled = false,
 }: TimeDropdownProps) {
   const { settings } = usePomodoroStore();
-  const isDarkMode = settings.is_dark_mode; 
+  const isDarkMode = settings.is_dark_mode;
   const timeOptions = [5, 10, 15, 20, 25, 30, 45, 60];
 
   return (
