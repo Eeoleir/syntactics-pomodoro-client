@@ -59,7 +59,7 @@ function EditProfileComponent({
         name: profile.name || "",
         email: profile.email || "",
       });
-      setPreviewUrl(profile.profile_photo); // Set initial preview from profile
+      setPreviewUrl(profile.profile_photo);
     }
   }, [profile, form]);
 
