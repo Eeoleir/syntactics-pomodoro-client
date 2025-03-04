@@ -4,20 +4,9 @@ import { useTranslations } from "next-intl";
 import { Button } from "../ui/button";
 import { Mode, useCycleStore } from "@/app/stores/cycleStore";
 import { useState, useEffect, useRef } from "react";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "../ui/accordion"; // Assuming Shadcn UI Accordion
-import { usePomodoroStore } from "@/app/stores/pomodoroStore"; // Import the store
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select"; // Import Shadcn UI Select components
+
+import { usePomodoroStore } from "@/app/stores/pomodoroStore";
+
 import CircularTimer from "../subcomponents/CircularTimer";
 import { HistoryAccordion } from "./HistoryAccordion";
 import { useQuery } from "@tanstack/react-query";
@@ -78,7 +67,7 @@ function CardTop({ isDarkMode }: { isDarkMode: boolean }) {
 
   const itemsPerPage = 3;
 
-  // Fetch history data with TanStack Query
+
   const {
     data: taskHistory = [],
     isLoading,
@@ -90,8 +79,7 @@ function CardTop({ isDarkMode }: { isDarkMode: boolean }) {
     placeholderData: (previousData) => previousData ?? [],
   });
 
-  // For now, we'll assume totalPages is based on fetched data length
-  // If you need meta.total, you'll need to fetch it separately or adjust the API response handling
+ 
   const totalPages = Math.ceil(taskHistory.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -148,9 +136,7 @@ function CardTop({ isDarkMode }: { isDarkMode: boolean }) {
         goToPage={goToPage}
       />
 
-      {/* ---- history accordion (slides up/down) ---- */}
 
-      {/* ---- cycles (always visible, but adjusted layout when history is open) ---- */}
       <div
         className={`flex flex-col space-y-[24px] text-[#71717A] dark:text-[#A1A1AA] mt-[24px] ${
           isHistoryOpen ? "mt-[24px]" : "mt-[24px]"
@@ -180,7 +166,6 @@ function CardTop({ isDarkMode }: { isDarkMode: boolean }) {
   );
 }
 
-// HistoryButton, CycleIndicator, ModeBadge remain unchanged
 function HistoryButton({
   onClick,
   isDarkMode,
