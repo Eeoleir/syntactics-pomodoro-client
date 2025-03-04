@@ -4,31 +4,33 @@ import { IoArrowBack } from "react-icons/io5";
 import PomodoroSettings from "@/components/custom/settings/pomodoro_settings";
 import EditProfile from "@/components/custom/settings/edit_profile";
 import { useRouter } from "next/navigation";
-import { usePomodoroStore } from "@/app/stores/pomodoroStore"; 
+import { usePomodoroStore } from "@/app/stores/pomodoroStore";
 import { useEffect, useState } from "react";
-import { editDarkMode } from "@/lib/preference-queries"; 
-import { Button } from "@/components/ui/button"; 
+import { editDarkMode } from "@/lib/preference-queries";
+import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
 export default function Settings() {
   const router = useRouter();
-  const { settings, setSettings, userId } = usePomodoroStore(); 
-  const [isDarkMode, setIsDarkMode] = useState(settings.is_dark_mode); 
+  const { settings, setSettings, userId } = usePomodoroStore();
+  const [isDarkMode, setIsDarkMode] = useState(settings.is_dark_mode);
+  const pageTranslations = useTranslations('settings-page');
 
   useEffect(() => {
-    setIsDarkMode(settings.is_dark_mode); 
+    setIsDarkMode(settings.is_dark_mode);
   }, [settings.is_dark_mode]);
 
   const toggleDarkMode = async () => {
-    const newDarkMode = !isDarkMode; 
-    setIsDarkMode(newDarkMode); 
-    setSettings({ is_dark_mode: newDarkMode }); 
+    const newDarkMode = !isDarkMode;
+    setIsDarkMode(newDarkMode);
+    setSettings({ is_dark_mode: newDarkMode });
 
     if (userId) {
       try {
-        await editDarkMode(userId, newDarkMode ? 1 : 0); 
+        await editDarkMode(userId, newDarkMode ? 1 : 0);
       } catch (error) {
         console.error("Failed to update dark mode:", error);
-       
+
         setIsDarkMode(!newDarkMode);
         setSettings({ is_dark_mode: !newDarkMode });
       }
@@ -61,7 +63,7 @@ export default function Settings() {
             isDarkMode ? "text-white" : "text-black"
           } text-xl sm:text-2xl md:text-[40px] font-semibold`}
         >
-          Settings
+          {pageTranslations('page-title')}
         </h2>
         <Button
           onClick={toggleDarkMode}

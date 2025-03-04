@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createTask } from "@/lib/task-queries";
+import { useTranslations } from "next-intl";
 
 interface AddTaskProps {
   AddTaskActive: string;
@@ -16,6 +17,7 @@ const AddTask: React.FC<AddTaskProps> = ({ setAddTaskActive }) => {
   const [taskDescription, setTaskDescription] = useState("");
   const [pomodoroCycles, setPomodoroCycles] = useState("");
   const queryClient = useQueryClient();
+  const componentTranslations = useTranslations('components.add-task');
 
   const mutation = useMutation({
     mutationFn: createTask,
@@ -43,8 +45,8 @@ const AddTask: React.FC<AddTaskProps> = ({ setAddTaskActive }) => {
     const newTask = {
       title: taskName,
       description: taskDescription,
-      due_date: formattedDate, 
-      estimated_cycles: parseInt(pomodoroCycles, 10), 
+      due_date: formattedDate,
+      estimated_cycles: parseInt(pomodoroCycles, 10),
       status: "pending",
     };
 
@@ -70,21 +72,21 @@ const AddTask: React.FC<AddTaskProps> = ({ setAddTaskActive }) => {
             />
           </svg>
           <h3 className="text-2xl font-bold text-[#52525B] dark:text-[#A1A1AA]">
-            What are you working on?
+            {componentTranslations('header')}
           </h3>
         </div>
         <Separator className="my-6" />
         <div className="flex flex-col gap-3 mt-1">
           <Input
             type="text"
-            placeholder="Name of Task"
+            placeholder={componentTranslations('fields.task-name.placeholder')}
             value={taskName}
             onChange={(e) => setTaskName(e.target.value)}
             className="text-[#52525B] dark:text-[#A1A1AA] placeholder:text-[#52525B] dark:placeholder:text-[#52525B]"
           />
           <Input
             type="text"
-            placeholder="Description of your task"
+            placeholder={componentTranslations('fields.task-description.placeholder')}
             value={taskDescription}
             onChange={(e) => setTaskDescription(e.target.value)}
             className="text-[#52525B] dark:text-[#A1A1AA] placeholder:text-[#52525B] dark:placeholder:text-[#52525B]"
@@ -93,7 +95,7 @@ const AddTask: React.FC<AddTaskProps> = ({ setAddTaskActive }) => {
         <Separator className="my-6" />
         <div className="flex items-center justify-between">
           <span className="font-medium text-base text-[#71717A]">
-            Est. # of Pomodoro Cycle
+            {componentTranslations('fields.est-pomodoro-cycle.title')}
           </span>
           <Input
             type="number"
@@ -110,14 +112,14 @@ const AddTask: React.FC<AddTaskProps> = ({ setAddTaskActive }) => {
           onClick={() => setAddTaskActive("default")}
           className="w-full font-semibold text-[#FAFAFA] text-sm bg-[#A1A1AA] hover:bg-[#878790]"
         >
-          Cancel
+          {componentTranslations('buttons.cancel.text')}
         </Button>
         <Button
           onClick={handleSubmitTask}
           className="w-full bg-[#84CC16] hover:bg-[#669f10] text-[#FAFAFA] font-semibold text-sm"
           disabled={!taskName || !taskDescription || !pomodoroCycles}
         >
-          Save Task
+          {componentTranslations('buttons.submit.text')}
         </Button>
       </div>
     </div>

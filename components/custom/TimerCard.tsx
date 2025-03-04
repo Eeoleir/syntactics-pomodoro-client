@@ -1,10 +1,24 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Button } from "../ui/button";
 import { Mode, useCycleStore } from "@/app/stores/cycleStore";
 import { useState, useEffect } from "react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "../ui/accordion"; // Assuming Shadcn UI Accordion
+import { usePomodoroStore } from "@/app/stores/pomodoroStore"; // Import the store
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select"; // Import Shadcn UI Select components
 import CircularTimer from "../subcomponents/CircularTimer";
-import { usePomodoroStore } from "@/app/stores/pomodoroStore";
 import { HistoryAccordion } from "./HistoryAccordion";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPomodoroHistory, HistoryItem } from "@/lib/history-queries";
@@ -46,6 +60,10 @@ export default function PomodoroTimerCard() {
 
 function CardTop({ isDarkMode }: { isDarkMode: boolean }) {
   const { currentMode, nextMode } = useCycleStore();
+
+  const timerTranslations = useTranslations('components.timer');
+  const sessionTranslations = useTranslations('components.session-data');
+
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] =
     useState<string>("Focus Cycles");
@@ -101,14 +119,14 @@ function CardTop({ isDarkMode }: { isDarkMode: boolean }) {
               isDarkMode
             )}`}
           >
-            Session data
+            {sessionTranslations('header')}
           </h3>
           <h6
             className={`text-[16px] dark:text-[#71717A] ${secondaryTextStyles(
               isDarkMode
             )}`}
           >
-            Track the next cycles
+           {sessionTranslations('sub-header')}
           </h6>
         </div>
         <HistoryButton
@@ -129,19 +147,22 @@ function CardTop({ isDarkMode }: { isDarkMode: boolean }) {
         goToPage={goToPage}
       />
 
+      {/* ---- history accordion (slides up/down) ---- */}
+
+      {/* ---- cycles (always visible, but adjusted layout when history is open) ---- */}
       <div
         className={`flex flex-col space-y-[24px] text-[#71717A] dark:text-[#A1A1AA] mt-[24px] ${
           isHistoryOpen ? "mt-[24px]" : "mt-[24px]"
         }`}
       >
         <CycleIndicator
-          title="Current mode:"
-          subText="Current cycle of the stopwatch"
+          title={timerTranslations('modes.current-mode.header')}
+          subText={timerTranslations('modes.current-mode.sub-header')}
           modeBadge={<ModeBadge mode={currentMode} isDarkMode={isDarkMode} />}
         />
         <CycleIndicator
-          title="Next mode:"
-          subText="Which cycle will be activated"
+        title={timerTranslations('modes.next-mode.header')}
+        subText={timerTranslations('modes.next-mode.sub-header')}
           modeBadge={<ModeBadge mode={nextMode} isDarkMode={isDarkMode} />}
         />
       </div>
@@ -225,9 +246,10 @@ const ModeBadge = ({
     shadow-none
   `;
 
+  const badgeTranslations = useTranslations('components.mode-badges')
   const badgeProperties = {
     [Mode.FOCUS]: {
-      title: "Focus",
+      title: badgeTranslations('focus.title'),
       style: `
         border-[#84cc16]
         text-[#84cc16]
@@ -236,7 +258,7 @@ const ModeBadge = ({
       `,
     },
     [Mode.LONG_BREAK]: {
-      title: "Long Break",
+      title: badgeTranslations('long-break.title'),
       style: `
         border-[#06b6d4]
         text-[#06b6d4]
@@ -245,7 +267,7 @@ const ModeBadge = ({
       `,
     },
     [Mode.SHORT_BREAK]: {
-      title: "Short Break",
+      title: badgeTranslations('short-break.title'),
       style: `
         text-[#f59e0b]
         border-[#f59e0b]

@@ -1,0 +1,344 @@
+{
+  "login-page" : {
+    "login-header" : "Log in",
+    "login-subheader" : "Enter your account details to log in",
+    "text-fields" : {
+      "email-field" : {
+        "title" : "Email",
+        "placeholder": "Enter your email"
+      },
+      "password-field" : {
+        "title" : "Password",
+        "placeholder" : "Enter your password"
+      }
+    },
+    "buttons" : {
+      "submit-button" : {
+        "text" : "Login",
+        "on-click" : "Logging In..."
+      }
+    },
+    "links" : {
+      "create-account-notice" : {
+        "text" : "New to Pomodoro?",
+        "link-text" : "Create Account"
+      },
+      "forgot-password-notice" : {
+        "text" : "Forgot Password?",
+        "link-text" : "Reset Password"
+      }
+    },
+    "alerts" : {
+      "errors" : {
+        "general-message" : "Something went wrong"
+      }
+    }
+  },
+  "create-account-page": {
+    "create-account-header": "Criar uma Conta",
+    "create-account-subheader": "Insira seu e-mail abaixo para criar sua conta",
+    "text-fields": {
+      "username-field": {
+        "title": "Nome de usuário",
+        "placeholder": "Digite seu nome de usuário"
+      },
+      "email-field": {
+        "title": "E-mail",
+        "placeholder": "Digite seu e-mail"
+      },
+      "password-field": {
+        "title": "Senha",
+        "placeholder": "Digite sua senha"
+      },
+      "re-password-field": {
+        "title": "Reinsira a Senha",
+        "placeholder": "Reinsira sua senha"
+      }
+    },
+    "buttons": {
+      "submit-button": {
+        "text": "Registrar",
+        "on-click": "Registrando..."
+      }
+    },
+    "links": {
+      "login-instead": {
+        "text": "Já tem uma conta?",
+        "link-text": "Entrar"
+      }
+    },
+    "alerts": {
+      "account-create": {
+        "success": {
+          "message": "Conta criada com sucesso!"
+        }
+      }
+    }
+  },
+  "forgot-password-page": {
+    "forgot-password-header": "Esqueceu a Senha",
+    "forgot-password-subheader": "Insira seu endereço de e-mail",
+    "fields": {
+      "email-field": {
+        "title": "",
+        "placeholder": "Digite seu endereço de e-mail"
+      }
+    },
+    "buttons": {
+      "submit-button": {
+        "text": "Solicitar código de redefinição"
+      }
+    }
+  },
+  "dashboard": {
+    "page-title": "Pomodoro",
+    "page-subtitle": "Gerencie seu tempo de forma mágica!",
+    "buttons": {
+      "settings": {
+        "text": "Configurações"
+      },
+      "logout": {
+        "text": "Sair"
+      }
+    }
+  },
+  "settings-page": {
+    "page-title": "Configurações"
+  },
+  "contextual-guide": {
+    "buttons": {
+      "start-guide": "Como usar",
+      "previous": "Anterior",
+      "next": "Próximo",
+      "done": "Concluído"
+    },
+    "of-separator": "de",
+    "pomodoro-timer": {
+      "title": "Timer Pomodoro",
+      "description": "Este é o seu Timer Pomodoro. Use-o para manter o foco! Acompanhe o tempo restante da sua sessão e gerencie pausas de forma eficaz."
+    },
+    "break-option": {
+      "title": "Opção de Pausa",
+      "description": "Sentindo-se sobrecarregado? Clique aqui para fazer uma pausa curta ou longa e recarregar antes da próxima sessão."
+    },
+    "task-list": {
+      "title": "Lista de Tarefas",
+      "description": "Aqui você pode gerenciar suas tarefas enquanto usa o timer. Adicione novas tarefas, edite as existentes e exclua as concluídas."
+    },
+    "add-new-task": {
+      "title": "Adicionar Nova Tarefa",
+      "description": "Clique aqui para adicionar uma nova tarefa à sua lista. Organize seu trabalho de forma eficiente!"
+    },
+    "task-options": {
+      "title": "Opções da Tarefa",
+      "description": "Clique neste ícone de menu para revelar opções como editar e excluir."
+    },
+    "edit-task": {
+      "title": "Editar Tarefa",
+      "description": "Precisa fazer alterações? Clique em uma tarefa para editar seus detalhes e atualizar seu plano."
+    },
+    "delete-task": {
+      "title": "Excluir Tarefa",
+      "description": "Finalizou ou não precisa mais? Remova tarefas da sua lista com esta opção."
+    },
+    "all-set": {
+      "title": "Tudo Pronto!",
+      "description": "Agora você está preparado para maximizar sua produtividade com o Timer Pomodoro e a Lista de Tarefas. Bom trabalho!"
+    }
+  },
+  "components" : {
+    "toasts": {
+      "task-fetch": {
+        "success": "Tarefas carregadas com sucesso. 🎉",
+        "error": "Falha ao carregar tarefas. Por favor, tente novamente. 🚨"
+      },
+      "logout": {
+        "success": "Logout realizado com sucesso!"
+      }
+    },
+    "mode-badges": {
+      "focus": {
+        "title": "Foco"
+      },
+      "short-break": {
+        "title": "Pausa Curta"
+      },
+      "long-break": {
+        "title": "Pausa Longa"
+      }
+    },
+    "task-list": {
+      "header": "Lista de Tarefas",
+      "subheader": "Seus objetivos para esta sessão",
+      "delete-task": {
+        "header": "Tem certeza de que deseja excluir esta tarefa?",
+        "message": "Esta ação não pode ser desfeita. Isso excluirá permanentemente sua tarefa...",
+        "buttons": {
+          "cancel": {
+            "text": "Não, não exclua minha tarefa"
+          },
+          "confirm": {
+            "text": "Sim, excluir minha tarefa"
+          }
+        }
+      }
+    },
+    "add-task": {
+      "header": "Em que você está trabalhando?",
+      "fields": {
+        "task-name": {
+          "placeholder": "Nome da Tarefa"
+        },
+        "task-description": {
+          "placeholder": "Descrição da sua tarefa"
+        },
+        "est-pomodoro-cycle": {
+          "title": "Estimativa de Ciclos Pomodoro"
+        }
+      },
+      "buttons": {
+        "cancel": {
+          "text": "Cancelar"
+        },
+        "submit": {
+          "text": "Salvar Tarefa"
+        }
+      }
+    },
+    "edit-task": {
+      "fields": {
+        "task-description": {
+          "placeholder": "Digite sua descrição aqui."
+        },
+        "est-pomodoro-cycle": {
+          "title": "Estimativa de Ciclos Pomodoro"
+        }
+      },
+      "buttons": {
+        "cancel": {
+          "text": "Voltar"
+        },
+        "submit": {
+          "text": "Salvar Alterações"
+        }
+      }
+    },
+    "edit-profile": {
+      "fields": {
+        "name": {
+          "title": "Nome",
+          "placeholder": "Nome"
+        },
+        "email": {
+          "title": "Email",
+          "placeholder": "m@example.com"
+        }
+      },
+      "buttons": {
+        "edit-profile": {
+          "text": "Editar Perfil"
+        },
+        "logout": {
+          "text": "Sair"
+        },
+        "cancel": {
+          "text": "Cancelar"
+        },
+        "submit-changes": {
+          "text": "Salvar Alterações"
+        }
+      }
+    },
+    "pomodoro-settings": {
+      "header": "Configurações do Pomodoro",
+      "timer": {
+        "title": "Temporizador",
+        "fields": {
+          "focus": {
+            "title": "Foco",
+            "mins": "min"
+          },
+          "short-break": {
+            "title": "Pausa Curta",
+            "mins": "min"
+          },
+          "long-break": {
+            "title": "Pausa Longa",
+            "mins": "min"
+          },
+          "auto-start-breaks": {
+            "title": "Iniciar Pausas Automaticamente"
+          },
+          "auto-start-focus": {
+            "title": "Iniciar Foco Automaticamente"
+          },
+          "cycles-before-long-break": {
+            "title": "Ciclos Antes da Pausa Longa"
+          }
+        }
+      },
+      "tasks": {
+        "title": "Tarefas",
+        "fields": {
+          "auto-check-tasks": {
+            "title": "Marcar Tarefas Automaticamente"
+          },
+          "auto-switch-tasks": {
+            "title": "Alternar Tarefas Automaticamente"
+          }
+        }
+      },
+      "buttons": {
+        "cancel": {
+          "text": "Cancelar"
+        },
+        "submit-changes": {
+          "text": "Salvar Alterações"
+        }
+      }
+    },
+    "timer": {
+      "modes": {
+        "current-mode": {
+          "header": "Modo atual",
+          "sub-header": "Ciclo do temporizador atual"
+        },
+        "next-mode": {
+          "header": "Próximo modo",
+          "sub-header": "Qual ciclo será ativado"
+        }
+      },
+      "cycle-finish": {
+        "header": "Parabéns! 🎉",
+        "message": "Você completou mais um ciclo nesta sessão!",
+        "buttons": {
+          "start-focus": {
+            "text": "Iniciar:"
+          }
+        }
+      }
+    },
+    "session-data": {
+      "header": "Dados da sessão",
+      "sub-header": "Acompanhe o próximo ciclo",
+      "fields": {
+        "focused-field-selections": {
+          "focus-cycles": "Ciclos de Foco",
+          "break-minutes": "Minutos de Pausa",
+          "focus-minutes": "Minutos de Foco"
+        }
+      },
+      "buttons": {
+        "previous": {
+          "text": "Anterior"
+        },
+        "next": {
+          "text": "Próximo"
+        }
+      },
+      "general" : {
+        "minutes" : "minutos"
+      }
+    }
+  }
+}
