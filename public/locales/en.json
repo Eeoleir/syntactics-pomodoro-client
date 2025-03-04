@@ -296,6 +296,49 @@
           "text" : "Save Changes"
         }
       }
+    },
+    "timer" : {
+      "modes" : {
+        "current-mode" : {
+          "header" : "Current mode",
+          "sub-header" : "Current timer cycle"
+        },
+        "next-mode" : {
+          "header" : "Next mode",
+          "sub-header" : "Which cycle will be activated"
+        }
+      },
+      "cycle-finish" : {
+        "header" : "Congratulations! 🎉",
+        "message" : "You have reached the end of another cycle this session!",
+        "buttons" : {
+          "start-focus" : {
+            "text" : "Start:"
+          }
+        }
+      }
+    },
+    "session-data" : {
+      "header" : "Session data",
+      "sub-header" : "Track the next cycle",
+      "fields" : {
+        "focused-field-selections" : {
+          "focus-cycles" : "Focus Cycles",
+          "break-minutes" : "Break Minutes",
+          "focus-minutes" : "Focus Minutes"
+        }
+      },
+      "buttons" : {
+        "previous" : {
+          "text" : "Previous"
+        },
+        "next" : {
+          "text" : "Next"
+        }
+      },
+      "general" : {
+        "minutes" : "minutes"
+      }
     }
   }
 }

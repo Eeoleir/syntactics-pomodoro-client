@@ -60,6 +60,10 @@ export default function PomodoroTimerCard() {
 
 function CardTop({ isDarkMode }: { isDarkMode: boolean }) {
   const { currentMode, nextMode } = useCycleStore();
+
+  const timerTranslations = useTranslations('components.timer');
+  const sessionTranslations = useTranslations('components.session-data');
+
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] =
     useState<string>("Focus Cycles");
@@ -115,14 +119,14 @@ function CardTop({ isDarkMode }: { isDarkMode: boolean }) {
               isDarkMode
             )}`}
           >
-            Session data
+            {sessionTranslations('header')}
           </h3>
           <h6
             className={`text-[16px] dark:text-[#71717A] ${secondaryTextStyles(
               isDarkMode
             )}`}
           >
-            Track the next cycles
+           {sessionTranslations('sub-header')}
           </h6>
         </div>
         <HistoryButton
@@ -143,19 +147,22 @@ function CardTop({ isDarkMode }: { isDarkMode: boolean }) {
         goToPage={goToPage}
       />
 
+      {/* ---- history accordion (slides up/down) ---- */}
+
+      {/* ---- cycles (always visible, but adjusted layout when history is open) ---- */}
       <div
         className={`flex flex-col space-y-[24px] text-[#71717A] dark:text-[#A1A1AA] mt-[24px] ${
           isHistoryOpen ? "mt-[24px]" : "mt-[24px]"
         }`}
       >
         <CycleIndicator
-          title="Current mode:"
-          subText="Current cycle of the stopwatch"
+          title={timerTranslations('modes.current-mode.header')}
+          subText={timerTranslations('modes.current-mode.sub-header')}
           modeBadge={<ModeBadge mode={currentMode} isDarkMode={isDarkMode} />}
         />
         <CycleIndicator
-          title="Next mode:"
-          subText="Which cycle will be activated"
+        title={timerTranslations('modes.next-mode.header')}
+        subText={timerTranslations('modes.next-mode.sub-header')}
           modeBadge={<ModeBadge mode={nextMode} isDarkMode={isDarkMode} />}
         />
       </div>

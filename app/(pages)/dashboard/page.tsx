@@ -25,7 +25,7 @@ import { useMutation } from "@tanstack/react-query";
 import { editDarkMode } from "@/lib/preference-queries";
 import { useProfileStore } from "@/app/stores/profileStore"; // Import the profile store
 import Image from "next/image";
-import { locales, useLocaleStore } from "@/app/stores/localeStore";
+import LocaleInitializer, { locales, useLocaleStore } from "@/app/stores/localeStore";
 import { setUserLocale } from "@/services/locale";
 import { Locale } from "@/next-intl-services/config";
 
@@ -36,7 +36,7 @@ const Dashboard = () => {
   const pageTranslations = useTranslations('dashboard');
 
   const toastTranslations = useTranslations('components.toasts');
-  const { setCurrentLocale } = useLocaleStore();
+  const { currentLocale, setCurrentLocale } = useLocaleStore();
 
   const [isDarkMode, setIsDarkMode] = React.useState(false);
 
@@ -182,6 +182,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-w-screen min-h-screen bg-[#FAFAFA] dark:bg-[#18181B] text-black overflow-y-hidden">
+      <LocaleInitializer/>
       <div className="p-10 w-full">
         <div className="flex flex-end items-center justify-between md:flex-row md:mt-4 flex-col">
           <div id="pomodoro-timer-card" className="flex items-center">
@@ -242,13 +243,15 @@ const Dashboard = () => {
               )}
             </Button>
 
-            <Select onValueChange={(value: Locale) => {
-              setUserLocale(value);
-            }}>
+            <Select
+              value={currentLocale}
+              onValueChange={(value: Locale) => {
+                setCurrentLocale(value);
+              }}>
               <SelectTrigger>
                 <div
                   className={`${
-                    settings.is_dark_mode === true
+                    settings.is_dark_mode
                     ? "bg-[#27272A]"
                     : "bg-[#F4F4F5] hover:bg-gray-200"
                     } h-8 w-8 flex justify-center items-center p-0 rounded-md`}>
@@ -260,6 +263,7 @@ const Dashboard = () => {
               <SelectContent>
                 <SelectItem value={locales.ENGLISH}>EN (English)</SelectItem>
                 <SelectItem value={locales.PORTUGUESE}>PT (Português)</SelectItem>
+                <SelectItem value={locales.JAPANESE}>JA (日本語)</SelectItem>
               </SelectContent>
             </Select>
             <Select
