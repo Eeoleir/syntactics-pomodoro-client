@@ -88,6 +88,47 @@ const TaskList = () => {
 
   const getOngoingTimerMutation = useMutation({
     mutationFn: getOngoingTimerRequest,
+    onSuccess: (response) => {
+      if (response && response.data) {
+        const timeRemaining = response.data.time_remaining;
+        const sessionType = response.data.session_type;
+
+        const newDurations = { ...useCycleStore.getState().durations };
+
+        switch (sessionType) {
+          case "focus":
+            newDurations[Mode.FOCUS] = timeRemaining;
+            useCycleStore.getState().setTimeLeft(Mode.FOCUS, timeRemaining);
+            useCycleStore.getState().setDurations(newDurations);
+            console.log("setTimeLeft Mode.FOCUS:", {
+              mode: Mode.FOCUS,
+              timeRemaining: timeRemaining,
+              currentMode: useCycleStore.getState().currentMode,
+              currentTimeLeft: useCycleStore.getState().currentTimeLeft,
+              durations: useCycleStore.getState().durations,
+            });
+            break;
+          case "short_break":
+            newDurations[Mode.SHORT_BREAK] = timeRemaining;
+            useCycleStore
+              .getState()
+              .setTimeLeft(Mode.SHORT_BREAK, timeRemaining);
+            useCycleStore.getState().setDurations(newDurations);
+            break;
+          case "long_break":
+            newDurations[Mode.LONG_BREAK] = timeRemaining;
+            useCycleStore
+              .getState()
+              .setTimeLeft(Mode.LONG_BREAK, timeRemaining);
+            useCycleStore.getState().setDurations(newDurations);
+            break;
+        }
+
+        // Update the durations in the store
+        useCycleStore.getState().setDurations(newDurations);
+        setTimerId(response.data.id);
+      }
+    },
     onError: (error) => {
       toast.error("Failed to check timer status");
       console.error("Timer status check error:", error);
@@ -97,8 +138,44 @@ const TaskList = () => {
   const resumeTimerMutation = useMutation({
     mutationFn: ({ status, timer_id }: { status: string; timer_id: number }) =>
       resumeTimerRequest(status, timer_id),
-    onSuccess: () => {
-      toast.success("Timer resumed successfully");
+    onSuccess: (response) => {
+      if (response && response.data) {
+        const timeRemaining = response.data.time_remaining;
+        const sessionType = response.data.session_type;
+
+        const newDurations = { ...useCycleStore.getState().durations };
+
+        switch (sessionType) {
+          case "focus":
+            newDurations[Mode.FOCUS] = timeRemaining;
+            useCycleStore.getState().setTimeLeft(Mode.FOCUS, timeRemaining);
+            useCycleStore.getState().setDurations(newDurations);
+            console.log("Resume Timer - Focus Mode:", {
+              timeRemaining,
+              currentMode: useCycleStore.getState().currentMode,
+              currentTimeLeft: useCycleStore.getState().currentTimeLeft,
+              durations: useCycleStore.getState().durations,
+            });
+            break;
+          case "short_break":
+            newDurations[Mode.SHORT_BREAK] = timeRemaining;
+            useCycleStore
+              .getState()
+              .setTimeLeft(Mode.SHORT_BREAK, timeRemaining);
+            useCycleStore.getState().setDurations(newDurations);
+            break;
+          case "long_break":
+            newDurations[Mode.LONG_BREAK] = timeRemaining;
+            useCycleStore
+              .getState()
+              .setTimeLeft(Mode.LONG_BREAK, timeRemaining);
+            useCycleStore.getState().setDurations(newDurations);
+            break;
+        }
+
+        useCycleStore.getState().setDurations(newDurations);
+        toast.success("Timer resumed successfully");
+      }
     },
     onError: (error) => {
       toast.error("Failed to resume timer");
@@ -151,8 +228,44 @@ const TaskList = () => {
   const pauseTimerMutation = useMutation({
     mutationFn: ({ status, timer_id }: { status: string; timer_id: number }) =>
       pauseTimerRequest(status, timer_id),
-    onSuccess: () => {
-      toast.success("Timer paused successfully");
+    onSuccess: (response) => {
+      if (response && response.data) {
+        const timeRemaining = response.data.time_remaining;
+        const sessionType = response.data.session_type;
+
+        const newDurations = { ...useCycleStore.getState().durations };
+
+        switch (sessionType) {
+          case "focus":
+            newDurations[Mode.FOCUS] = timeRemaining;
+            useCycleStore.getState().setTimeLeft(Mode.FOCUS, timeRemaining);
+            useCycleStore.getState().setDurations(newDurations);
+            console.log("Pause Timer - Focus Mode:", {
+              timeRemaining,
+              currentMode: useCycleStore.getState().currentMode,
+              currentTimeLeft: useCycleStore.getState().currentTimeLeft,
+              durations: useCycleStore.getState().durations,
+            });
+            break;
+          case "short_break":
+            newDurations[Mode.SHORT_BREAK] = timeRemaining;
+            useCycleStore
+              .getState()
+              .setTimeLeft(Mode.SHORT_BREAK, timeRemaining);
+            useCycleStore.getState().setDurations(newDurations);
+            break;
+          case "long_break":
+            newDurations[Mode.LONG_BREAK] = timeRemaining;
+            useCycleStore
+              .getState()
+              .setTimeLeft(Mode.LONG_BREAK, timeRemaining);
+            useCycleStore.getState().setDurations(newDurations);
+            break;
+        }
+
+        useCycleStore.getState().setDurations(newDurations);
+        toast.success("Timer paused successfully");
+      }
     },
     onError: (error) => {
       toast.error("Failed to pause timer");
@@ -171,9 +284,44 @@ const TaskList = () => {
       duration: number;
     }) => playTimerRequest(task_id, session_type, duration),
     onSuccess: (response) => {
-      setTimerId(response.data.id);
-      toast.success("Timer play successfully");
-      console.log("Timer response:", response);
+      if (response && response.data) {
+        const timeRemaining = response.data.time_remaining;
+        const sessionType = response.data.session_type;
+
+        const newDurations = { ...useCycleStore.getState().durations };
+
+        switch (sessionType) {
+          case "focus":
+            newDurations[Mode.FOCUS] = timeRemaining;
+            useCycleStore.getState().setTimeLeft(Mode.FOCUS, timeRemaining);
+            useCycleStore.getState().setDurations(newDurations);
+            console.log("Create Timer - Focus Mode:", {
+              timeRemaining,
+              currentMode: useCycleStore.getState().currentMode,
+              currentTimeLeft: useCycleStore.getState().currentTimeLeft,
+              durations: useCycleStore.getState().durations,
+            });
+            break;
+          case "short_break":
+            newDurations[Mode.SHORT_BREAK] = timeRemaining;
+            useCycleStore
+              .getState()
+              .setTimeLeft(Mode.SHORT_BREAK, timeRemaining);
+            useCycleStore.getState().setDurations(newDurations);
+            break;
+          case "long_break":
+            newDurations[Mode.LONG_BREAK] = timeRemaining;
+            useCycleStore
+              .getState()
+              .setTimeLeft(Mode.LONG_BREAK, timeRemaining);
+            useCycleStore.getState().setDurations(newDurations);
+            break;
+        }
+
+        useCycleStore.getState().setDurations(newDurations);
+        setTimerId(response.data.id);
+        toast.success("Timer play successfully");
+      }
     },
     onError: (error) => {
       toast.error("Failed to play timer");

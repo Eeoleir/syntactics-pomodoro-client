@@ -29,6 +29,7 @@ export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
   const {
     currentMode,
     durations,
+    currentTimeLeft,
     setTimeLeft,
     nextMode,
     activateNextMode,
@@ -37,7 +38,7 @@ export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
   } = useCycleStore();
 
   // countdown state variable
-  const [time, setTime] = useState(durations[currentMode]);
+  const [time, setTime] = useState(currentTimeLeft);
   const intervalRef = useRef<NodeJS.Timeout>(null);
 
   // important for countdown animation
@@ -85,6 +86,10 @@ export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
     currentMode,
     cycleDone,
   ]);
+
+  useEffect(() => {
+    setTime(currentTimeLeft);
+  }, [currentTimeLeft]);
 
   const styles = buildStyles({
     pathTransition: "stroke-dashoffset 0.15s ease-out 0s",
@@ -165,7 +170,6 @@ export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
             </h6>
           </div>
           <OnFinishedCycleButton isDarkMode={isDarkMode} />{" "}
-          {/* Pass isDarkMode */}
         </div>
       )}
     </div>
