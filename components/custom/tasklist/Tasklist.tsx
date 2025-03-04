@@ -24,7 +24,8 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { useCycleStore, Mode } from "@/app/stores/cycleStore";
-import { useTranslations } from "next-intl";
+import { usePomodoroStore } from "@/app/stores/pomodoroStore";
+import { pauseTimerRequest, playTimerRequest } from "@/lib/time-queries";
 
 const TaskList = () => {
   const [activeTaskId, setActiveTaskId] = React.useState<number | null>(null);
@@ -48,8 +49,7 @@ const TaskList = () => {
   const noAvailableTasks = useCycleStore((state) => state.noAvailableTasks);
   const isTimerPaused = useCycleStore((state) => state.isTimerPaused);
   const setIsPaused = useCycleStore((state) => state.setIsPaused);
-
-  const componentTranslations = useTranslations('components.task-list')
+  const [timer_id, setTimerId] = React.useState<number | null>(null);
 
   const [editInfo, setEditInfo] = React.useState({
     taskId: 0,
@@ -122,6 +122,39 @@ const TaskList = () => {
     },
   });
 
+  const pauseTimerMutation = useMutation({
+    mutationFn: ({ status, timer_id }: { status: string; timer_id: number }) =>
+      pauseTimerRequest(status, timer_id),
+    onSuccess: () => {
+      toast.success("Timer paused successfully");
+    },
+    onError: (error) => {
+      toast.error("Failed to pause timer");
+      console.error("Timer pause error:", error);
+    },
+  });
+
+  const playTimerMutation = useMutation({
+    mutationFn: ({
+      task_id,
+      session_type,
+      duration,
+    }: {
+      task_id: number;
+      session_type: string;
+      duration: number;
+    }) => playTimerRequest(task_id, session_type, duration),
+    onSuccess: (response) => {
+      setTimerId(response.data.id);
+      toast.success("Timer play successfully");
+      console.log("Timer response:", response);
+    },
+    onError: (error) => {
+      toast.error("Failed to play timer");
+      console.error("Timer play error:", error);
+    },
+  });
+
   useEffect(() => {
     let intervalId: string | number | NodeJS.Timeout | undefined;
 
@@ -141,10 +174,48 @@ const TaskList = () => {
         status: first.status,
         user_id: first.user_id,
       });
+      if (!isTimerPaused) {
+        playTimerMutation.mutate(
+          {
+            task_id: first.id,
+            session_type:
+              currentMode === Mode.FOCUS
+                ? "focus"
+                : currentMode === Mode.SHORT_BREAK
+                ? "short_break"
+                : currentMode === Mode.LONG_BREAK
+                ? "long_break"
+                : "",
+            duration: Number(
+              currentMode === Mode.FOCUS
+                ? usePomodoroStore.getState().settings.focus_duration * 60
+                : currentMode === Mode.SHORT_BREAK
+                ? usePomodoroStore.getState().settings.short_break_duration * 60
+                : currentMode === Mode.LONG_BREAK
+                ? usePomodoroStore.getState().settings.long_break_duration * 60
+                : 0
+            ),
+          },
+          {
+            onSuccess: (response) => {
+              setTimerId(response.data.id);
+              console.log("Timer response in useEffect:", response);
+            },
+          }
+        );
+      } else if (isTimerPaused) {
+        if (timer_id !== null) {
+          pauseTimerMutation.mutate({
+            status: "paused",
+            timer_id: timer_id,
+          });
+        }
+      }
 
       // Only track cycles if task is not completed
       if (first.status !== "completed") {
         intervalId = setInterval(() => {
+          // Check if we completed a full cycle (Focus + either type of break)
           if (
             currentMode === Mode.FOCUS &&
             (lastCompletedMode === Mode.SHORT_BREAK ||
@@ -152,10 +223,35 @@ const TaskList = () => {
           ) {
             setCompletedCycles((prev) => {
               const newCount = prev + 1;
+              // Complete task when cycles match estimated_cycles
               if (newCount >= first.estimated_cycles) {
-                completeFirstListTask.mutate(first.id);
-                setIsPaused(true);
-                return 0;
+                if (
+                  usePomodoroStore.getState().settings.is_auto_complete_tasks
+                ) {
+                  completeFirstListTask.mutate(first.id, {
+                    onSuccess: () => {
+                      if (
+                        usePomodoroStore.getState().settings
+                          .is_auto_start_breaks
+                      ) {
+                        setIsPaused(true);
+                      } else {
+                        setIsPaused(false);
+                      }
+                    },
+                  });
+                } else {
+                  // If auto-complete is off, just handle the timer state
+                  if (
+                    usePomodoroStore.getState().settings.is_auto_start_breaks
+                  ) {
+                    setIsPaused(true);
+                  } else {
+                    setIsPaused(false);
+                  }
+                }
+
+                return 0; // Reset counter after completion
               }
               return newCount;
             });
@@ -166,7 +262,7 @@ const TaskList = () => {
           ) {
             setLastCompletedMode(currentMode);
           }
-        }, 1000);
+        }); // Check every second for mode changes
       } else {
         toast.success("All tasks completed!");
         setNoAvailableTasks(true);
@@ -180,7 +276,7 @@ const TaskList = () => {
         clearInterval(intervalId);
       }
     };
-  }, [taskList, currentMode, nextMode, lastCompletedMode]);
+  }, [taskList, currentMode, nextMode, lastCompletedMode, isTimerPaused]);
 
   const handleActionClick = (taskId: number) => {
     setIsSpinning(true);
@@ -232,6 +328,16 @@ const TaskList = () => {
       )
     );
 
+    // Check if there are any pending tasks after the status change
+    const hasUncompletedTasks = taskList.some((task) =>
+      task.id === taskId
+        ? newStatus !== "completed"
+        : task.status !== "completed"
+    );
+
+    // Update noAvailableTasks state based on whether there are any pending tasks
+    setNoAvailableTasks(!hasUncompletedTasks);
+
     // Make API request to update status
     editStatusMutation.mutate({ id: taskId, status: newStatus });
   };
@@ -276,10 +382,10 @@ const TaskList = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="iAmHere font-bold text-2xl text-[#52525B] dark:text-[#A1A1AA]">
-                {componentTranslations('header')}
+                Task list
               </h1>
               <p className="text-[#71717A] font-normal text-base">
-                {componentTranslations('subheader')}
+                Your goals for this session
               </p>
             </div>
             <div>
@@ -291,7 +397,7 @@ const TaskList = () => {
           <DragDropContext onDragEnd={handleDragEnd}>
             <Droppable droppableId="tasks">
               {(provided: any) => (
-                <ScrollArea className="flex flex-col justify-between h-[382px] overflow-y-auto">
+                <ScrollArea className="flex flex-col justify-between h-[340px] overflow-y-auto">
                   <div
                     {...provided.droppableProps}
                     ref={provided.innerRef}
@@ -416,10 +522,13 @@ const TaskList = () => {
                                         <DialogContent>
                                           <DialogHeader>
                                             <DialogTitle>
-                                              {componentTranslations('delete-task.header')}
+                                              Are you sure you're gonna delete
+                                              this task ?
                                             </DialogTitle>
                                             <DialogDescription>
-                                              {componentTranslations('delete-task.message')}
+                                              This action cannot be undone. This
+                                              will permanently delete your
+                                              task..
                                             </DialogDescription>
                                           </DialogHeader>
                                           <DialogFooter>
@@ -429,7 +538,7 @@ const TaskList = () => {
                                                 setIsDeleteDialogOpen(false)
                                               }
                                             >
-                                              {componentTranslations('delete-task.buttons.cancel.text')}
+                                              No, don't delete my task
                                             </Button>
                                             <Button
                                               className="bg-[#84CC16] hover:bg-[#669f10]"
@@ -451,7 +560,7 @@ const TaskList = () => {
                                                   d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
                                                 />
                                               </svg>
-                                              {componentTranslations('delete-task.buttons.confirm.text')}
+                                              Yes, delete my task
                                             </Button>
                                           </DialogFooter>
                                         </DialogContent>
@@ -461,10 +570,13 @@ const TaskList = () => {
 
                                   <span
                                     className={`${
-                                      index === 0 && task.status !== "completed"
+                                      task.status === "completed"
+                                        ? "hidden"
+                                        : index === 0
                                         ? "text-[#84CC16]"
                                         : "text-[#71717A]"
-                                    }`}
+                                    }
+                                        `}
                                   >
                                     {" "}
                                     {index === 0 ? completedCycles : 0}/
