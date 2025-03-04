@@ -27,8 +27,8 @@ const inter = Inter({
 
 // Export metadata for SEO and page config
 export const metadata: Metadata = {
-  title: "POMODORO APP",
-  description: "SYCN POMODORO",
+  title: "POMOSYNC",
+  description: "POMODORO APP",
   icons: {
     icon: "/logo.png",
   },
