@@ -1,6 +1,7 @@
 import Cookies from "js-cookie";
 import useAuthStore from "@/app/stores/authStore";
 import API_BASE_URL from "./api_url";
+import { toast } from "sonner";
 
 export interface Profile {
   name: string;
@@ -88,7 +89,7 @@ export async function editProfile(
     console.log("API error:", errorText, "Status:", response.status);
     throw new Error(`Failed to update profile: ${response.status}`);
   }
-
+  toast.success("Profile updated successfully.");
   const data = await response.json();
   console.log("API raw response (edit):", data);
 

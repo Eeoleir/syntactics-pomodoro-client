@@ -6,7 +6,7 @@ interface ProfilePictureProps {
   size: "sm" | "md" | "lg";
   editable?: boolean;
   src?: string;
-  onFileChange?: () => void; 
+  onFileChange?: () => void;
 }
 
 export default function ProfilePicture({
@@ -35,7 +35,7 @@ export default function ProfilePicture({
           overflow-hidden
           ${editable ? "cursor-pointer hover:opacity-80" : ""}
         `}
-        onClick={editable ? onFileChange : undefined} // Trigger file input via parent
+        onClick={editable ? onFileChange : undefined}
       >
         {src ? (
           <img src={src} alt="Profile" className="w-full h-full object-cover" />
