@@ -29,6 +29,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "POMODORO APP",
   description: "SYCN POMODORO",
+  icons: {
+    icon: "/logo.png",
+  },
 };
 
 export default async function RootLayout({
