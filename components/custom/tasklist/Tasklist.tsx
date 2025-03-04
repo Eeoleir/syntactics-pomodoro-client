@@ -27,6 +27,10 @@ import { useCycleStore, Mode } from "@/app/stores/cycleStore";
 
 import { usePomodoroStore } from "@/app/stores/pomodoroStore";
 import { pauseTimerRequest, playTimerRequest } from "@/lib/time-queries";
+import {
+  getOngoingTimerRequest,
+  resumeTimerRequest,
+} from "@/lib/timer-queries";
 
 const TaskList = () => {
   const [activeTaskId, setActiveTaskId] = React.useState<number | null>(null);
@@ -78,6 +82,26 @@ const TaskList = () => {
     },
     onError: (error: Error) => {
       toast.warning(`Failed to delete task: ${error.message}`);
+    },
+  });
+
+  const getOngoingTimerMutation = useMutation({
+    mutationFn: getOngoingTimerRequest,
+    onError: (error) => {
+      toast.error("Failed to check timer status");
+      console.error("Timer status check error:", error);
+    },
+  });
+
+  const resumeTimerMutation = useMutation({
+    mutationFn: ({ status, timer_id }: { status: string; timer_id: number }) =>
+      resumeTimerRequest(status, timer_id),
+    onSuccess: () => {
+      toast.success("Timer resumed successfully");
+    },
+    onError: (error) => {
+      toast.error("Failed to resume timer");
+      console.error("Timer resume error:", error);
     },
   });
 
@@ -176,34 +200,57 @@ const TaskList = () => {
         user_id: first.user_id,
       });
       if (!isTimerPaused) {
-        playTimerMutation.mutate(
-          {
-            task_id: first.id,
-            session_type:
-              currentMode === Mode.FOCUS
-                ? "focus"
-                : currentMode === Mode.SHORT_BREAK
-                ? "short_break"
-                : currentMode === Mode.LONG_BREAK
-                ? "long_break"
-                : "",
-            duration: Number(
-              currentMode === Mode.FOCUS
-                ? usePomodoroStore.getState().settings.focus_duration * 60
-                : currentMode === Mode.SHORT_BREAK
-                ? usePomodoroStore.getState().settings.short_break_duration * 60
-                : currentMode === Mode.LONG_BREAK
-                ? usePomodoroStore.getState().settings.long_break_duration * 60
-                : 0
-            ),
+        // First check for ongoing timer
+        getOngoingTimerMutation.mutate(undefined, {
+          onSuccess: async (response) => {
+            if (response && response.data) {
+              // There is an ongoing timer, resume it
+              resumeTimerMutation.mutate(
+                {
+                  status: "ongoing",
+                  timer_id: response.data.id,
+                },
+                {
+                  onSuccess: (resumeResponse) => {
+                    setTimerId(response.data.id);
+                  },
+                }
+              );
+            } else {
+              // No ongoing timer, start a new one
+              playTimerMutation.mutate(
+                {
+                  task_id: first.id,
+                  session_type:
+                    currentMode === Mode.FOCUS
+                      ? "focus"
+                      : currentMode === Mode.SHORT_BREAK
+                      ? "short_break"
+                      : currentMode === Mode.LONG_BREAK
+                      ? "long_break"
+                      : "",
+                  duration: Number(
+                    currentMode === Mode.FOCUS
+                      ? usePomodoroStore.getState().settings.focus_duration * 60
+                      : currentMode === Mode.SHORT_BREAK
+                      ? usePomodoroStore.getState().settings
+                          .short_break_duration * 60
+                      : currentMode === Mode.LONG_BREAK
+                      ? usePomodoroStore.getState().settings
+                          .long_break_duration * 60
+                      : 0
+                  ),
+                },
+                {
+                  onSuccess: (response) => {
+                    setTimerId(response.data.id);
+                    console.log("Timer response in useEffect:", response);
+                  },
+                }
+              );
+            }
           },
-          {
-            onSuccess: (response) => {
-              setTimerId(response.data.id);
-              console.log("Timer response in useEffect:", response);
-            },
-          }
-        );
+        });
       } else if (isTimerPaused) {
         if (timer_id !== null) {
           pauseTimerMutation.mutate({
