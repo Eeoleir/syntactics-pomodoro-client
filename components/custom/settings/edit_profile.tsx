@@ -212,10 +212,10 @@ function EditProfileComponent({
             className="w-full py-3 sm:py-4 px-4 bg-[#71717A]"
             onClick={handleEditClick}
           >
-            Edit Profile
+            {translations('buttons.edit-profile.text')}
           </Button>
           <Button className="w-full py-3 sm:py-4 px-4 bg-[#84CC16]">
-            Logout
+            {translations('buttons.logout.text')}
           </Button>
         </div>
       )}

@@ -8,6 +8,7 @@ import { create } from "zustand";
 // support languages
 export const locales = {
   ENGLISH: "en",
+  PORTUGUESE: "pt"
 } as const;
 
 type LocaleState = {
