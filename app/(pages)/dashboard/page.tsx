@@ -175,7 +175,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-w-screen min-h-screen bg-[#FAFAFA] dark:bg-[#18181B] text-black">
+    <div className="min-w-screen min-h-screen bg-[#FAFAFA] dark:bg-[#18181B] text-black overflow-y-hidden">
       <div className="p-10 w-full">
         <div className="flex flex-end items-center justify-between md:flex-row md:mt-4 flex-col">
           <div id="pomodoro-timer-card" className="flex items-center">

@@ -5,7 +5,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import "animate.css";
 import { QueryProvider } from "../lib/query-client";
-import ClientThemeWrapper from "./ClientThemeWrapper"; // Import the new client component
+import ClientThemeWrapper from "./ClientThemeWrapper";
 
 const inter = Inter({
   variable: "--font-inter",
