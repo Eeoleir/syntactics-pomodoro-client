@@ -156,15 +156,18 @@
         "success": "Logout realizado com sucesso!"
       }
     },
-    "mode-badges": {
-      "focus": {
-        "title": "Foco"
+    "mode-badges" : {
+      "focus" : {
+        "title" : "Foco",
+        "description": "Minimize distrações e mantenha o foco com uma sessão dedicada. Perfeito para trabalho profundo e concentração."
       },
-      "short-break": {
-        "title": "Pausa Curta"
+      "short-break" : {
+        "title" : "Pausa Curta",
+        "description": "Uma pausa rápida para descansar e se refrescar entre sessões de foco. Ajuda a manter a produtividade sem perder o ritmo."
       },
-      "long-break": {
-        "title": "Pausa Longa"
+      "long-break" : {
+        "title" : "Pausa Longa",
+        "description": "Faça uma pausa prolongada para recarregar as energias após várias sessões de foco. Ideal para relaxamento profundo antes do próximo ciclo de trabalho."
       }
     },
     "task-list": {
