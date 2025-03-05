@@ -27,11 +27,11 @@ export default function Home() {
   }, [])
 
   return (
-    <main className="relative min-h-screen overflow-x-hidden">
+    <main className="relative min-h-screen overflow-x-hidden ">
       <Header />
 
       <section className="flex flex-col lg:flex-row w-full h-[100vh] pt-24 md:pt-32 lg:pt-40">
-        {/* Image container - full width on mobile, half on desktop */}
+
         <div className=" flex items-end w-full lg:w-1/2 order-2 lg:order-1 lg:pr-[4vw] xl:pr-[8vw] mb-8 lg:mb-0">
           <div className="relative">
             <div className="absolute  z-[-1] top-[0px] left-[90px]">
@@ -51,7 +51,7 @@ export default function Home() {
           
         </div>
 
-        {/* Content container - full width on mobile, half on desktop */}
+        
         <div className="relative flex items-center w-full lg:w-1/2 px-6 lg:px-0 order-1 lg:order-2 mb-10 pb-[100px] lg:mb-0">
           <Image src={Polka2} alt="Polkadots" layout="" className="w-[281px] h-[351px] absolute z-[-1] bottom-[10px] right-[-30px] opacity-0 md:opacity-100" />
           <div className="w-full lg:w-[90%] xl:w-[80%] 2xl:w-[70%] flex flex-col gap-4 md:gap-5">

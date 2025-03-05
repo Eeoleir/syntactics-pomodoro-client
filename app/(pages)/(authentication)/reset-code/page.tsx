@@ -24,14 +24,14 @@ export default function ResetCode() {
   const [email, setEmail] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
-  // Get email from previous page (either from URL params or localStorage)
+  
   useEffect(() => {
-    // Check if the email is stored in localStorage
+   
     const storedEmail = localStorage.getItem("resetEmail");
     if (storedEmail) {
       setEmail(storedEmail);
     } else {
-      // If no email is found, redirect back to forgot password
+    
       router.push("/forgot-password");
     }
   }, [router]);
@@ -50,8 +50,7 @@ export default function ResetCode() {
         token: values.recoveryCode 
       }),
     onSuccess: (data) => {
-      console.log("Code verified successfully:", data);
-      // Store the reset token for the next step
+
       localStorage.setItem("resetToken", data.token);
       router.push("/new-password");
     },
@@ -64,15 +63,10 @@ export default function ResetCode() {
   });
 
   const onSubmit = (values: FormValues) => {
-    console.log("Form data:", values);
     setErrorMessage(null);
     mutation.mutate(values);
   };
 
-  const handleResend = () => {
-    // You would implement the resend code functionality here
-    console.log("Resending code to:", email);
-  };
 
   return (
     <section className="content w-full h-screen mx-auto bg-[#18181B] text-[#FAFAFA] flex justify-center items-center flex-col">

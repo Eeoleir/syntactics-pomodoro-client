@@ -33,8 +33,8 @@ export default function ForgotPassword() {
   const mutation = useMutation({
     mutationFn: forgotPassword,
     onSuccess: (data) => {
-      console.log("Reset code sent successfully:", data);
-      localStorage.setItem("resetEmail", data.email); // Store email before navigation
+     
+      localStorage.setItem("resetEmail", data.email); 
       router.push("/reset-code");
     },
     onError: (error: any) => {
@@ -46,7 +46,7 @@ export default function ForgotPassword() {
   });
 
   const onSubmit = (values: FormValues) => {
-    console.log("Form data:", values);
+  
     setErrorMessage(null);
     mutation.mutate(values);
   };

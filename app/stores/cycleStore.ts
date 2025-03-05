@@ -33,7 +33,7 @@ type CycleStateActions = {
 };
 
 export const useCycleStore = create<CycleState & CycleStateActions>((set) => ({
-  // state properties
+ 
   durations: {
     [Mode.FOCUS]: usePomodoroStore.getState().settings.focus_duration * 60, // convert minutes to seconds
     [Mode.SHORT_BREAK]:
@@ -63,10 +63,6 @@ export const useCycleStore = create<CycleState & CycleStateActions>((set) => ({
     set((state) => {
       let newNextMode: Mode;
       let newIntervalCount: number;
-
-      console.log(
-        `currentMode: ${state.currentMode}, nextMode: ${state.nextMode}`
-      );
 
       if (state.currentMode === Mode.FOCUS) {
         newNextMode = Mode.FOCUS;
