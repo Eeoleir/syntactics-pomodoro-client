@@ -8,6 +8,7 @@ import { QueryProvider } from "../lib/query-client";
 import { ThemeProvider } from "@/components/Theme/theme-provider";
 import { getLocale, getMessages } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
+import ClientThemeWrapper from "./ClientThemeWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,14 +19,12 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
-import ClientThemeWrapper from "./ClientThemeWrapper"; // Import the new client component
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
 });
 
-// Export metadata for SEO and page config
 export const metadata: Metadata = {
   title: "POMOSYNC",
   description: "POMODORO APP",
@@ -48,17 +47,19 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased`}
       >
         <NextIntlClientProvider messages={messages}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <QueryProvider>
-              {children}
-              <Toaster />
-            </QueryProvider>
-          </ThemeProvider>
+          <ClientThemeWrapper>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <QueryProvider>
+                {children}
+                <Toaster />
+              </QueryProvider>
+            </ThemeProvider>
+          </ClientThemeWrapper>
         </NextIntlClientProvider>
       </body>
     </html>

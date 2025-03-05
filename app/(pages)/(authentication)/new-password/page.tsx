@@ -29,11 +29,11 @@ export default function NewPassword() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
 
-  // Get token from localStorage
+
   useEffect(() => {
     const storedToken = localStorage.getItem("resetToken");
     if (!storedToken) {
-      router.push("/forgot-password"); // Redirect if no token
+      router.push("/forgot-password");
     } else {
       setToken(storedToken);
     }
@@ -55,8 +55,8 @@ export default function NewPassword() {
         token: token || "",
       }),
     onSuccess: (data) => {
-      console.log("Password reset successfully:", data);
-      localStorage.removeItem("resetToken"); // Clean up
+    
+      localStorage.removeItem("resetToken"); 
       router.push("/login");
     },
     onError: (error: any) => {
@@ -71,7 +71,6 @@ export default function NewPassword() {
       return;
     }
     setErrorMessage(null);
-    console.log("Form data:", values);
     mutation.mutate(values);
   };
 

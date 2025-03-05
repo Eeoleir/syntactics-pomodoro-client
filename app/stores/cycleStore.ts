@@ -32,13 +32,12 @@ type CycleStateActions = {
 };
 
 export const useCycleStore = create<CycleState & CycleStateActions>((set) => ({
-  // state properties
+ 
   durations: {
-    // dapat mag query og data para ani
 
-    [Mode.FOCUS]: 5, // 1500
-    [Mode.SHORT_BREAK]: 5, // 300
-    [Mode.LONG_BREAK]: 5, // 900
+    [Mode.FOCUS]: 5, 
+    [Mode.SHORT_BREAK]: 5, 
+    [Mode.LONG_BREAK]: 5, 
   },
   longBreakInterval: 4,
   longBreakIntervalCounter: 0,
@@ -61,10 +60,6 @@ export const useCycleStore = create<CycleState & CycleStateActions>((set) => ({
     set((state) => {
       let newNextMode: Mode;
       let newIntervalCount: number;
-
-      console.log(
-        `currentMode: ${state.currentMode}, nextMode: ${state.nextMode}`
-      );
 
       if (state.currentMode === Mode.FOCUS) {
         newNextMode = Mode.FOCUS;

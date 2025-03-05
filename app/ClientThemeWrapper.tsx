@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useServerInsertedHTML } from "next/navigation"; 
+import { useServerInsertedHTML } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 
 export default function ClientThemeWrapper({
@@ -9,7 +9,6 @@ export default function ClientThemeWrapper({
 }: {
   children: React.ReactNode;
 }) {
-
   useServerInsertedHTML(() => {
     return (
       <style
@@ -20,7 +19,6 @@ export default function ClientThemeWrapper({
     );
   });
 
-  
   return (
     <NextThemesProvider
       attribute="class"
