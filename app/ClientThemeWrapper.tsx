@@ -6,14 +6,14 @@ import { ThemeProvider as NextThemesProvider } from "next-themes";
 
 export default function ClientThemeWrapper({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   useServerInsertedHTML(() => {
     return (
       <style
         dangerouslySetInnerHTML={{
-          __html: `/ Your server-inserted styles here /`,
+          __html: `/* Your server-inserted styles here */`,
         }}
       />
     );
