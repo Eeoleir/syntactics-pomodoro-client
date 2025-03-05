@@ -35,6 +35,8 @@ export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
     isTimerPaused,
     setIsPaused,
     currentTimeLeft,
+    longBreakIntervalCounter,
+    longBreakInterval,
   } = useCycleStore();
 
   const intervalRef = useRef<NodeJS.Timeout>(null);
@@ -44,27 +46,28 @@ export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
 
   useEffect(() => {
     setPrevTime(formatTime(currentTimeLeft));
+
     intervalRef.current = setInterval(() => {
       if (!isTimerPaused && !cycleDone) {
+        // Decrement time left
         setTimeLeft(currentMode, currentTimeLeft > 0 ? currentTimeLeft - 1 : 0);
       }
     }, 1000);
 
+    // When timer reaches 0
     if (currentTimeLeft === 0) {
-      // < -------------- MOCK CONDITION FOR TESTING --------------> //
-      if (mockTaskCountdown === 0) {
-        setCycleDone(true);
-      } else {
-        if (currentMode === Mode.FOCUS) {
-          setMockTaskCountDown(mockTaskCountdown - 1);
-        }
-      }
+      // Determine if we should mark cycle as done
+      const shouldMarkCycleDone =
+        longBreakIntervalCounter + 1 === longBreakInterval &&
+        currentMode === Mode.LONG_BREAK;
 
-      if (!cycleDone) {
+      if (shouldMarkCycleDone) {
+        setCycleDone(true);
+        setIsPaused(true);
+      } else {
+        // Activate next mode and set its duration
         activateNextMode();
         setTimeLeft(nextMode, durations[nextMode]);
-      } else {
-        setIsPaused(true);
       }
     }
 
@@ -78,10 +81,10 @@ export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
     durations,
     nextMode,
     setTimeLeft,
-    prevTime,
-    mockTaskCountdown,
     currentMode,
     cycleDone,
+    longBreakIntervalCounter,
+    longBreakInterval,
   ]);
 
   const styles = buildStyles({

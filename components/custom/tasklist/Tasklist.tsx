@@ -298,15 +298,8 @@ const TaskList = () => {
               const newCount = prev + 1;
               // Complete task when cycles match estimated_cycles
               if (newCount >= first.estimated_cycles) {
-                completeFirstListTask.mutate(first.id, {
-                  onSuccess: () => {
-                    if (
-                      usePomodoroStore.getState().settings.is_auto_start_breaks
-                    ) {
-                      setIsPaused(true);
-                    }
-                  },
-                });
+                completeFirstListTask.mutate(first.id);
+                setIsPaused(true);
 
                 return 0; // Reset counter after completion
               }
