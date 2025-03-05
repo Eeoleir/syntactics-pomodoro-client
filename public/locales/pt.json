@@ -173,6 +173,7 @@
     "task-list": {
       "header": "Lista de Tarefas",
       "subheader": "Seus objetivos para esta sessão",
+      "no-tasks-message": "Nenhuma tarefa encontrada. Crie uma nova tarefa para começar!",
       "delete-task": {
         "header": "Tem certeza de que deseja excluir esta tarefa?",
         "message": "Esta ação não pode ser desfeita. Isso excluirá permanentemente sua tarefa...",
