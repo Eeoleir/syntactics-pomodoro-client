@@ -25,7 +25,7 @@ export default function Header() {
   ];
 
   return (
-    <header className="fixed left-1/2 z-50 mt-4 sm:mt-8 w-[95%] sm:w-[90%] md:w-[85%] lg:w-[80%] -translate-x-1/2 rounded-2xl sm:rounded-[2.5em] bg-black px-4 sm:px-6 md:px-8 py-3 sm:py-4 text-white">
+    <header className="fixed left-1/2 z-50 mt-4 sm:mt-8 w-[95%] sm:w-[90%] md:w-[85%] lg:w-[80%] -translate-x-1/2 rounded-2xl sm:rounded-[2.5em] bg-black px-4 sm:px-6 md:px-8 py-3 sm:py-4 text-white border-[1px] border-white">
       <div className="flex items-center justify-between">
         {/* Logo Section */}
         <Logo />
