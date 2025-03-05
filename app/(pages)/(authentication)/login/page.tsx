@@ -22,6 +22,8 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
+import "../../../globals.css";
+
 import { useTranslations } from "next-intl";
 import DarkModeToggle, { useDarkMode } from "@/components/custom/Toggle";
 
@@ -37,10 +39,10 @@ type FormValues = z.infer<typeof formSchema>;
 export default function Login() {
   const router = useRouter();
   const login = useAuthStore((state) => state.login);
-  const { settings, setSettings, setUserId } = usePomodoroStore();
+  const { setSettings, setUserId } = usePomodoroStore();
   const { setProfile } = useProfileStore();
   const [errorKey, setErrorKey] = useState(0);
-  const { isDarkMode } = useDarkMode(); 
+  const { isDarkMode } = useDarkMode();
 
   const pageTranslations = useTranslations("login-page");
 
@@ -112,46 +114,6 @@ export default function Login() {
         isDarkMode ? "bg-[#18181B] text-[#FAFAFA]" : "bg-gray-100 text-black"
       } flex justify-center items-center relative`}
     >
-      <style jsx global>{`
-        @keyframes shake {
-          0%,
-          100% {
-            transform: translateX(0);
-          }
-          10%,
-          30%,
-          50%,
-          70%,
-          90% {
-            transform: translateX(-5px);
-          }
-          20%,
-          40%,
-          60%,
-          80% {
-            transform: translateX(5px);
-          }
-        }
-
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .animate-shake {
-          animation: shake 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-        }
-
-        .animate-fade-in {
-          animation: fadeIn 0.3s ease-out forwards;
-        }
-      `}</style>
       <div className="flex h-fit w-[408px] border-[1px] rounded-xl bg-inherit border-[#84CC16] flex-col">
         <div className="title flex flex-row justify-between items-center h-auto p-6">
           <div className="flex flex-col">
