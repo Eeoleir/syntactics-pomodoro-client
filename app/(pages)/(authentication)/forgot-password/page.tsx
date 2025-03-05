@@ -10,9 +10,8 @@ import { IoArrowBack } from "react-icons/io5";
 import { useMutation } from "@tanstack/react-query";
 import { forgotPassword } from "../../../../lib/auth-queries";
 import { useState } from "react";
-import DarkModeToggle, {
-  useDarkMode,
-} from "@/components/custom/Toggle";
+import DarkModeToggle, { useDarkMode } from "@/components/custom/Toggle";
+import "../../../globals.css";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 
 const formSchema = z.object({
@@ -24,7 +23,7 @@ type FormValues = z.infer<typeof formSchema>;
 export default function ForgotPassword() {
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { isDarkMode } = useDarkMode(); 
+  const { isDarkMode } = useDarkMode();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -59,53 +58,12 @@ export default function ForgotPassword() {
         isDarkMode ? "bg-[#18181B] text-[#FAFAFA]" : "bg-gray-100 text-black"
       } flex justify-center items-center relative`}
     >
-      <style jsx global>{`
-        @keyframes shake {
-          0%,
-          100% {
-            transform: translateX(0);
-          }
-          10%,
-          30%,
-          50%,
-          70%,
-          90% {
-            transform: translateX(-5px);
-          }
-          20%,
-          40%,
-          60%,
-          80% {
-            transform: translateX(5px);
-          }
-        }
-
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .animate-shake {
-          animation: shake 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-        }
-
-        .animate-fade-in {
-          animation: fadeIn 0.3s ease-out forwards;
-        }
-      `}</style>
-
       <div
         className={`flex h-fit w-[408px] border-[1px] rounded-xl border-[#84CC16] flex-col ${
           isDarkMode ? "bg-[#18181B]" : "bg-white"
         }`}
       >
-        <div
+        <button
           className="title flex flex-row h-auto p-6 pb-0 items-center gap-[10px] cursor-pointer"
           onClick={() => router.back()}
         >
@@ -121,7 +79,7 @@ export default function ForgotPassword() {
           >
             Go back
           </p>
-        </div>
+        </button>
         <div className="form text-[14px] p-6 pb-0 pt-4">
           <div className="text pb-6">
             <h2 className="text-2xl font-semibold">Forgot Password</h2>
