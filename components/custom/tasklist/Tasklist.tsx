@@ -41,6 +41,8 @@ const TaskList = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const queryClient = useQueryClient();
   const [firstTask, setFirstTask] = React.useState<Task | null>(null);
+  const [totalCyclesBeforeLongBreak, setTotalCyclesBeforeLongBreak] =
+    React.useState<number>(0);
 
   const [completedCycles, setCompletedCycles] = React.useState<number>(0);
   const currentMode = useCycleStore((state) => state.currentMode);
@@ -48,6 +50,8 @@ const TaskList = () => {
   const [lastCompletedMode, setLastCompletedMode] = React.useState<Mode | null>(
     null
   );
+  const currentTimeLeft = useCycleStore((state) => state.currentTimeLeft);
+
   const setNoAvailableTasks = useCycleStore(
     (state) => state.setNoAvailableTasks
   );
@@ -142,7 +146,6 @@ const TaskList = () => {
       toast.success("Timer paused successfully");
     },
     onError: (error) => {
-      toast.error("Failed to pause timer");
       console.error("Timer pause error:", error);
     },
   });
@@ -177,7 +180,7 @@ const TaskList = () => {
   });
 
   useEffect(() => {
-    let intervalId: string | number | NodeJS.Timeout | undefined;
+    let intervalId: NodeJS.Timeout | undefined;
 
     if (taskList && taskList.length > 0) {
       const sortedTasks = [...taskList].sort((a, b) => {
@@ -186,6 +189,7 @@ const TaskList = () => {
         return 0;
       });
       const first = sortedTasks[0];
+
       setFirstTask({
         id: first.id,
         title: first.title,
@@ -195,36 +199,131 @@ const TaskList = () => {
         status: first.status,
         user_id: first.user_id,
       });
-      if (!isTimerPaused) {
-        getOngoingTimerMutation.mutate(undefined, {
-          onSuccess: (response) => {
-            if (response.data) {
-              // There is an ongoing timer
-              setTimerId(response.data.id);
-              const mode =
-                response.data.session_type === "focus"
-                  ? Mode.FOCUS
-                  : response.data.session_type === "short_break"
-                  ? Mode.SHORT_BREAK
-                  : Mode.LONG_BREAK;
 
-              // Set the remaining time from the ongoing timer
-              const timeRemaining =
-                response.data.time_remaining ?? response.data.duration;
-              console.log("Time remaining in useEffect:", timeRemaining);
-              useCycleStore.getState().setTimeLeft(mode, timeRemaining);
+      if (first.status !== "completed") {
+        if (!isTimerPaused) {
+          getOngoingTimerMutation.mutate(undefined, {
+            onSuccess: (response) => {
+              if (response.data) {
+                // Ongoing timer exists
+                setTimerId(response.data.id);
+                const mode =
+                  response.data.session_type === "focus"
+                    ? Mode.FOCUS
+                    : response.data.session_type === "short_break"
+                    ? Mode.SHORT_BREAK
+                    : Mode.LONG_BREAK;
 
-              // changeTimerStatusMutation.mutate({
-              //   status: "ongoing",
-              //   timer_id: timer_id!,
-              //   time_remaining: useCycleStore.getState().timeLeft[currentMode],
-              // });
-              console.log(
-                "Time remaining after validation in get:",
-                timeRemaining
-              );
-            } else {
-              // No ongoing timer - create a new one
+                let timeRemaining =
+                  response.data.time_remaining ?? response.data.duration;
+                console.log("Time remaining in useEffect:", timeRemaining);
+
+                useCycleStore.getState().setTimeLeft(mode, timeRemaining);
+
+                // Start countdown timer
+                intervalId = setInterval(() => {
+                  timeRemaining -= 1;
+                  useCycleStore.getState().setTimeLeft(mode, timeRemaining);
+
+                  if (timeRemaining <= 0) {
+                    clearInterval(intervalId);
+
+                    // Determine next mode
+                    const nextMode =
+                      mode === Mode.FOCUS
+                        ? Mode.SHORT_BREAK
+                        : mode === Mode.SHORT_BREAK &&
+                          (totalCyclesBeforeLongBreak + 1) %
+                            usePomodoroStore.getState().settings
+                              .long_break_duration ===
+                            0
+                        ? Mode.LONG_BREAK
+                        : Mode.FOCUS;
+
+                    if (mode === Mode.SHORT_BREAK || mode === Mode.LONG_BREAK) {
+                      const updatedCompletedCycles = completedCycles + 1;
+                      setCompletedCycles(updatedCompletedCycles);
+
+                      // Check if completed cycles match estimated cycles
+                      if (updatedCompletedCycles === first.estimated_cycles) {
+                        completeFirstListTask.mutate(first.id);
+                        setCompletedCycles(0);
+                        if (
+                          usePomodoroStore.getState().settings
+                            .is_auto_start_breaks
+                        ) {
+                          setIsPaused(true);
+                        }
+                      }
+                    }
+
+                    // Create a new timer when previous one ends
+                    createTimerMutation.mutate(
+                      {
+                        task_id: first.id,
+                        session_type:
+                          nextMode === Mode.FOCUS
+                            ? "focus"
+                            : nextMode === Mode.SHORT_BREAK
+                            ? "short_break"
+                            : "long_break",
+                        duration: Number(
+                          nextMode === Mode.FOCUS
+                            ? usePomodoroStore.getState().settings
+                                .focus_duration * 60
+                            : nextMode === Mode.SHORT_BREAK
+                            ? usePomodoroStore.getState().settings
+                                .short_break_duration * 60
+                            : usePomodoroStore.getState().settings
+                                .long_break_duration * 60
+                        ),
+                      },
+                      {
+                        onSuccess: (newResponse) => {
+                          setTimerId(newResponse.data.id);
+                          console.log("New timer response:", newResponse);
+
+                          // Fetch updated ongoing timer details
+                          getOngoingTimerMutation.mutate();
+                        },
+                      }
+                    );
+                  }
+                }, 1000);
+              } else {
+                // No ongoing timer - create a new one
+                createTimerMutation.mutate(
+                  {
+                    task_id: first.id,
+                    session_type:
+                      currentMode === Mode.FOCUS
+                        ? "focus"
+                        : currentMode === Mode.SHORT_BREAK
+                        ? "short_break"
+                        : "long_break",
+                    duration: Number(
+                      currentMode === Mode.FOCUS
+                        ? usePomodoroStore.getState().settings.focus_duration *
+                            60
+                        : currentMode === Mode.SHORT_BREAK
+                        ? usePomodoroStore.getState().settings
+                            .short_break_duration * 60
+                        : usePomodoroStore.getState().settings
+                            .long_break_duration * 60
+                    ),
+                  },
+                  {
+                    onSuccess: (newResponse) => {
+                      setTimerId(newResponse.data.id);
+                      console.log("New timer created:", newResponse);
+                      getOngoingTimerMutation.mutate();
+                    },
+                  }
+                );
+              }
+            },
+            onError: () => {
+              // Handle error by creating a new timer
               createTimerMutation.mutate(
                 {
                   task_id: first.id,
@@ -246,87 +345,67 @@ const TaskList = () => {
                 },
                 {
                   onSuccess: (response) => {
-                    setTimerId(response.data.id);
-                    console.log("Timer response in useEffect:", response);
+                    if (response.data) {
+                      let timeRemaining =
+                        response.data.time_remaining ?? response.data.duration;
+
+                      console.log(
+                        "Time remaining in useEffect:",
+                        timeRemaining
+                      );
+
+                      const mode =
+                        response.data.session_type === "focus"
+                          ? Mode.FOCUS
+                          : response.data.session_type === "short_break"
+                          ? Mode.SHORT_BREAK
+                          : Mode.LONG_BREAK;
+
+                      useCycleStore.getState().setTimeLeft(mode, timeRemaining);
+                    }
                   },
                 }
               );
-            }
-          },
-          onError: (error) => {
-            // Handle as if no ongoing timer
-            createTimerMutation.mutate({
-              task_id: first.id,
-              session_type:
-                currentMode === Mode.FOCUS
-                  ? "focus"
-                  : currentMode === Mode.SHORT_BREAK
-                  ? "short_break"
-                  : "long_break",
-              duration: Number(
-                currentMode === Mode.FOCUS
-                  ? usePomodoroStore.getState().settings.focus_duration * 60
-                  : currentMode === Mode.SHORT_BREAK
-                  ? usePomodoroStore.getState().settings.short_break_duration *
-                    60
-                  : usePomodoroStore.getState().settings.long_break_duration *
-                    60
-              ),
-            });
-          },
-        });
-      } else if (isTimerPaused) {
-        if (timer_id !== null) {
-          changeTimerStatusMutation.mutate({
-            status: "paused",
-            timer_id: timer_id,
-            time_remaining: 5,
+            },
           });
+        } else if (isTimerPaused) {
+          if (timer_id !== null) {
+            changeTimerStatusMutation.mutate(
+              {
+                status: "paused",
+                timer_id: timer_id,
+                time_remaining: currentTimeLeft,
+              },
+              {
+                onSuccess: (response) => {
+                  if (response.data) {
+                    let timeRemaining =
+                      response.data.time_remaining ?? response.data.duration;
+
+                    console.log("Time remaining in useEffect:", timeRemaining);
+
+                    // Set the remaining time
+                    const mode =
+                      response.data.session_type === "focus"
+                        ? Mode.FOCUS
+                        : response.data.session_type === "short_break"
+                        ? Mode.SHORT_BREAK
+                        : Mode.LONG_BREAK;
+
+                    useCycleStore.getState().setTimeLeft(mode, timeRemaining);
+                  }
+                },
+              }
+            );
+          }
         }
       }
-
-      // Only track cycles if task is not completed
-      if (first.status !== "completed") {
-        intervalId = setInterval(() => {
-          // Check if we completed a full cycle (Focus + either type of break)
-          if (
-            currentMode === Mode.FOCUS &&
-            (lastCompletedMode === Mode.SHORT_BREAK ||
-              lastCompletedMode === Mode.LONG_BREAK)
-          ) {
-            setCompletedCycles((prev) => {
-              const newCount = prev + 1;
-              // Complete task when cycles match estimated_cycles
-              if (newCount >= first.estimated_cycles) {
-                completeFirstListTask.mutate(first.id);
-                setIsPaused(true);
-
-                return 0; // Reset counter after completion
-              }
-              return newCount;
-            });
-            setLastCompletedMode(null);
-          } else if (
-            currentMode === Mode.SHORT_BREAK ||
-            currentMode === Mode.LONG_BREAK
-          ) {
-            setLastCompletedMode(currentMode);
-          }
-        }); // Check every second for mode changes
-      } else {
-        toast.success("All tasks completed!");
-        setNoAvailableTasks(true);
-      }
-    } else {
-      setFirstTask(null);
     }
 
     return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
+      if (intervalId) clearInterval(intervalId);
     };
-  }, [taskList, currentMode, nextMode, lastCompletedMode, isTimerPaused]);
+  }, [taskList, isTimerPaused]);
 
   const handleActionClick = (taskId: number) => {
     setIsSpinning(true);

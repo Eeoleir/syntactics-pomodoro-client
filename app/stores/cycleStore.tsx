@@ -75,12 +75,6 @@ export const useCycleStore = create<CycleState & CycleStateActions>((set) => ({
       let newNextMode: Mode;
       let newIntervalCount: number = state.longBreakIntervalCounter;
 
-      console.log("Activating Next Mode", {
-        currentMode: state.currentMode,
-        currentTimeLeft: state.currentTimeLeft,
-        longBreakIntervalCounter: state.longBreakIntervalCounter,
-      });
-
       // Determine next mode based on current mode
       if (state.currentMode === Mode.FOCUS) {
         // After focus, determine break type
@@ -93,12 +87,17 @@ export const useCycleStore = create<CycleState & CycleStateActions>((set) => ({
         newIntervalCount =
           newCurrentMode === Mode.LONG_BREAK ? 0 : newIntervalCount + 1;
 
-        // Next mode will always be focus after a break
+        // Next mode will be focus
         newNextMode = Mode.FOCUS;
       } else {
-        // After break, always go to focus
+        // After any break, always go to focus
         newCurrentMode = Mode.FOCUS;
-        newNextMode = Mode.SHORT_BREAK;
+        newNextMode =
+          state.longBreakIntervalCounter + 1 === state.longBreakInterval
+            ? Mode.LONG_BREAK
+            : Mode.SHORT_BREAK;
+
+        // Do not increment counter here
       }
 
       return {
