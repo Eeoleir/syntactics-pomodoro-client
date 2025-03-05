@@ -11,6 +11,8 @@ import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { useMutation } from "@tanstack/react-query";
 import { resetPassword } from "../../../../lib/auth-queries";
 import { useState, useEffect } from "react";
+import "../../../globals.css";
+import DarkModeToggle, { useDarkMode } from "@/components/custom/Toggle";
 
 const formSchema = z
   .object({
@@ -28,12 +30,12 @@ export default function NewPassword() {
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const { isDarkMode } = useDarkMode(); // Add dark mode context hook
 
-  // Get token from localStorage
   useEffect(() => {
     const storedToken = localStorage.getItem("resetToken");
     if (!storedToken) {
-      router.push("/forgot-password"); // Redirect if no token
+      router.push("/forgot-password");
     } else {
       setToken(storedToken);
     }
@@ -52,11 +54,10 @@ export default function NewPassword() {
       resetPassword({
         password: values.password,
         password_confirmation: values.repassword,
-        token: token || "",
+        token: token ?? "",
       }),
-    onSuccess: (data) => {
-      console.log("Password reset successfully:", data);
-      localStorage.removeItem("resetToken"); // Clean up
+    onSuccess: () => {
+      localStorage.removeItem("resetToken");
       router.push("/login");
     },
     onError: (error: any) => {
@@ -71,24 +72,45 @@ export default function NewPassword() {
       return;
     }
     setErrorMessage(null);
-    console.log("Form data:", values);
     mutation.mutate(values);
   };
 
   return (
-    <section className="content w-full h-screen mx-auto bg-[#18181B] text-[#FAFAFA] flex justify-center items-center flex-col">
-      <div className="flex h-[368px] w-[408px] border-[1px] rounded-xl bg-[#18181B] border-[#84CC16] flex-col">
-        <div
+    <section
+      className={`content w-full h-screen mx-auto ${
+        isDarkMode ? "bg-[#18181B] text-[#FAFAFA]" : "bg-gray-100 text-black"
+      } flex justify-center items-center flex-col relative`}
+    >
+      <div
+        className={`flex h-[368px] w-[408px] border-[1px] rounded-xl border-[#84CC16] flex-col ${
+          isDarkMode ? "bg-[#18181B]" : "bg-white"
+        }`}
+      >
+        <button
           className="title flex flex-row h-auto p-6 pb-0 items-center gap-[10px] cursor-pointer"
           onClick={() => router.back()}
         >
-          <IoArrowBack className="text-[20px] text-zinc-400" />
-          <p className="text-[14px] mt-1 text-zinc-400 font-normal">Go back</p>
-        </div>
+          <IoArrowBack
+            className={`text-[20px] ${
+              isDarkMode ? "text-zinc-400" : "text-gray-600"
+            }`}
+          />
+          <p
+            className={`text-[14px] mt-1 font-normal ${
+              isDarkMode ? "text-zinc-400" : "text-gray-600"
+            }`}
+          >
+            Go back
+          </p>
+        </button>
         <div className="form text-[14px] p-6 pb-0 pt-6">
           <div className="text pb-6 space-y-[10px]">
             <h2 className="text-2xl font-semibold">New Password</h2>
-            <p className="text-zinc-400 text-[16px] font-[700]">
+            <p
+              className={`text-[16px] font-[700] ${
+                isDarkMode ? "text-zinc-400" : "text-gray-600"
+              }`}
+            >
               Please create a new password that you don’t use on any other site.
             </p>
           </div>
@@ -106,13 +128,15 @@ export default function NewPassword() {
                       <Input
                         type="password"
                         required
-                        className="w-full bg-[#3D4142] border-none px-3 py-1"
+                        className={`w-full ${
+                          isDarkMode ? "bg-[#3D4142]" : "bg-gray-200"
+                        } border-none px-3 py-1`}
                         placeholder="Create new password"
                         {...field}
                       />
                     </FormControl>
                     {form.formState.errors.password && (
-                      <p className="text-red-500 text-xs mt-1">
+                      <p className="text-red-500 text-xs mt-1 animate-fade-in">
                         {form.formState.errors.password.message}
                       </p>
                     )}
@@ -128,13 +152,15 @@ export default function NewPassword() {
                       <Input
                         type="password"
                         required
-                        className="w-full bg-[#3D4142] border-none px-3 py-1"
+                        className={`w-full ${
+                          isDarkMode ? "bg-[#3D4142]" : "bg-gray-200"
+                        } border-none px-3 py-1`}
                         placeholder="Confirm new password"
                         {...field}
                       />
                     </FormControl>
                     {form.formState.errors.repassword && (
-                      <p className="text-red-500 text-xs mt-1">
+                      <p className="text-red-500 text-xs mt-1 animate-fade-in">
                         {form.formState.errors.repassword.message}
                       </p>
                     )}
@@ -142,7 +168,9 @@ export default function NewPassword() {
                 )}
               />
               {errorMessage && (
-                <p className="text-red-500 text-xs">{errorMessage}</p>
+                <p className="text-red-500 text-xs animate-fade-in">
+                  {errorMessage}
+                </p>
               )}
               <div className="Request-btn pt-3 pb-6">
                 <Button
@@ -157,6 +185,7 @@ export default function NewPassword() {
           </Form>
         </div>
       </div>
+      <DarkModeToggle />
     </section>
   );
 }

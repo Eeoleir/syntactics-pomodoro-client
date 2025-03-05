@@ -21,7 +21,7 @@ export interface Preference {
 function getToken(): string | null {
   const storeToken = useAuthStore.getState().token;
   if (storeToken) return storeToken;
-  return Cookies.get("token") || null;
+  return Cookies.get("token") ?? null;
 }
 
 export async function getPreferences(): Promise<Preference[]> {

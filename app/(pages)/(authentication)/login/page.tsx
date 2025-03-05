@@ -22,7 +22,10 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
+import "../../../globals.css";
+
 import { useTranslations } from "next-intl";
+import DarkModeToggle, { useDarkMode } from "@/components/custom/Toggle";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -39,7 +42,9 @@ export default function Login() {
   const { setSettings, setUserId } = usePomodoroStore();
   const { setProfile } = useProfileStore();
   const [errorKey, setErrorKey] = useState(0);
-  const pageTranslations = useTranslations('login-page');
+  const { isDarkMode } = useDarkMode();
+
+  const pageTranslations = useTranslations("login-page");
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -58,24 +63,19 @@ export default function Login() {
   const mutation = useMutation({
     mutationFn: signIn,
     onSuccess: async (data) => {
-      console.log("Sign-in successful - Auth Data:", data); // Log the auth data (user, token)
       login(data.user, data.token);
 
       try {
         const fetchedProfile = await fetchProfile();
-        console.log("Profile Data Loaded:", fetchedProfile); // Log the profile data
         setProfile({
           name: fetchedProfile.name,
           email: fetchedProfile.email,
           profile_photo: fetchedProfile.profile_photo,
         });
-      } catch (error) {
-        console.error("Failed to fetch profile after login:", error);
-      }
+      } catch (error) {}
 
       try {
         const preferences = await getPreferences();
-        console.log("Preferences Data Loaded:", preferences); // Log the preferences data
         if (preferences.length > 0) {
           const pref = preferences[0];
           setUserId(pref.user_id);
@@ -90,12 +90,8 @@ export default function Login() {
             is_auto_switch_tasks: pref.is_auto_switch_tasks,
             is_dark_mode: pref.is_dark_mode,
           });
-        } else {
-          console.log("No preferences found for the user.");
         }
-      } catch (error) {
-        console.error("Failed to fetch preferences after login:", error);
-      }
+      } catch (error) {}
 
       router.push("/dashboard");
     },
@@ -109,59 +105,25 @@ export default function Login() {
   });
 
   const onSubmit = (values: FormValues) => {
-    console.log("Form data submitted:", values); // Log the form data before mutation
     mutation.mutate(values);
   };
 
   return (
-    <section className="content w-full h-screen mx-auto bg-[#18181B] text-[#FAFAFA] flex justify-center items-center">
-      <style jsx global>{`
-        @keyframes shake {
-          0%,
-          100% {
-            transform: translateX(0);
-          }
-          10%,
-          30%,
-          50%,
-          70%,
-          90% {
-            transform: translateX(-5px);
-          }
-          20%,
-          40%,
-          60%,
-          80% {
-            transform: translateX(5px);
-          }
-        }
-
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .animate-shake {
-          animation: shake 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-        }
-
-        .animate-fade-in {
-          animation: fadeIn 0.3s ease-out forwards;
-        }
-      `}</style>
-
-      <div className="flex h-fit w-[408px] border-[1px] rounded-xl bg-[#18181B] border-[#84CC16] flex-col">
-        <div className="title flex flex-col h-auto p-6">
-          <h2 className="text-2xl font-semibold">{pageTranslations('login-header')}</h2>
-          <p className="text-[14px] mt-1 text-zinc-400 font-normal">
-            {pageTranslations('login-subheader')}
-          </p>
+    <section
+      className={`content w-full h-screen mx-auto ${
+        isDarkMode ? "bg-[#18181B] text-[#FAFAFA]" : "bg-gray-100 text-black"
+      } flex justify-center items-center relative`}
+    >
+      <div className="flex h-fit w-[408px] border-[1px] rounded-xl bg-inherit border-[#84CC16] flex-col">
+        <div className="title flex flex-row justify-between items-center h-auto p-6">
+          <div className="flex flex-col">
+            <h2 className="text-2xl font-semibold">
+              {pageTranslations("login-header")}
+            </h2>
+            <p className="text-[14px] mt-1 text-zinc-400 font-normal">
+              {pageTranslations("login-subheader")}
+            </p>
+          </div>
         </div>
         <div className="form text-[14px] p-6 pt-0">
           <Form {...form}>
@@ -175,13 +137,17 @@ export default function Login() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="font-bold text-[14px]">
-                      {pageTranslations('text-fields.email-field.title')}
+                      {pageTranslations("text-fields.email-field.title")}
                     </FormLabel>
                     <FormControl>
                       <Input
                         required
-                        className="w-full bg-[#3D4142] border-none px-3 py-1"
-                        placeholder={pageTranslations('text-fields.email-field.placeholder')}
+                        className={`w-full ${
+                          isDarkMode ? "bg-[#3D4142]" : "bg-gray-200"
+                        } border-none px-3 py-1`}
+                        placeholder={pageTranslations(
+                          "text-fields.email-field.placeholder"
+                        )}
                         {...field}
                       />
                     </FormControl>
@@ -194,13 +160,17 @@ export default function Login() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="font-bold text-[14px]">
-                      {pageTranslations('text-fields.password-field.title')}
+                      {pageTranslations("text-fields.password-field.title")}
                     </FormLabel>
                     <FormControl>
                       <Input
                         required
-                        className="w-full bg-[#3D4142] border-none px-3 py-1"
-                        placeholder={pageTranslations('text-fields.password-field.placeholder')}
+                        className={`w-full ${
+                          isDarkMode ? "bg-[#3D4142]" : "bg-gray-200"
+                        } border-none px-3 py-1`}
+                        placeholder={pageTranslations(
+                          "text-fields.password-field.placeholder"
+                        )}
                         type="password"
                         {...field}
                       />
@@ -219,7 +189,7 @@ export default function Login() {
                   <p>
                     <Link href="/forgot-password">
                       <span className="flex justify-end ml-2 text-xs text-[#84CC16]">
-                        {pageTranslations('links.forgot-password-notice.text')}
+                        {pageTranslations("links.forgot-password-notice.text")}
                       </span>
                     </Link>
                   </p>
@@ -232,7 +202,9 @@ export default function Login() {
                   className="bg-[#84CC16] w-full"
                   disabled={mutation.isPending}
                 >
-                  {mutation.isPending ? pageTranslations('buttons.submit-button.on-click') : pageTranslations('buttons.submit-button.text')}
+                  {mutation.isPending
+                    ? pageTranslations("buttons.submit-button.on-click")
+                    : pageTranslations("buttons.submit-button.text")}
                 </Button>
               </div>
             </form>
@@ -241,15 +213,16 @@ export default function Login() {
 
         <div className="links text-zinc-400 px-6 pb-6 flex flex-col text-sm space-y-1 justify-center items-center">
           <p>
-            {pageTranslations('links.create-account-notice.text')}
+            {pageTranslations("links.create-account-notice.text")}
             <Link href="/register">
               <span className="underline ml-2 text-[#84CC16]">
-                {pageTranslations('links.create-account-notice.link-text')}
+                {pageTranslations("links.create-account-notice.link-text")}
               </span>
             </Link>
           </p>
         </div>
       </div>
+      <DarkModeToggle />
     </section>
   );
 }
