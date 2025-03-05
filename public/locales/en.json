@@ -173,6 +173,7 @@
     "task-list" : {
       "header" : "Task list",
       "subheader" : "Your goals for this session",
+      "no-tasks-message" : "No task found. Create a new task to get started!",
       "delete-task" : {
         "header" : "Are you sure you're gonna delete this task?",
         "message" : "This action cannot be undone. This will permanently delete your task...",
