@@ -23,23 +23,18 @@ export function DarkModeProvider({
   children,
 }: Readonly<{ children: ReactNode }>) {
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    // Only run this in the browser
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("isDarkMode");
-      // Return parsed value or default to true (dark mode) if null/invalid
       return saved !== null ? JSON.parse(saved) : true;
     }
-    // Default for SSR or initial render
     return true;
   });
 
-  // Sync state with localStorage and apply dark mode class
   useEffect(() => {
     localStorage.setItem("isDarkMode", JSON.stringify(isDarkMode));
     document.documentElement.classList.toggle("dark", isDarkMode);
   }, [isDarkMode]);
 
-  // Optional: Sync with localStorage on mount (for extra safety)
   useEffect(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("isDarkMode");
@@ -48,10 +43,10 @@ export function DarkModeProvider({
         setIsDarkMode(parsedValue);
       }
     }
-  }, []); // Empty dependency array: runs once on mount
+  }, []);
 
   const toggleDarkMode = () => {
-    setIsDarkMode((prev) => !prev);
+    setIsDarkMode((prev: boolean) => !prev); 
   };
 
   const contextValue = useMemo(
