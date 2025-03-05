@@ -73,6 +73,7 @@ const useAuthStore = create<AuthState>((set, get) => {
     logout: () => {
       Cookies.remove("token");
       Cookies.remove("tokenExpiresAt");
+      localStorage.clear();
       set({
         isAuthenticated: false,
         user: null,
