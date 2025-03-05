@@ -3,6 +3,7 @@ import useAuthStore from "@/app/stores/authStore";
 
 import { toast } from "sonner";
 import API_BASE_URL from "./api_url";
+import { useRouter } from "next/navigation";
 
 export interface Task {
   id: number;
@@ -71,6 +72,7 @@ export async function deleteTask(taskId: number) {
 
 export async function getTasks(): Promise<Task[]> {
   const token = getToken();
+  const router = useRouter();
   if (!token) throw new Error("No authentication token available");
 
   try {
@@ -83,6 +85,10 @@ export async function getTasks(): Promise<Task[]> {
     });
 
     if (!response.ok) {
+      if (response.status === 500) {
+        Cookies.remove("token");
+        router.push("/login");
+      }
       throw new Error(`Error: ${response.status}`);
     }
 

@@ -10,6 +10,10 @@ import Image from "next/image";
 import { formatTime, generateColor } from "@/lib/utils";
 import { Mode, useCycleStore } from "@/app/stores/cycleStore";
 import { useTranslations } from "next-intl";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { finishFirstTask, Task } from "@/lib/task-queries";
+import { toast } from "sonner";
+import { usePomodoroStore } from "@/app/stores/pomodoroStore";
 
 const rajdhani = Rajdhani({ subsets: ["latin"], weight: ["700"] });
 
@@ -18,11 +22,10 @@ interface CircularTimerProps {
 }
 
 export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
-
   const [cycleDone, setCycleDone] = useState(false);
   const [mockTaskCountdown, setMockTaskCountDown] = useState(4);
 
-  const timerTranslations = useTranslations('components.timer');
+  const timerTranslations = useTranslations("components.timer");
 
   const {
     currentMode,
@@ -148,7 +151,7 @@ export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
               <TimerControls
                 initialTime={durations[currentMode]}
                 setTime={setTime}
-                isDarkMode={isDarkMode} // Pass isDarkMode to TimerControls
+                isDarkMode={isDarkMode}
               />
             </motion.div>
           </AnimatePresence>
@@ -162,18 +165,17 @@ export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
                 isDarkMode ? "text-[#f4f4f5]" : "text-[#3f3f46]"
               }`}
             >
-              {timerTranslations('cycle-finish.header')}
+              {timerTranslations("cycle-finish.header")}
             </h3>
             <h6
               className={`${
                 isDarkMode ? "text-[#f4f4f5]" : "text-[#71717a]"
               } text-[18px]`}
             >
-              {timerTranslations('cycle-finish.message')}
+              {timerTranslations("cycle-finish.message")}
             </h6>
           </div>
-          <OnFinishedCycleButton isDarkMode={isDarkMode} />{" "}
-          {/* Pass isDarkMode */}
+          <OnFinishedCycleButton isDarkMode={isDarkMode} />
         </div>
       )}
     </div>
@@ -242,9 +244,33 @@ const TimerControls = ({
 }: {
   initialTime: number;
   setTime: CallableFunction;
-  isDarkMode: boolean; // Add isDarkMode prop
+  isDarkMode: boolean;
 }) => {
   const { isTimerPaused, setIsPaused } = useCycleStore();
+  const queryClient = useQueryClient();
+
+  const completeFirstListTask = useMutation({
+    mutationFn: (taskId: number) => finishFirstTask(taskId),
+    onMutate: async (taskId) => {
+      await queryClient.cancelQueries({ queryKey: ["tasks"] });
+      const previousTasks = queryClient.getQueryData<Task[]>(["tasks"]);
+
+      queryClient.setQueryData<Task[]>(["tasks"], (old) =>
+        old?.map((task) =>
+          task.id === taskId ? { ...task, status: "completed" } : task
+        )
+      );
+
+      return { previousTasks };
+    },
+    onError: (err, taskId, context) => {
+      queryClient.setQueryData(["tasks"], context?.previousTasks);
+      toast.warning("Failed to mark task as completed");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    },
+  });
 
   const togglePause = () => {
     setIsPaused(!isTimerPaused);
@@ -273,10 +299,26 @@ const TimerControls = ({
     setIsPaused(true);
   };
 
+  const handleNextSession = () => {
+    const tasks = queryClient.getQueryData<Task[]>(["tasks"]);
+    const firstTask = tasks?.find((task) => task.status !== "completed");
+
+    if (firstTask) {
+      completeFirstListTask.mutate(firstTask.id, {
+        onSuccess: () => {
+          if (usePomodoroStore.getState().settings.is_auto_start_breaks) {
+            setIsPaused(true);
+          } else {
+            setIsPaused(false);
+          }
+        },
+      });
+    }
+  };
+
   return (
     <div className={containerStyles}>
       <div className="flex flex-row justify-center items-center space-x-3">
-        {/* ---- reset time ----- */}
         <Button
           className={`${secondaryBtnStyles} ${secondaryBtnLayout}`}
           onClick={reset}
@@ -289,8 +331,6 @@ const TimerControls = ({
             className="-mt-[2px]"
           />
         </Button>
-        {/* ---- pause / start timer ----- */}
-
         <Button
           className={`${primaryButtonStyle} ${primaryBtnLayout}`}
           onClick={togglePause}
@@ -306,10 +346,9 @@ const TimerControls = ({
             className="-mt-[2px]"
           />
         </Button>
-        {/* ---- proceed to next cycle  ----- */}
         <Button
           className={`${secondaryBtnStyles} ${secondaryBtnLayout}`}
-          onClick={() => {}}
+          onClick={handleNextSession}
         >
           <Image
             src={`/timer_control_icons/next_session.svg`}
@@ -324,13 +363,9 @@ const TimerControls = ({
   );
 };
 
-const OnFinishedCycleButton = ({
-  isDarkMode,
-}: {
-  isDarkMode: boolean; // Add isDarkMode prop
-}) => {
-  const modeTranslations = useTranslations('components.mode-badges')
-  const timerTranslations = useTranslations('components.timer')
+const OnFinishedCycleButton = ({ isDarkMode }: { isDarkMode: boolean }) => {
+  const modeTranslations = useTranslations("components.mode-badges");
+  const timerTranslations = useTranslations("components.timer");
 
   return (
     <Button
@@ -339,7 +374,8 @@ const OnFinishedCycleButton = ({
       }`}
       onClick={() => {}}
     >
-      {timerTranslations('cycle-finish.buttons.start-focus.text')} {modeTranslations('focus.title')}
+      {timerTranslations("cycle-finish.buttons.start-focus.text")}{" "}
+      {modeTranslations("focus.title")}
     </Button>
   );
 };

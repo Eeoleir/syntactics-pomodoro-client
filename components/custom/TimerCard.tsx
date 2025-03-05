@@ -36,7 +36,7 @@ export default function PomodoroTimerCard() {
     "flex flex-col w-full p-[24px] rounded-xl border pb-12";
   const containerStyles = isDarkMode
     ? `border-[#27272a] bg-[#18181B]`
-    : `border-[#e4e4e7] dark:border-[#27272A] bg-gray-100`;
+    : `border-[#e4e4e7] dark:border-[#27272A]`;
 
   return (
     <div
