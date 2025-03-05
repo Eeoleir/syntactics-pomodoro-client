@@ -10,7 +10,10 @@ import Image from "next/image";
 import { formatTime, generateColor } from "@/lib/utils";
 import { Mode, useCycleStore } from "@/app/stores/cycleStore";
 import { useTranslations } from "next-intl";
-
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { finishFirstTask, Task } from "@/lib/task-queries";
+import { toast } from "sonner";
+import { usePomodoroStore } from "@/app/stores/pomodoroStore";
 const rajdhani = Rajdhani({ subsets: ["latin"], weight: ["700"] });
 
 interface CircularTimerProps {
@@ -273,6 +276,48 @@ const TimerControls = ({
     setIsPaused(true);
   };
 
+  const queryClient = useQueryClient();
+
+  const completeFirstListTask = useMutation({
+    mutationFn: (taskId: number) => finishFirstTask(taskId),
+    onMutate: async (taskId) => {
+      await queryClient.cancelQueries({ queryKey: ["tasks"] });
+      const previousTasks = queryClient.getQueryData<Task[]>(["tasks"]);
+
+      queryClient.setQueryData<Task[]>(["tasks"], (old) =>
+        old?.map((task) =>
+          task.id === taskId ? { ...task, status: "completed" } : task
+        )
+      );
+
+      return { previousTasks };
+    },
+    onError: (err, taskId, context) => {
+      queryClient.setQueryData(["tasks"], context?.previousTasks);
+      toast.warning("Failed to mark task as completed");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    },
+  });
+
+  const handleNextSession = () => {
+     const tasks = queryClient.getQueryData<Task[]>(["tasks"]);
+     const firstTask = tasks?.find((task) => task.status !== "completed");
+
+     if (firstTask) {
+       completeFirstListTask.mutate(firstTask.id, {
+         onSuccess: () => {
+           if (usePomodoroStore.getState().settings.is_auto_start_breaks) {
+             setIsPaused(true);
+           } else {
+             setIsPaused(false);
+           }
+         },
+       });
+     }
+   };
+
   return (
     <div className={containerStyles}>
       <div className="flex flex-row justify-center items-center space-x-3">
@@ -309,7 +354,7 @@ const TimerControls = ({
         {/* ---- proceed to next cycle  ----- */}
         <Button
           className={`${secondaryBtnStyles} ${secondaryBtnLayout}`}
-          onClick={() => {}}
+          onClick={handleNextSession}
         >
           <Image
             src={`/timer_control_icons/next_session.svg`}
@@ -330,7 +375,7 @@ const OnFinishedCycleButton = ({
   isDarkMode: boolean; // Add isDarkMode prop
 }) => {
   const modeTranslations = useTranslations('components.mode-badges')
-  const timerTranslations = useTranslations('components.timer')
+  const timerTranslations = useTranslations('components.timer');;
 
   return (
     <Button
