@@ -6,6 +6,7 @@ import {
   useContext,
   useState,
   useEffect,
+  useMemo,
   ReactNode,
 } from "react";
 
@@ -18,30 +19,56 @@ const DarkModeContext = createContext<DarkModeContextType | undefined>(
   undefined
 );
 
-export function DarkModeProvider({ children }: { children: ReactNode }) {
+export function DarkModeProvider({
+  children,
+}: Readonly<{ children: ReactNode }>) {
   const [isDarkMode, setIsDarkMode] = useState(() => {
+    // Only run this in the browser
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("isDarkMode");
-      return saved ? JSON.parse(saved) : true;
+      // Return parsed value or default to true (dark mode) if null/invalid
+      return saved !== null ? JSON.parse(saved) : true;
     }
+    // Default for SSR or initial render
     return true;
   });
 
+  // Sync state with localStorage and apply dark mode class
   useEffect(() => {
     localStorage.setItem("isDarkMode", JSON.stringify(isDarkMode));
+    document.documentElement.classList.toggle("dark", isDarkMode);
   }, [isDarkMode]);
 
+  // Optional: Sync with localStorage on mount (for extra safety)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("isDarkMode");
+      if (saved !== null) {
+        const parsedValue = JSON.parse(saved);
+        setIsDarkMode(parsedValue);
+      }
+    }
+  }, []); // Empty dependency array: runs once on mount
+
   const toggleDarkMode = () => {
-    setIsDarkMode((prev: boolean) => !prev);
+    setIsDarkMode((prev) => !prev);
   };
+
+  const contextValue = useMemo(
+    () => ({
+      isDarkMode,
+      toggleDarkMode,
+    }),
+    [isDarkMode]
+  );
+
   return (
-    <DarkModeContext.Provider value={{ isDarkMode, toggleDarkMode }}>
+    <DarkModeContext.Provider value={contextValue}>
       {children}
     </DarkModeContext.Provider>
   );
 }
 
-// Hook to use the context
 export function useDarkMode() {
   const context = useContext(DarkModeContext);
   if (context === undefined) {
@@ -50,7 +77,6 @@ export function useDarkMode() {
   return context;
 }
 
-// Toggle Component
 export default function DarkModeToggle() {
   const { isDarkMode, toggleDarkMode } = useDarkMode();
 
