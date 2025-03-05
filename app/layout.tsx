@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/components/Theme/theme-provider";
 import { getLocale, getMessages } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
 import ClientThemeWrapper from "./ClientThemeWrapper";
+import { DarkModeProvider } from "@/components/custom/Toggle";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -55,7 +56,7 @@ export default async function RootLayout({
               disableTransitionOnChange
             >
               <QueryProvider>
-                {children}
+              <DarkModeProvider>{children}</DarkModeProvider>
                 <Toaster />
               </QueryProvider>
             </ThemeProvider>

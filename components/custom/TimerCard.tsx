@@ -10,7 +10,7 @@ import { usePomodoroStore } from "@/app/stores/pomodoroStore";
 import CircularTimer from "../subcomponents/CircularTimer";
 import { HistoryAccordion } from "./HistoryAccordion";
 import { useQuery } from "@tanstack/react-query";
-import { fetchPomodoroHistory, HistoryItem } from "@/lib/history-queries";
+import { fetchPomodoroHistory } from "@/lib/history-queries";
 import { motion, AnimatePresence } from "motion/react";
 
 const primaryTextStyles = (isDarkMode: boolean) => `
@@ -20,12 +20,12 @@ const primaryTextStyles = (isDarkMode: boolean) => `
 `;
 
 const secondaryTextStyles = (isDarkMode: boolean) => `
-  ${isDarkMode ? "text-[#71717a]" : "text-[#71717a]"}
+  ${isDarkMode ? "text-[#71717a]" : "text-white"}
   font-sans
 `;
 
 export default function PomodoroTimerCard() {
-  const { settings, setSettings } = usePomodoroStore();
+  const { settings } = usePomodoroStore();
   const [isDarkMode, setIsDarkMode] = useState(settings.is_dark_mode);
 
   useEffect(() => {
@@ -48,7 +48,7 @@ export default function PomodoroTimerCard() {
   );
 }
 
-function CardTop({ isDarkMode }: { isDarkMode: boolean }) {
+function CardTop({ isDarkMode }: Readonly<{ isDarkMode: boolean }>) {
   const { currentMode, nextMode } = useCycleStore();
 
   const timerTranslations = useTranslations("components.timer");
@@ -94,9 +94,8 @@ function CardTop({ isDarkMode }: { isDarkMode: boolean }) {
   }
 
   if (error) {
-    return <div>Error loading history: {(error as Error).message}</div>;
+    return <div>Error loading history: {error.message}</div>;
   }
-
   return (
     <div className="flex flex-col w-full">
       <div id="header-container" className={containerStyles}>
@@ -164,10 +163,10 @@ function CardTop({ isDarkMode }: { isDarkMode: boolean }) {
 function HistoryButton({
   onClick,
   isDarkMode,
-}: {
+}: Readonly<{
   onClick: () => void;
   isDarkMode: boolean;
-}) {
+}>) {
   const hourglassIconStyles = `
     w-[40px] h-[40px]
     flex justify-center items-center
@@ -179,9 +178,20 @@ function HistoryButton({
   `;
 
   return (
-    <div id="header-icon" className={hourglassIconStyles} onClick={onClick}>
+    <button
+      id="header-icon"
+      className={hourglassIconStyles}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          onClick();
+        }
+      }}
+      tabIndex={0}
+      aria-label="Open history"
+    >
       <h3>⏳</h3>
-    </div>
+    </button>
   );
 }
 

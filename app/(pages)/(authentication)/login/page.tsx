@@ -23,6 +23,7 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { useTranslations } from "next-intl";
+import DarkModeToggle, { useDarkMode } from "@/components/custom/Toggle";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -39,17 +40,7 @@ export default function Login() {
   const { settings, setSettings, setUserId } = usePomodoroStore();
   const { setProfile } = useProfileStore();
   const [errorKey, setErrorKey] = useState(0);
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("isDarkMode");
-      return saved ? JSON.parse(saved) : true;
-    }
-    return true;
-  });
-
-  const toggleDarkMode = () => {
-    setIsDarkMode((prev: boolean) => !prev);
-  };
+  const { isDarkMode } = useDarkMode(); 
 
   const pageTranslations = useTranslations("login-page");
 
@@ -66,10 +57,6 @@ export default function Login() {
       setErrorKey((prev) => prev + 1);
     }
   }, [form.formState.errors.root]);
-
-  useEffect(() => {
-    localStorage.setItem("isDarkMode", JSON.stringify(isDarkMode));
-  }, [isDarkMode]);
 
   const mutation = useMutation({
     mutationFn: signIn,
@@ -165,7 +152,6 @@ export default function Login() {
           animation: fadeIn 0.3s ease-out forwards;
         }
       `}</style>
-
       <div className="flex h-fit w-[408px] border-[1px] rounded-xl bg-inherit border-[#84CC16] flex-col">
         <div className="title flex flex-row justify-between items-center h-auto p-6">
           <div className="flex flex-col">
@@ -274,46 +260,7 @@ export default function Login() {
           </p>
         </div>
       </div>
-
-      {/* Bottom-right toggle button */}
-      <Button
-        onClick={toggleDarkMode}
-        className={`fixed bottom-8 right-8 z-50 ${
-          isDarkMode
-            ? "bg-[#27272A] text-white hover:bg-[#3f3f46] border-[#84CC16] border"
-            : "bg-[#F4F4F5] text-[#52525B] hover:bg-gray-200 border-[#84CC16] border"
-        } h-12 w-12 rounded-full flex items-center justify-center shadow-lg`}
-      >
-        {isDarkMode ? (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="white"
-            viewBox="0 0 24 24"
-            strokeWidth="1.5"
-            stroke="white"
-            className="size-6"
-          >
-            <path
-              strokeLinecap="round"
-              d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z"
-            />
-          </svg>
-        ) : (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth="1.5"
-            stroke="#71717A"
-            className="size-6"
-          >
-            <path
-              strokeLinecap="round"
-              d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"
-            />
-          </svg>
-        )}
-      </Button>
+      <DarkModeToggle />
     </section>
   );
 }
