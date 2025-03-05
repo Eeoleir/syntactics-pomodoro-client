@@ -405,7 +405,6 @@ function PomodoroSettingsComponent({
                     className="bg-[#84CC16] w-full text-white"
                   >
                     {translations("buttons.submit-changes.text")}
-                    Save Changes
                   </Button>
                 </div>
               )}

@@ -182,6 +182,9 @@
           },
           "confirm": {
             "text": "Sim, excluir minha tarefa"
+          },
+          "add" : {
+            "text" : "Adicionar"
           }
         }
       }

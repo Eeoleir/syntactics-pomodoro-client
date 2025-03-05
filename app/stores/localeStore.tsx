@@ -5,7 +5,6 @@ import { getUserLocale, setUserLocale } from "@/services/locale";
 import { useEffect } from "react";
 import { create } from "zustand";
 
-// support languages
 export const locales = {
   ENGLISH: "en",
   PORTUGUESE: "pt",
@@ -26,13 +25,13 @@ export const useLocaleStore = create<LocaleState & LocaleActions>((set) => ({
   currentLocale: locales.ENGLISH,
   initialized: false,
 
-  setCurrentLocale: async (newLocale: Locale) => {
-    await setUserLocale(newLocale);
+  setCurrentLocale: (newLocale: Locale) => {
+    setUserLocale(newLocale); 
     set({ currentLocale: newLocale });
   },
 
   initializeLocale: async () => {
-    const userLocale = (await getUserLocale()) as Locale; 
+    const userLocale = (await getUserLocale()) as Locale;
     set({ currentLocale: userLocale, initialized: true });
   },
 }));

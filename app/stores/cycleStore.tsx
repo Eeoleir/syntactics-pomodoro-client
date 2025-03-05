@@ -26,8 +26,8 @@ type CycleState = {
 type CycleStateActions = {
   setDurations: (newDurations: { [keys in Mode]: number }) => void;
   setLongBreakInterval: (newInterval: number) => void;
-  setIntervalCount: (newCount: number) => void; // set a new interval count altogether
-  setTimeLeft: (mode: Mode, timeLeft: number) => void; //one action for both current time left and current mode
+  setIntervalCount: (newCount: number) => void;
+  setTimeLeft: (mode: Mode, timeLeft: number) => void;
   activateNextMode: () => void;
   setIsPaused: (paused: boolean) => void;
   setNoAvailableTasks: (noAvailableTasks: boolean) => void;
@@ -63,6 +63,14 @@ const getInitialState = () => {
 export const useCycleStore = create<CycleState & CycleStateActions>((set) => ({
   // state properties
   ...getInitialState(),
+
+  durations: {
+    [Mode.FOCUS]: usePomodoroStore.getState().settings.focus_duration * 60,
+    [Mode.SHORT_BREAK]:
+      usePomodoroStore.getState().settings.short_break_duration * 60,
+    [Mode.LONG_BREAK]:
+      usePomodoroStore.getState().settings.long_break_duration * 60,
+  },
   longBreakInterval:
     usePomodoroStore.getState().settings.cycles_before_long_break,
   longBreakIntervalCounter: 0,
@@ -71,7 +79,7 @@ export const useCycleStore = create<CycleState & CycleStateActions>((set) => ({
   noAvailableTasks: false,
   lastTimerUpdate: Date.now(),
 
-  // actions
+
   setDurations: (newDurations: { [keys in Mode]: number }) =>
     set((state) => {
       const newState = {
@@ -120,10 +128,6 @@ export const useCycleStore = create<CycleState & CycleStateActions>((set) => ({
     set((state) => {
       let newNextMode: Mode;
       let newIntervalCount: number;
-
-      console.log(
-        `currentMode: ${state.currentMode}, nextMode: ${state.nextMode}`
-      );
 
       if (state.currentMode === Mode.FOCUS) {
         newNextMode = Mode.FOCUS;

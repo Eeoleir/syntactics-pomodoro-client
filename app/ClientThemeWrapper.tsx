@@ -1,26 +1,24 @@
 "use client";
 
 import * as React from "react";
-import { useServerInsertedHTML } from "next/navigation"; 
+import { useServerInsertedHTML } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 
 export default function ClientThemeWrapper({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
-
+}>) {
   useServerInsertedHTML(() => {
     return (
       <style
         dangerouslySetInnerHTML={{
-          __html: `/ Your server-inserted styles here /`,
+          __html: `/* Your server-inserted styles here */`,
         }}
       />
     );
   });
 
-  
   return (
     <NextThemesProvider
       attribute="class"
