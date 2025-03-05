@@ -12,6 +12,9 @@ import { HistoryAccordion } from "./HistoryAccordion";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPomodoroHistory, HistoryItem } from "@/lib/history-queries";
 import {motion, AnimatePresence} from 'motion/react'
+import { validateToken } from "@/lib/auth-queries";
+import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 
 const primaryTextStyles = (isDarkMode: boolean) => `
   ${isDarkMode ? "text-[#a1a1aa]" : "text-[#52525b] dark:text-[#a1a1aa]"}
@@ -50,6 +53,7 @@ export default function PomodoroTimerCard() {
 
 function CardTop({ isDarkMode }: { isDarkMode: boolean }) {
   const { currentMode, nextMode } = useCycleStore();
+  const router = useRouter();
 
   const timerTranslations = useTranslations('components.timer');
   const sessionTranslations = useTranslations('components.session-data');
@@ -77,9 +81,14 @@ function CardTop({ isDarkMode }: { isDarkMode: boolean }) {
     queryKey: ["pomodoroHistory", currentPage],
     queryFn: () => fetchPomodoroHistory(currentPage),
     placeholderData: (previousData) => previousData ?? [],
+    retry: (count, error) => {
+      if (parseInt(error.message.substring(error.message.length - 3, error.message.length)) === 401) {
+        return false;
+      }
+      return count < 2;
+    }
   });
 
- 
   const totalPages = Math.ceil(taskHistory.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -96,6 +105,11 @@ function CardTop({ isDarkMode }: { isDarkMode: boolean }) {
   }
 
   if (error) {
+    const code = error.message.substring(error.message.length - 3, error.message.length);
+    if (parseInt(code) === 500) {
+      Cookies.remove('token');
+      router.push('/login');
+    }
     return <div>Error loading history: {(error as Error).message}</div>;
   }
 
@@ -314,7 +328,7 @@ const ModeBadge = ({
       <AnimatePresence>
         {showTooltip && (
           <motion.div
-            initial={{marginTop: "0px", opacity: 0}}
+            initial={{marginTop: "10px", opacity: 0}}
             animate={{marginTop: "25px", opacity: 1}}
             exit={{marginTop: "0px", opacity: 0}}
             style={{ backgroundColor: colors(mode)}}

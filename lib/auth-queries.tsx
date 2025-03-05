@@ -122,3 +122,21 @@ export async function resetPassword({
 
   return data;
 }
+
+export async function validateToken(token: string) {
+  try {
+    const response = await fetch(`${API_BASE_URL}auth/validate-token`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
+    });
+
+    // const data = await response.json();
+    // console.log(`Token check response: ${data}`);
+
+    return response.status;
+  } catch (e) {
+    console.log(`err: ${e}`);
+  }
+}
