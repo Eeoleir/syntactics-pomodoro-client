@@ -1,4 +1,4 @@
-"use server"
+  "use server"
 
 import { cookies } from "next/headers"
 import { Locale, defaultLocale } from "@/next-intl-services/config"
@@ -12,4 +12,8 @@ export async function getUserLocale() {
 
 export async function setUserLocale(locale: Locale) {
   (await cookies()).set(LOCALE_COOKIE, locale);
+}
+
+export async function deleteCookie(name: string) {
+  (await cookies()).delete(namez);
 }

@@ -182,6 +182,9 @@
           },
           "confirm" : {
             "text" : "Yes, delete my task"
+          },
+          "add" : {
+            "text" : "Add"
           }
         }
       }
