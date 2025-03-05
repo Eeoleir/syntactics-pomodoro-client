@@ -17,6 +17,7 @@ import {
 import UserDataProvider from "@/components/hooks/fetchUserData";
 import { Profile } from "@/lib/profile-queries";
 import { usePomodoroStore } from "@/app/stores/pomodoroStore";
+import { useTranslations } from "next-intl";
 
 const formSchema = z.object({
   name: z.string().min(6, { message: "Name must be at least 6 characters" }),
@@ -44,6 +45,7 @@ function EditProfileComponent({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { settings } = usePomodoroStore();
   const isDarkMode = settings.is_dark_mode;
+  const translations = useTranslations('components.edit-profile');
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -156,7 +158,7 @@ function EditProfileComponent({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-bold text-[14px]">Name</FormLabel>
+                  <FormLabel className="font-bold text-[14px]">{translations('fields.name.title')}</FormLabel>
                   <FormControl>
                     <Input
                       disabled={!isEditing}
@@ -165,7 +167,7 @@ function EditProfileComponent({
                           ? "bg-[#3D4142] text-white border-[#27272A]"
                           : "bg-[white] text-[##71717A] border-[#E4E4E7]"
                       } border px-3 py-1`}
-                      placeholder="Name"
+                      placeholder={translations('fields.name.placeholder')}
                       {...field}
                       value={field.value || ""}
                     />
@@ -201,13 +203,13 @@ function EditProfileComponent({
                   className="w-full py-3 sm:py-4 px-4 bg-[#CC8484]"
                   onClick={handleCancelClick}
                 >
-                  Cancel
+                  {translations('buttons.cancel.text')}
                 </Button>
                 <Button
                   type="submit"
                   className="w-full py-3 sm:py-4 px-4 bg-[#84CC16]"
                 >
-                  Save Changes
+                  {translations('buttons.submit-changes.text')}
                 </Button>
               </div>
             )}
@@ -221,10 +223,10 @@ function EditProfileComponent({
             className="w-full py-3 sm:py-4 px-4 bg-[#71717A]"
             onClick={handleEditClick}
           >
-            Edit Profile
+            {translations('buttons.edit-profile.text')}
           </Button>
           <Button className="w-full py-3 sm:py-4 px-4 bg-[#84CC16]">
-            Logout
+            {translations('buttons.logout.text')}
           </Button>
         </div>
       )}
