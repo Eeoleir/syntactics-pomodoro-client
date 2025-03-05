@@ -161,11 +161,11 @@
         "title" : "集中",
         "description": "気を散らすものを最小限に抑え、専念できるフォーカスセッション。深い作業や集中に最適です。"
       },
-      "short-break" : {
+      "short_break" : {
         "title" : "短い休憩",
         "description": "集中セッションの合間に短時間の休憩を取ることで、集中力を維持しながら生産性を高めます。"
       },
-      "long-break" : {
+      "long_break" : {
         "title" : "長い休憩",
         "description": "複数の集中セッション後に、じっくりとリラックスできる休憩を取りましょう。次の作業に備えてリフレッシュするのに最適です。"
       }
@@ -264,11 +264,11 @@
             "title" : "集中",
             "mins" : "分"
           },
-          "short-break" : {
+          "short_break" : {
             "title" : "短い休憩",
             "mins" : "分"
           },
-          "long-break" : {
+          "long_break" : {
             "title" : "長い休憩",
             "mins" : "分"
           },

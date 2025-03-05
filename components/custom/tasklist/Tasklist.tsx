@@ -56,7 +56,7 @@ const TaskList = () => {
   const isTimerPaused = useCycleStore((state) => state.isTimerPaused);
   const setIsPaused = useCycleStore((state) => state.setIsPaused);
   const [timer_id, setTimerId] = React.useState<number | null>(null);
-  const translations = useTranslations('components.task-list')
+  const translations = useTranslations("components.task-list");
 
   const [editInfo, setEditInfo] = React.useState({
     taskId: 0,
@@ -580,10 +580,10 @@ const TaskList = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="iAmHere font-bold text-2xl text-[#52525B] dark:text-[#A1A1AA]">
-                {translations('header')}
+                {translations("header")}
               </h1>
               <p className="text-[#71717A] font-normal text-base">
-                {translations('subheader')}
+                {translations("subheader")}
               </p>
             </div>
             <div>
@@ -720,10 +720,14 @@ const TaskList = () => {
                                         <DialogContent>
                                           <DialogHeader>
                                             <DialogTitle>
-                                              {translations('delete-task.header')}
+                                              {translations(
+                                                "delete-task.header"
+                                              )}
                                             </DialogTitle>
                                             <DialogDescription>
-                                              {translations('delete-task.message')}
+                                              {translations(
+                                                "delete-task.message"
+                                              )}
                                             </DialogDescription>
                                           </DialogHeader>
                                           <DialogFooter>
@@ -733,7 +737,9 @@ const TaskList = () => {
                                                 setIsDeleteDialogOpen(false)
                                               }
                                             >
-                                              {translations('delete-task.buttons.cancel.text')}
+                                              {translations(
+                                                "delete-task.buttons.cancel.text"
+                                              )}
                                             </Button>
                                             <Button
                                               className="bg-[#84CC16] hover:bg-[#669f10]"
@@ -755,7 +761,9 @@ const TaskList = () => {
                                                   d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
                                                 />
                                               </svg>
-                                              {translations('delete-task.buttons.confirm.text')}
+                                              {translations(
+                                                "delete-task.buttons.confirm.text"
+                                              )}
                                             </Button>
                                           </DialogFooter>
                                         </DialogContent>
@@ -822,7 +830,7 @@ const TaskList = () => {
             id="add-task-button"
             className="w-full py-2 px-3 mt-16 text-sm font-semibold text-white bg-[#84CC16] hover:bg-[#669f10] rounded-md"
           >
-            {translations('delete-task.buttons.add.text')}
+            {translations("delete-task.buttons.add.text")}
           </Button>
         </>
       ) : AddTaskActive === "addTitle" ? (

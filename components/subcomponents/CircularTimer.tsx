@@ -287,21 +287,21 @@ const TimerControls = ({
   });
 
   const handleNextSession = () => {
-     const tasks = queryClient.getQueryData<Task[]>(["tasks"]);
-     const firstTask = tasks?.find((task) => task.status !== "completed");
+    const tasks = queryClient.getQueryData<Task[]>(["tasks"]);
+    const firstTask = tasks?.find((task) => task.status !== "completed");
 
-     if (firstTask) {
-       completeFirstListTask.mutate(firstTask.id, {
-         onSuccess: () => {
-           if (usePomodoroStore.getState().settings.is_auto_start_breaks) {
-             setIsPaused(true);
-           } else {
-             setIsPaused(false);
-           }
-         },
-       });
-     }
-   };
+    if (firstTask) {
+      completeFirstListTask.mutate(firstTask.id, {
+        onSuccess: () => {
+          if (usePomodoroStore.getState().settings.is_auto_start_breaks) {
+            setIsPaused(true);
+          } else {
+            setIsPaused(false);
+          }
+        },
+      });
+    }
+  };
 
   return (
     <div className={containerStyles}>
@@ -342,6 +342,7 @@ const TimerControls = ({
           className={`${secondaryBtnStyles} ${secondaryBtnLayout}`}
           disabled={noAvailableTasks}
           onClick={handleNextSession}
+          disabled={noAvailableTasks}
         >
           <Image
             src={`/timer_control_icons/next_session.svg`}
