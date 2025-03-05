@@ -8,18 +8,31 @@ interface User {
   name?: string;
 }
 
+export interface Preference {
+  user_id: number;
+  focus_duration: number;
+  short_break_duration: number;
+  long_break_duration: number;
+  cycles_before_long_break: number;
+  is_auto_start_breaks: boolean;
+  is_auto_start_focus: boolean;
+  is_auto_complete_tasks: boolean;
+  is_auto_switch_tasks: boolean;
+  is_dark_mode: boolean;
+}
+
 interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
   token: string | null;
-  preferences: any | null;
+  preferences: Preference | null; 
   login: (user: User, token: string) => void;
   logout: () => void;
-  setPreferences: (preferences: any) => void;
+  setPreferences: (preferences: Preference) => void; 
   checkTokenExpiration: () => void;
 }
 
-const TOKEN_EXPIRATION_MINUTES = 12; 
+const TOKEN_EXPIRATION_MINUTES = 12;
 
 const getInitialAuthState = (() => {
   let cachedState: {
@@ -32,8 +45,8 @@ const getInitialAuthState = (() => {
       return { isAuthenticated: false, token: null, expiresAt: null };
     }
     if (cachedState === null) {
-      const token = Cookies.get("token") || null;
-      const expiresAt = Cookies.get("tokenExpiresAt") || null;
+      const token = Cookies.get("token") ?? null;
+      const expiresAt = Cookies.get("tokenExpiresAt") ?? null;
       cachedState = {
         isAuthenticated:
           !!token && !!expiresAt && new Date(expiresAt) > new Date(),
@@ -56,14 +69,14 @@ const useAuthStore = create<AuthState>((set, get) => {
     login: (user, token) => {
       const expiresAt = new Date(
         Date.now() + TOKEN_EXPIRATION_MINUTES * 60 * 60 * 1000
-      ).toISOString(); 
+      ).toISOString();
       Cookies.set("token", token, {
-        expires: TOKEN_EXPIRATION_MINUTES / (24 * 60), 
+        expires: TOKEN_EXPIRATION_MINUTES / (24 * 60),
         secure: true,
         sameSite: "Strict",
       });
       Cookies.set("tokenExpiresAt", expiresAt, {
-        expires: TOKEN_EXPIRATION_MINUTES / (24 * 60), 
+        expires: TOKEN_EXPIRATION_MINUTES / (24 * 60),
         secure: true,
         sameSite: "Strict",
       });
@@ -98,7 +111,7 @@ const useAuthStore = create<AuthState>((set, get) => {
 if (typeof window !== "undefined") {
   setInterval(() => {
     useAuthStore.getState().checkTokenExpiration();
-  }, 60 * 1000); 
+  }, 60 * 1000);
 }
 
 export default useAuthStore;
