@@ -22,31 +22,23 @@ const DarkModeContext = createContext<DarkModeContextType | undefined>(
 export function DarkModeProvider({
   children,
 }: Readonly<{ children: ReactNode }>) {
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("isDarkMode");
-      return saved !== null ? JSON.parse(saved) : true;
-    }
-    return true;
-  });
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("isDarkMode");
+    const initialDarkMode = saved !== null ? JSON.parse(saved) : true;
+    setIsDarkMode(initialDarkMode);
+    document.documentElement.classList.toggle("dark", initialDarkMode);
+    document.documentElement.classList.add("visible"); // Ensure visibility after state is set
+  }, []);
 
   useEffect(() => {
     localStorage.setItem("isDarkMode", JSON.stringify(isDarkMode));
     document.documentElement.classList.toggle("dark", isDarkMode);
   }, [isDarkMode]);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("isDarkMode");
-      if (saved !== null) {
-        const parsedValue = JSON.parse(saved);
-        setIsDarkMode(parsedValue);
-      }
-    }
-  }, []);
-
   const toggleDarkMode = () => {
-    setIsDarkMode((prev: boolean) => !prev); 
+    setIsDarkMode((prev: boolean) => !prev);
   };
 
   const contextValue = useMemo(

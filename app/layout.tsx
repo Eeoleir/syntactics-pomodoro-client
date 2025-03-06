@@ -1,15 +1,13 @@
-// app/layout.tsx
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import "animate.css";
 import { QueryProvider } from "../lib/query-client";
-import { ThemeProvider } from "@/components/Theme/theme-provider";
 import { getLocale, getMessages } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
 import ClientThemeWrapper from "./ClientThemeWrapper";
-import { DarkModeProvider } from "@/components/custom/Toggle";
+import DarkModeToggle, { DarkModeProvider } from "@/components/custom/Toggle";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -43,25 +41,35 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning className="invisible">
+      <head>
+        <style>{`
+          html.visible {
+            visibility: visible;
+          }
+        `}</style>
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased`}
       >
         <NextIntlClientProvider messages={messages}>
           <ClientThemeWrapper>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
-              <QueryProvider>
-              <DarkModeProvider>{children}</DarkModeProvider>
-                <Toaster />
-              </QueryProvider>
-            </ThemeProvider>
+            <QueryProvider>
+              <DarkModeProvider>
+                {children}
+                <DarkModeToggle />
+              </DarkModeProvider>
+              <Toaster />
+            </QueryProvider>
           </ClientThemeWrapper>
         </NextIntlClientProvider>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              document.documentElement.classList.add('visible');
+            `,
+          }}
+        />
       </body>
     </html>
   );
