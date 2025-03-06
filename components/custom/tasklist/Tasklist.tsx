@@ -749,7 +749,7 @@ const TaskList = () => {
                     ) : (
                       <div className="flex justify-center items-center h-full">
                         <p className="text-gray-500">
-                          No tasks found. Create a new task to get started!
+                          {translations('no-tasks-message')}
                         </p>
                       </div>
                     )}

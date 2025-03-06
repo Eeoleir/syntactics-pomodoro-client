@@ -10,19 +10,15 @@ import { usePomodoroStore } from "@/app/stores/pomodoroStore";
 import CircularTimer from "../subcomponents/CircularTimer";
 import { HistoryAccordion } from "./HistoryAccordion";
 import { useQuery } from "@tanstack/react-query";
-import { fetchPomodoroHistory } from "@/lib/history-queries";
-import { motion, AnimatePresence } from "motion/react";
+import { fetchPomodoroHistory, HistoryItem } from "@/lib/history-queries";
+import {motion, AnimatePresence} from 'motion/react'
+import { validateToken } from "@/lib/auth-queries";
+import Cookies from "js-cookie";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
+import InvalidSessionDialog from "./ForceLoginDialog";
 
-const primaryTextStyles = (isDarkMode: boolean) => `
-  ${isDarkMode ? "text-[#a1a1aa]" : "text-[#52525b] dark:text-[#a1a1aa]"}
-  font-bold
-  font-sans
-`;
-
-const secondaryTextStyles = (isDarkMode: boolean) => `
-  ${isDarkMode ? "text-[#71717a]" : "text-white"}
-  font-sans
-`;
+const primaryTextStyles = () => "dark:text-[#a1a1aa] text-[#52525b] font-bold font-sans";
+const secondaryTextStyles = () => "font-sans dark:text-[#71717a] text-[#a1a1aa]";
 
 export default function PomodoroTimerCard() {
   const { settings } = usePomodoroStore();
@@ -76,6 +72,12 @@ function CardTop({ isDarkMode }: Readonly<{ isDarkMode: boolean }>) {
     queryKey: ["pomodoroHistory", currentPage],
     queryFn: () => fetchPomodoroHistory(currentPage),
     placeholderData: (previousData) => previousData ?? [],
+    retry: (count, error) => {
+      if (parseInt(error.message.substring(error.message.length - 3, error.message.length)) === 401) {
+        return false;
+      }
+      return count < 2;
+    }
   });
 
   const totalPages = Math.ceil(taskHistory.length / itemsPerPage);
@@ -94,10 +96,36 @@ function CardTop({ isDarkMode }: Readonly<{ isDarkMode: boolean }>) {
   }
 
   if (error) {
-    return <div>Error loading history: {error.message}</div>;
+    const code = error.message.substring(error.message.length - 3, error.message.length);
+    if (parseInt(code) === 401) {
+      Cookies.remove('token');
+      return (
+          <InvalidSessionDialog/>
+      )
+    }
+    return <div>Error loading history: {(error as Error).message}</div>;
   }
+
   return (
     <div className="flex flex-col w-full">
+      {/* <Dialog open={true}>
+        <DialogContent>
+          <DialogClose className="hidden" />
+          <DialogHeader>
+            <DialogTitle>
+              Invalid session
+            </DialogTitle>
+            <DialogDescription>
+              Your account has been logged out, please login again.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => router.push('/login')} className="">
+              Login
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog> */}
       <div id="header-container" className={containerStyles}>
         <div id="header-text" className="flex flex-col">
           <h3
@@ -207,8 +235,8 @@ const CycleIndicator = ({
   return (
     <div className="flex flex-row justify-between">
       <div className="flex flex-col">
-        <h4 className={`${primaryTextStyles(true)} text-[18px]`}>{title}</h4>
-        <h6 className={`${secondaryTextStyles(true)} text-[14px]`}>
+        <h4 className={`${primaryTextStyles()} text-[18px]`}>{title}</h4>
+        <h6 className={`${secondaryTextStyles()} text-[14px]`}>
           {subText}
         </h6>
       </div>
@@ -324,10 +352,10 @@ const ModeBadge = ({
       <AnimatePresence>
         {showTooltip && (
           <motion.div
-            initial={{ marginTop: "0px", opacity: 0 }}
-            animate={{ marginTop: "25px", opacity: 1 }}
-            exit={{ marginTop: "0px", opacity: 0 }}
-            style={{ backgroundColor: colors(mode) }}
+            initial={{marginTop: "10px", opacity: 0}}
+            animate={{marginTop: "25px", opacity: 1}}
+            exit={{marginTop: "0px", opacity: 0}}
+            style={{ backgroundColor: colors(mode)}}
             ref={componentRef}
             className="absolute right-16 lg:right-auto text-white md:w-[360px] sm:w-[300px] w-[250px] h-fit z-50 rounded-lg"
           >

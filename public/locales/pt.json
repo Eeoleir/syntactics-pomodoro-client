@@ -1,36 +1,36 @@
 {
-  "login-page" : {
-    "login-header" : "Log in",
-    "login-subheader" : "Enter your account details to log in",
-    "text-fields" : {
-      "email-field" : {
-        "title" : "Email",
-        "placeholder": "Enter your email"
+  "login-page": {
+    "login-header": "Entrar",
+    "login-subheader": "Insira os detalhes da sua conta para fazer login",
+    "text-fields": {
+      "email-field": {
+        "title": "E-mail",
+        "placeholder": "Digite seu e-mail"
       },
-      "password-field" : {
-        "title" : "Password",
-        "placeholder" : "Enter your password"
+      "password-field": {
+        "title": "Senha",
+        "placeholder": "Digite sua senha"
       }
     },
-    "buttons" : {
-      "submit-button" : {
-        "text" : "Login",
-        "on-click" : "Logging In..."
+    "buttons": {
+      "submit-button": {
+        "text": "Entrar",
+        "on-click": "Fazendo login..."
       }
     },
-    "links" : {
-      "create-account-notice" : {
-        "text" : "New to Pomodoro?",
-        "link-text" : "Create Account"
+    "links": {
+      "create-account-notice": {
+        "text": "Novo no Pomodoro?",
+        "link-text": "Criar Conta"
       },
-      "forgot-password-notice" : {
-        "text" : "Forgot Password?",
-        "link-text" : "Reset Password"
+      "forgot-password-notice": {
+        "text": "Esqueceu a senha?",
+        "link-text": "Redefinir Senha"
       }
     },
-    "alerts" : {
-      "errors" : {
-        "general-message" : "Something went wrong"
+    "alerts": {
+      "errors": {
+        "general-message": "Algo deu errado"
       }
     }
   },
@@ -173,6 +173,7 @@
     "task-list": {
       "header": "Lista de Tarefas",
       "subheader": "Seus objetivos para esta sessão",
+      "no-tasks-message": "Nenhuma tarefa encontrada. Crie uma nova tarefa para começar!",
       "delete-task": {
         "header": "Tem certeza de que deseja excluir esta tarefa?",
         "message": "Esta ação não pode ser desfeita. Isso excluirá permanentemente sua tarefa...",
@@ -344,6 +345,15 @@
       },
       "general" : {
         "minutes" : "minutos"
+      }
+    },
+    "force-login-dialog": {
+      "header": "Sessão de Token Inválida",
+      "subheader": "Sua conta foi desconectada. Faça login novamente.",
+      "buttons": {
+        "continue": {
+          "text": "Continuar"
+        }
       }
     }
   }

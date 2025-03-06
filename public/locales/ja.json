@@ -173,6 +173,7 @@
     "task-list": {
       "header": "タスクリスト",
       "subheader": "このセッションの目標",
+      "no-tasks-message": "タスクが見つかりません。新しいタスクを作成して開始してください！",
       "delete-task": {
         "header": "本当にこのタスクを削除しますか？",
         "message": "この操作は元に戻せません。タスクは完全に削除されます...",
@@ -344,6 +345,15 @@
       },
       "general" : {
         "minutes" : "分"
+      }
+    },
+    "force-login-dialog": {
+      "header": "無効なトークンセッション",
+      "subheader": "アカウントがログアウトされました。再度ログインしてください。",
+      "buttons": {
+        "continue": {
+          "text": "続ける"
+        }
       }
     }
   }

@@ -173,6 +173,7 @@
     "task-list" : {
       "header" : "Task list",
       "subheader" : "Your goals for this session",
+      "no-tasks-message" : "No task found. Create a new task to get started!",
       "delete-task" : {
         "header" : "Are you sure you're gonna delete this task?",
         "message" : "This action cannot be undone. This will permanently delete your task...",
@@ -344,6 +345,15 @@
       },
       "general" : {
         "minutes" : "minutes"
+      }
+    },
+    "force-login-dialog" : {
+      "header" : "Invalid Token Session",
+      "subheader" : "Your account has been logged out, please login again.",
+      "buttons" : {
+        "continue" : {
+          "text" : "Continue"
+        }
       }
     }
   }

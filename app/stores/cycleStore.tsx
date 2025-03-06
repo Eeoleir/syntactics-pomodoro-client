@@ -33,8 +33,10 @@ type CycleStateActions = {
 };
 
 export const useCycleStore = create<CycleState & CycleStateActions>((set) => ({
+
   durations: {
     [Mode.FOCUS]: usePomodoroStore.getState().settings.focus_duration * 60,
+
     [Mode.SHORT_BREAK]:
       usePomodoroStore.getState().settings.short_break_duration * 60,
     [Mode.LONG_BREAK]:
