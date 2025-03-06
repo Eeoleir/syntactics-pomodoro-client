@@ -227,7 +227,11 @@ const TaskList = () => {
 
                   if (timeRemaining <= 0) {
                     clearInterval(intervalId);
-
+                    if (
+                      usePomodoroStore.getState().settings.is_auto_start_breaks
+                    ) {
+                      setIsPaused(true);
+                    }
                     // Determine next mode
                     const nextMode =
                       mode === Mode.FOCUS
@@ -246,13 +250,12 @@ const TaskList = () => {
 
                       // Check if completed cycles match estimated cycles
                       if (updatedCompletedCycles === first.estimated_cycles) {
-                        completeFirstListTask.mutate(first.id);
-                        setCompletedCycles(0);
                         if (
                           usePomodoroStore.getState().settings
-                            .is_auto_start_breaks
+                            .is_auto_complete_tasks
                         ) {
-                          setIsPaused(true);
+                          completeFirstListTask.mutate(first.id);
+                          setCompletedCycles(0);
                         }
                       }
                     }
