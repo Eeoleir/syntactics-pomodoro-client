@@ -59,16 +59,25 @@ export const useCycleStore = create<CycleState & CycleStateActions>((set) => ({
     set(() => ({ longBreakIntervalCounter: newIntervalCount })),
 
   setTimeLeft: (mode: Mode, timeLeft: number) =>
-    set((state) => ({
-      currentMode: mode,
-      currentTimeLeft: timeLeft,
-      nextMode:
-        mode === Mode.FOCUS
-          ? state.longBreakIntervalCounter + 1 === state.longBreakInterval
-            ? Mode.LONG_BREAK
-            : Mode.SHORT_BREAK
-          : Mode.FOCUS,
-    })),
+    set((state) => {
+      let nextModeValue: Mode;
+
+      if (mode === Mode.FOCUS) {
+        if (state.longBreakIntervalCounter + 1 === state.longBreakInterval) {
+          nextModeValue = Mode.LONG_BREAK;
+        } else {
+          nextModeValue = Mode.SHORT_BREAK;
+        }
+      } else {
+        nextModeValue = Mode.FOCUS;
+      }
+
+      return {
+        currentMode: mode,
+        currentTimeLeft: timeLeft,
+        nextMode: nextModeValue,
+      };
+    }),
   activateNextMode: () =>
     set((state) => {
       let newCurrentMode: Mode;
