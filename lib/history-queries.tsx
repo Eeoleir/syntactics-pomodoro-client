@@ -2,6 +2,7 @@
 import Cookies from "js-cookie";
 import useAuthStore from "@/app/stores/authStore";
 import API_BASE_URL from "./api_url";
+import { validateToken } from "./auth-queries";
 
 export interface HistoryItem {
   id: number;
@@ -69,6 +70,17 @@ export async function fetchPomodoroHistory(
   if (!response.ok) {
     const errorText = await response.text();
     console.log("API error:", errorText, "Status:", response.status);
+    if (response.status === 500) {
+      const token = Cookies.get('token');
+      if (!token) {
+        throw new Error('No valid token in cookies: 500');
+      } else {
+        const tokenValidity = await validateToken(token);
+        if (tokenValidity === 401) {
+          throw new Error(`Token invalid returning user to login: ${tokenValidity}`);
+        }
+      }
+    }
     throw new Error(`Failed to fetch Pomodoro history: ${response.status}`);
   }
 

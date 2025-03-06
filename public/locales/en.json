@@ -119,7 +119,7 @@
     },
     "break-option" : {
       "title" : "Break Option",
-      "description" : "Feeling overwhelmed? Click here to take a short or long break and recharge before your next session."
+      "description" : "Feeling overwhelmed? You can see here the next modes to take a short or long break and recharge before your next session."
     },
     "task-list" : {
       "title" : "Task List",
@@ -173,6 +173,7 @@
     "task-list" : {
       "header" : "Task list",
       "subheader" : "Your goals for this session",
+      "no-tasks-message" : "No task found. Create a new task to get started!",
       "delete-task" : {
         "header" : "Are you sure you're gonna delete this task?",
         "message" : "This action cannot be undone. This will permanently delete your task...",
@@ -344,6 +345,15 @@
       },
       "general" : {
         "minutes" : "minutes"
+      }
+    },
+    "force-login-dialog" : {
+      "header" : "Invalid Token Session",
+      "subheader" : "Your account has been logged out, please login again.",
+      "buttons" : {
+        "continue" : {
+          "text" : "Continue"
+        }
       }
     }
   }
