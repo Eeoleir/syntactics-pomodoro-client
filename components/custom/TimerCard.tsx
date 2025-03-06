@@ -17,8 +17,17 @@ import Cookies from "js-cookie";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import InvalidSessionDialog from "./ForceLoginDialog";
 
-const primaryTextStyles = () => "dark:text-[#a1a1aa] text-[#52525b] font-bold font-sans";
-const secondaryTextStyles = () => "font-sans dark:text-[#71717a] text-[#a1a1aa]";
+
+const primaryTextStyles = (isDarkMode: boolean) => `
+  ${isDarkMode ? "text-[#a1a1aa]" : "text-[#52525b] dark:text-[#a1a1aa]"}
+  font-bold
+  font-sans
+`;
+
+const secondaryTextStyles = `
+  text-[#71717a]
+  font-sans
+`;
 
 export default function PomodoroTimerCard() {
   const { settings } = usePomodoroStore();
@@ -136,7 +145,7 @@ function CardTop({ isDarkMode }: Readonly<{ isDarkMode: boolean }>) {
             {sessionTranslations("header")}
           </h3>
           <h6
-            className={`text-[16px] dark:text-[#71717A] ${secondaryTextStyles(
+            className={`secondaryTextStyles text-[16px] dark:text-[#71717A] (
               isDarkMode
             )}`}
           >
@@ -176,7 +185,6 @@ function CardTop({ isDarkMode }: Readonly<{ isDarkMode: boolean }>) {
         />
       </div>
 
-      {/* Always render CircularTimer, toggle visibility with CSS */}
       <div
         id="clock-container"
         className={`flex w-full justify-center items-center mt-[64px] ${
@@ -235,10 +243,10 @@ const CycleIndicator = ({
   return (
     <div className="flex flex-row justify-between">
       <div className="flex flex-col">
-        <h4 className={`${primaryTextStyles()} text-[18px]`}>{title}</h4>
-        <h6 className={`${secondaryTextStyles()} text-[14px]`}>
-          {subText}
-        </h6>
+
+        <h4 className={`${primaryTextStyles(true)} text-[18px]`}>{title}</h4>
+        <h6 className={`secondaryTextStyles text-[14px]`}>{subText}</h6>
+
       </div>
       <div className="flex items-center">{modeBadge}</div>
     </div>

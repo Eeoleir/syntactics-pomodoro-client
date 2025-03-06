@@ -23,9 +23,8 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import "../../../globals.css";
-
 import { useTranslations } from "next-intl";
-import DarkModeToggle, { useDarkMode } from "@/components/custom/Toggle";
+import ThemeToggle, { useTheme } from "@/components/custom/themeManager";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -42,8 +41,7 @@ export default function Login() {
   const { setSettings, setUserId } = usePomodoroStore();
   const { setProfile } = useProfileStore();
   const [errorKey, setErrorKey] = useState(0);
-  const { isDarkMode } = useDarkMode();
-
+  const { isDarkMode } = useTheme();
   const pageTranslations = useTranslations("login-page");
 
   const form = useForm<FormValues>({
@@ -222,7 +220,7 @@ export default function Login() {
           </p>
         </div>
       </div>
-      <DarkModeToggle />
+      <ThemeToggle />
     </section>
   );
 }

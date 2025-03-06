@@ -10,9 +10,10 @@ import { IoArrowBack } from "react-icons/io5";
 import { useMutation } from "@tanstack/react-query";
 import { forgotPassword } from "../../../../lib/auth-queries";
 import { useState } from "react";
-import DarkModeToggle, { useDarkMode } from "@/components/custom/Toggle";
-import "../../../globals.css";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
+import ThemeToggle, { useTheme } from "@/components/custom/themeManager";
+
+import "../../../globals.css";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -23,8 +24,7 @@ type FormValues = z.infer<typeof formSchema>;
 export default function ForgotPassword() {
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { isDarkMode } = useDarkMode();
-
+  const { isDarkMode } = useTheme(); 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -130,7 +130,7 @@ export default function ForgotPassword() {
           </Form>
         </div>
       </div>
-      <DarkModeToggle />
+      <ThemeToggle />
     </section>
   );
 }

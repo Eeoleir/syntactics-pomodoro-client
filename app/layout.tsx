@@ -3,11 +3,20 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import "animate.css";
-import { QueryProvider } from "../lib/query-client";
 import { getLocale, getMessages } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
 import ClientThemeWrapper from "./ClientThemeWrapper";
-import DarkModeToggle, { DarkModeProvider } from "@/components/custom/Toggle";
+import { ClientQueryProvider } from "@/lib/query-client";
+import { ThemeManager } from "@/components/custom/themeManager";
+import { getServerSession } from "next-auth";
+
+export const metadata: Metadata = {
+  title: "POMOSYNC",
+  description: "POMODORO APP",
+  icons: {
+    icon: "/logo.png",
+  },
+};
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,14 +33,6 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "POMOSYNC",
-  description: "POMODORO APP",
-  icons: {
-    icon: "/logo.png",
-  },
-};
-
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -39,37 +40,41 @@ export default async function RootLayout({
 }>) {
   const locale = await getLocale();
   const messages = await getMessages();
+  const session = await getServerSession();
+  const isLoggedIn = !!session;
 
   return (
-    <html lang={locale} suppressHydrationWarning className="invisible">
+    <html lang={locale} suppressHydrationWarning>
       <head>
-        <style>{`
-          html.visible {
-            visibility: visible;
-          }
-        `}</style>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                const isLoggedIn = document.cookie.includes('next-auth.session-token');
+                if (!isLoggedIn) {
+                  const isDark = localStorage.getItem('theme-loggedOut');
+                  if (isDark && JSON.parse(isDark).isDarkMode === true) {
+                    document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                  }
+                }
+              })();
+            `,
+          }}
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased`}
       >
         <NextIntlClientProvider messages={messages}>
           <ClientThemeWrapper>
-            <QueryProvider>
-              <DarkModeProvider>
-                {children}
-                <DarkModeToggle />
-              </DarkModeProvider>
+            <ClientQueryProvider>
+              <ThemeManager isLoggedIn={isLoggedIn}>{children}</ThemeManager>
               <Toaster />
-            </QueryProvider>
+            </ClientQueryProvider>
           </ClientThemeWrapper>
         </NextIntlClientProvider>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              document.documentElement.classList.add('visible');
-            `,
-          }}
-        />
       </body>
     </html>
   );

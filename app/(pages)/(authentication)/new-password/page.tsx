@@ -11,8 +11,9 @@ import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { useMutation } from "@tanstack/react-query";
 import { resetPassword } from "../../../../lib/auth-queries";
 import { useState, useEffect } from "react";
+import ThemeToggle, { useTheme } from "@/components/custom/themeManager";
+
 import "../../../globals.css";
-import DarkModeToggle, { useDarkMode } from "@/components/custom/Toggle";
 
 const formSchema = z
   .object({
@@ -30,7 +31,7 @@ export default function NewPassword() {
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const { isDarkMode } = useDarkMode(); // Add dark mode context hook
+  const { isDarkMode } = useTheme(); // Use refactored useTheme hook
 
   useEffect(() => {
     const storedToken = localStorage.getItem("resetToken");
@@ -185,7 +186,7 @@ export default function NewPassword() {
           </Form>
         </div>
       </div>
-      <DarkModeToggle />
+      <ThemeToggle />
     </section>
   );
 }

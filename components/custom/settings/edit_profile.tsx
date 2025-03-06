@@ -45,7 +45,7 @@ function EditProfileComponent({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { settings } = usePomodoroStore();
   const isDarkMode = settings.is_dark_mode;
-  const translations = useTranslations('components.edit-profile');
+  const translations = useTranslations("components.edit-profile");
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -130,18 +130,25 @@ function EditProfileComponent({
     };
   }, [previewUrl]);
 
-  if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error loading profile: {error.message}</div>;
 
   return (
     <div className="profile flex flex-col items-center justify-between h-auto min-h-[400px] sm:min-h-[594px] gap-3 sm:gap-4 md:gap-[12px] text-[14px] lg:w-1/3">
       <div className="PPcontianer flex items-center justify-center pt-4">
-        <ProfilePicture
-          size="lg"
-          editable={isEditing}
-          src={previewUrl}
-          onFileChange={isEditing ? triggerFileInput : undefined}
-        />
+        {isLoading ? (
+          <div
+            className={`w-[120px] h-[120px] rounded-full ${
+              isDarkMode ? "bg-[#3D4142]" : "bg-gray-200"
+            } animate-pulse`}
+          />
+        ) : (
+          <ProfilePicture
+            size="lg"
+            editable={isEditing}
+            src={previewUrl}
+            onFileChange={isEditing ? triggerFileInput : undefined}
+          />
+        )}
         <input
           type="file"
           accept="image/*"
@@ -158,19 +165,29 @@ function EditProfileComponent({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-bold text-[14px]">{translations('fields.name.title')}</FormLabel>
+                  <FormLabel className="font-bold text-[14px]">
+                    {translations("fields.name.title")}
+                  </FormLabel>
                   <FormControl>
-                    <Input
-                      disabled={!isEditing}
-                      className={`w-full ${
-                        isDarkMode
-                          ? "bg-[#3D4142] text-white border-[#27272A]"
-                          : "bg-[white] text-[##71717A] border-[#E4E4E7]"
-                      } border px-3 py-1`}
-                      placeholder={translations('fields.name.placeholder')}
-                      {...field}
-                      value={field.value || ""}
-                    />
+                    {isLoading ? (
+                      <div
+                        className={`w-full h-8 ${
+                          isDarkMode ? "bg-[#3D4142]" : "bg-gray-200"
+                        } animate-pulse rounded`}
+                      />
+                    ) : (
+                      <Input
+                        disabled={!isEditing}
+                        className={`w-full ${
+                          isDarkMode
+                            ? "bg-[#3D4142] text-white border-[#27272A]"
+                            : "bg-[white] text-[##71717A] border-[#E4E4E7]"
+                        } border px-3 py-1`}
+                        placeholder={translations("fields.name.placeholder")}
+                        {...field}
+                        value={field.value || ""}
+                      />
+                    )}
                   </FormControl>
                 </FormItem>
               )}
@@ -181,36 +198,61 @@ function EditProfileComponent({
                 <FormItem>
                   <FormLabel className="font-bold text-[14px]">Email</FormLabel>
                   <FormControl>
-                    <Input
-                      disabled={!isEditing}
-                      className={`w-full ${
-                        isDarkMode
-                          ? "bg-[#3D4142] text-white border-[#27272A]"
-                          : "bg-[white] text-[##71717A] border-[#E4E4E7]"
-                      } border px-3 py-1`}
-                      placeholder="m@example.com"
-                      {...field}
-                      value={field.value || ""}
-                    />
+                    {isLoading ? (
+                      <div
+                        className={`w-full h-8 ${
+                          isDarkMode ? "bg-[#3D4142]" : "bg-gray-200"
+                        } animate-pulse rounded`}
+                      />
+                    ) : (
+                      <Input
+                        disabled={!isEditing}
+                        className={`w-full ${
+                          isDarkMode
+                            ? "bg-[#3D4142] text-white border-[#27272A]"
+                            : "bg-[white] text-[##71717A] border-[#E4E4E7]"
+                        } border px-3 py-1`}
+                        placeholder="m@example.com"
+                        {...field}
+                        value={field.value || ""}
+                      />
+                    )}
                   </FormControl>
                 </FormItem>
               )}
             />
             {isEditing && (
               <div className="flex flex-row gap-2 sm:gap-[10px] mt-6">
-                <Button
-                  type="button"
-                  className="w-full py-3 sm:py-4 px-4 bg-[#CC8484]"
-                  onClick={handleCancelClick}
-                >
-                  {translations('buttons.cancel.text')}
-                </Button>
-                <Button
-                  type="submit"
-                  className="w-full py-3 sm:py-4 px-4 bg-[#84CC16]"
-                >
-                  {translations('buttons.submit-changes.text')}
-                </Button>
+                {isLoading ? (
+                  <>
+                    <div
+                      className={`w-full h-10 ${
+                        isDarkMode ? "bg-[#3D4142]" : "bg-gray-200"
+                      } animate-pulse rounded`}
+                    />
+                    <div
+                      className={`w-full h-10 ${
+                        isDarkMode ? "bg-[#3D4142]" : "bg-gray-200"
+                      } animate-pulse rounded`}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      type="button"
+                      className="w-full py-3 sm:py-4 px-4 bg-[#CC8484]"
+                      onClick={handleCancelClick}
+                    >
+                      {translations("buttons.cancel.text")}
+                    </Button>
+                    <Button
+                      type="submit"
+                      className="w-full py-3 sm:py-4 px-4 bg-[#84CC16]"
+                    >
+                      {translations("buttons.submit-changes.text")}
+                    </Button>
+                  </>
+                )}
               </div>
             )}
           </form>
@@ -219,15 +261,32 @@ function EditProfileComponent({
 
       {!isEditing && (
         <div className="btns flex flex-col gap-2 sm:gap-[10px] w-full mt-6 sm:mt-8 px-4 sm:px-0">
-          <Button
-            className="w-full py-3 sm:py-4 px-4 bg-[#71717A]"
-            onClick={handleEditClick}
-          >
-            {translations('buttons.edit-profile.text')}
-          </Button>
-          <Button className="w-full py-3 sm:py-4 px-4 bg-[#84CC16]">
-            {translations('buttons.logout.text')}
-          </Button>
+          {isLoading ? (
+            <>
+              <div
+                className={`w-full h-10 ${
+                  isDarkMode ? "bg-[#3D4142]" : "bg-gray-200"
+                } animate-pulse rounded`}
+              />
+              <div
+                className={`w-full h-10 ${
+                  isDarkMode ? "bg-[#3D4142]" : "bg-gray-200"
+                } animate-pulse rounded`}
+              />
+            </>
+          ) : (
+            <>
+              <Button
+                className="w-full py-3 sm:py-4 px-4 bg-[#71717A]"
+                onClick={handleEditClick}
+              >
+                {translations("buttons.edit-profile.text")}
+              </Button>
+              <Button className="w-full py-3 sm:py-4 px-4 bg-[#84CC16]">
+                {translations("buttons.logout.text")}
+              </Button>
+            </>
+          )}
         </div>
       )}
     </div>

@@ -25,10 +25,10 @@ interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
   token: string | null;
-  preferences: Preference | null; 
+  preferences: Preference | null;
   login: (user: User, token: string) => void;
   logout: () => void;
-  setPreferences: (preferences: Preference) => void; 
+  setPreferences: (preferences: Preference) => void;
   checkTokenExpiration: () => void;
 }
 
