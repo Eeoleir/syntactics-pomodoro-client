@@ -12,8 +12,8 @@ import { ResendTimer } from "@/components/custom/ResendTimer";
 import { useMutation } from "@tanstack/react-query";
 import { verifyResetCode } from "../../../../lib/auth-queries";
 import { useState, useEffect } from "react";
+import ThemeToggle, { useTheme } from "@/components/custom/themeManager";
 import "../../../globals.css";
-import DarkModeToggle, { useDarkMode } from "@/components/custom/Toggle";
 
 const formSchema = z.object({
   recoveryCode: z.string().min(4),
@@ -25,7 +25,7 @@ export default function ResetCode() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { isDarkMode } = useDarkMode();
+  const { isDarkMode } = useTheme(); 
 
   useEffect(() => {
     const storedEmail = localStorage.getItem("resetEmail");
@@ -160,7 +160,7 @@ export default function ResetCode() {
           </h3>
         </div>
       </div>
-      <DarkModeToggle />
+      <ThemeToggle />
     </section>
   );
 }

@@ -104,9 +104,9 @@ export function HistoryAccordion({
               </Select>
             </div>
 
-            {/* History Table */}
+          
             <div className="flex flex-col">
-              {/* Column Headers */}
+              
               <div className="grid grid-cols-3 gap-4 p-4 border-b dark:border-[#27272A] border-[#e4e4e7] font-semibold">
                 <span className={primaryTextStyles(isDarkMode)}>
                   Date
@@ -119,7 +119,6 @@ export function HistoryAccordion({
                 </span>
               </div>
 
-              {/* Table Rows */}
               {paginatedData.map((item) => (
                 <div
                   key={item.id}

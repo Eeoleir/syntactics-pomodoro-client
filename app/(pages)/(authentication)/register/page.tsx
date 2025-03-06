@@ -9,9 +9,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { register } from "../../../../lib/auth-queries";
-import DarkModeToggle, { useDarkMode } from "@/components/custom/Toggle";
-import "../../../globals.css";
-
+import { useTranslations } from "next-intl";
 import {
   Form,
   FormControl,
@@ -19,7 +17,9 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
-import { useTranslations } from "next-intl";
+import ThemeToggle, { useTheme } from "@/components/custom/themeManager";
+
+import "../../../globals.css";
 
 const formSchema = z
   .object({
@@ -44,7 +44,8 @@ type FormValues = z.infer<typeof formSchema>;
 export default function Register() {
   const router = useRouter();
   const pageTranslations = useTranslations("create-account-page");
-  const { isDarkMode } = useDarkMode();
+  const { isDarkMode } = useTheme();
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -225,7 +226,7 @@ export default function Register() {
           </p>
         </div>
       </div>
-      <DarkModeToggle />
+      <ThemeToggle />
     </section>
   );
 }

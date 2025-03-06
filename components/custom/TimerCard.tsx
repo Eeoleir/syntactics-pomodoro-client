@@ -19,8 +19,8 @@ const primaryTextStyles = (isDarkMode: boolean) => `
   font-sans
 `;
 
-const secondaryTextStyles = (isDarkMode: boolean) => `
-  ${isDarkMode ? "text-[#71717a]" : "text-white"}
+const secondaryTextStyles = `
+  text-[#71717a]
   font-sans
 `;
 
@@ -108,7 +108,7 @@ function CardTop({ isDarkMode }: Readonly<{ isDarkMode: boolean }>) {
             {sessionTranslations("header")}
           </h3>
           <h6
-            className={`text-[16px] dark:text-[#71717A] ${secondaryTextStyles(
+            className={`secondaryTextStyles text-[16px] dark:text-[#71717A] (
               isDarkMode
             )}`}
           >
@@ -148,7 +148,6 @@ function CardTop({ isDarkMode }: Readonly<{ isDarkMode: boolean }>) {
         />
       </div>
 
-      {/* Always render CircularTimer, toggle visibility with CSS */}
       <div
         id="clock-container"
         className={`flex w-full justify-center items-center mt-[64px] ${
@@ -208,9 +207,7 @@ const CycleIndicator = ({
     <div className="flex flex-row justify-between">
       <div className="flex flex-col">
         <h4 className={`${primaryTextStyles(true)} text-[18px]`}>{title}</h4>
-        <h6 className={`${secondaryTextStyles(true)} text-[14px]`}>
-          {subText}
-        </h6>
+        <h6 className={`secondaryTextStyles text-[14px]`}>{subText}</h6>
       </div>
       <div className="flex items-center">{modeBadge}</div>
     </div>

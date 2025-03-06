@@ -7,10 +7,10 @@ import { HeroSection } from "./(pages)/section/HeroSection";
 import { IntroSection } from "./(pages)/section/IntroSection";
 import { FeaturesSection } from "./(pages)/section/FeaturesSection";
 import { DownloadSection } from "./(pages)/section/DownloadSection";
-import { useDarkMode } from "@/components/custom/Toggle";
+import ThemeToggle, { useTheme } from "@/components/custom/themeManager";
 
 export default function Home() {
-  const { isDarkMode } = useDarkMode();
+  const { isDarkMode } = useTheme();
 
   useEffect(() => {
     const firstTimeUser = JSON.parse(
@@ -32,6 +32,7 @@ export default function Home() {
       <IntroSection isDarkMode={isDarkMode} />
       <FeaturesSection isDarkMode={isDarkMode} />
       <DownloadSection isDarkMode={isDarkMode} />
+      <ThemeToggle />
       <Footer />
     </main>
   );
