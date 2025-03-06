@@ -10,11 +10,9 @@ import useAuthStore from "@/app/stores/authStore";
 
 export function ThemeManager({
   children,
-  isLoggedIn,
   userId,
 }: Readonly<{
   children: ReactNode;
-  isLoggedIn: boolean;
   userId?: number;
 }>) {
   const { isDarkMode, setDarkMode } = useThemeStore();
@@ -24,7 +22,7 @@ export function ThemeManager({
   const { data: preferences } = useQuery({
     queryKey: [userId],
     queryFn: getPreferences,
-    enabled: isLoggedIn && !!userId && !!token,
+    enabled: !!userId && !!token,
     initialData: [],
   });
 
@@ -46,17 +44,17 @@ export function ThemeManager({
       setDarkMode(!!dbDarkMode);
       document.documentElement.classList.toggle("dark", !!dbDarkMode);
     } else {
-      
+
       document.documentElement.classList.toggle("dark", isDarkMode);
     }
-  }, [isLoggedIn, userId, preferences, isDarkMode, setDarkMode]);
+  }, [userId, preferences, isDarkMode, setDarkMode]);
 
   useEffect(() => {
-    if (isLoggedIn && userId) {
+    if (userId) {
       mutation.mutate({ id: userId, is_dark_mode: isDarkMode ? 1 : 0 });
     }
     document.documentElement.classList.toggle("dark", isDarkMode);
-  }, [isDarkMode, isLoggedIn, userId, mutation]);
+  }, [isDarkMode, userId, mutation]);
 
   return <>{children}</>;
 }

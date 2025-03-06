@@ -8,7 +8,6 @@ import { NextIntlClientProvider } from "next-intl";
 import ClientThemeWrapper from "./ClientThemeWrapper";
 import { ClientQueryProvider } from "@/lib/query-client";
 import { ThemeManager } from "@/components/custom/themeManager";
-import { getServerSession } from "next-auth";
 
 export const metadata: Metadata = {
   title: "POMOSYNC",
@@ -40,8 +39,6 @@ export default async function RootLayout({
 }>) {
   const locale = await getLocale();
   const messages = await getMessages();
-  const session = await getServerSession();
-  const isLoggedIn = !!session;
 
   return (
     <html lang={locale} suppressHydrationWarning>
@@ -70,7 +67,7 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           <ClientThemeWrapper>
             <ClientQueryProvider>
-              <ThemeManager isLoggedIn={isLoggedIn}>{children}</ThemeManager>
+              <ThemeManager>{children}</ThemeManager>
               <Toaster />
             </ClientQueryProvider>
           </ClientThemeWrapper>
