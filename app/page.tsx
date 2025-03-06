@@ -7,13 +7,15 @@ import { HeroSection } from "./(pages)/section/HeroSection";
 import { IntroSection } from "./(pages)/section/IntroSection";
 import { FeaturesSection } from "./(pages)/section/FeaturesSection";
 import { DownloadSection } from "./(pages)/section/DownloadSection";
-import DarkModeToggle, { useDarkMode } from "@/components/custom/Toggle";
+import { useDarkMode } from "@/components/custom/Toggle";
 
 export default function Home() {
   const { isDarkMode } = useDarkMode();
 
   useEffect(() => {
-    const firstTimeUser = JSON.parse(localStorage.getItem("firstTimeUser") ?? "true");
+    const firstTimeUser = JSON.parse(
+      localStorage.getItem("firstTimeUser") ?? "true"
+    );
     if (firstTimeUser) {
       localStorage.setItem("firstTimeUser", JSON.stringify(false));
     }
@@ -31,7 +33,6 @@ export default function Home() {
       <FeaturesSection isDarkMode={isDarkMode} />
       <DownloadSection isDarkMode={isDarkMode} />
       <Footer />
-      <DarkModeToggle />
     </main>
   );
 }

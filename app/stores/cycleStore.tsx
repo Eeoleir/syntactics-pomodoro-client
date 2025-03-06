@@ -35,8 +35,8 @@ type CycleStateActions = {
 export const useCycleStore = create<CycleState & CycleStateActions>((set) => ({
 
   durations: {
-    [Mode.FOCUS]:
-      usePomodoroStore.getState().settings.focus_duration * 60, // convert minutes to seconds
+    [Mode.FOCUS]: usePomodoroStore.getState().settings.focus_duration * 60,
+
     [Mode.SHORT_BREAK]:
       usePomodoroStore.getState().settings.short_break_duration * 60,
     [Mode.LONG_BREAK]:
@@ -51,45 +51,70 @@ export const useCycleStore = create<CycleState & CycleStateActions>((set) => ({
   isTimerPaused: true,
   noAvailableTasks: false,
 
-
   setDurations: (newDurations: { [keys in Mode]: number }) =>
     set(() => ({ durations: newDurations })),
+
   setLongBreakInterval: (newInterval: number) =>
     set(() => ({ longBreakInterval: newInterval })),
+
   setIntervalCount: (newIntervalCount: number) =>
     set(() => ({ longBreakIntervalCounter: newIntervalCount })),
-  setTimeLeft: (newMode: Mode, newTimeLeft: number) =>
-    set(() => ({ currentMode: newMode, currentTimeLeft: newTimeLeft })),
+
+  setTimeLeft: (mode: Mode, timeLeft: number) =>
+    set((state) => ({
+      currentMode: mode,
+      currentTimeLeft: timeLeft,
+      nextMode:
+        mode === Mode.FOCUS
+          ? state.longBreakIntervalCounter + 1 === state.longBreakInterval
+            ? Mode.LONG_BREAK
+            : Mode.SHORT_BREAK
+          : Mode.FOCUS,
+    })),
   activateNextMode: () =>
     set((state) => {
+      let newCurrentMode: Mode;
       let newNextMode: Mode;
-      let newIntervalCount: number;
+      let newIntervalCount: number = state.longBreakIntervalCounter;
 
+      // Determine next mode based on current mode
       if (state.currentMode === Mode.FOCUS) {
+        // After focus, determine break type
+        newCurrentMode =
+          state.longBreakIntervalCounter + 1 === state.longBreakInterval
+            ? Mode.LONG_BREAK
+            : Mode.SHORT_BREAK;
+
+        // Increment interval counter
+        newIntervalCount =
+          newCurrentMode === Mode.LONG_BREAK ? 0 : newIntervalCount + 1;
+
+        // Next mode will be focus
         newNextMode = Mode.FOCUS;
-        newIntervalCount = state.longBreakIntervalCounter + 1;
       } else {
+        // After any break, always go to focus
+        newCurrentMode = Mode.FOCUS;
         newNextMode =
           state.longBreakIntervalCounter + 1 === state.longBreakInterval
             ? Mode.LONG_BREAK
             : Mode.SHORT_BREAK;
-        newIntervalCount =
-          state.longBreakIntervalCounter === state.longBreakInterval
-            ? 0
-            : state.longBreakIntervalCounter;
+
+        // Do not increment counter here
       }
 
       return {
-        currentMode: state.nextMode,
+        currentMode: newCurrentMode,
         nextMode: newNextMode,
+        currentTimeLeft: state.durations[newCurrentMode],
         longBreakIntervalCounter: newIntervalCount,
       };
     }),
+
   setIsPaused: (paused: boolean) => set(() => ({ isTimerPaused: paused })),
+
   setNoAvailableTasks: (noAvailableTasks: boolean) =>
     set(() => ({ noAvailableTasks: noAvailableTasks })),
 }));
-
 
 usePomodoroStore.subscribe((state) => {
   useCycleStore.getState().setDurations({

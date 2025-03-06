@@ -21,11 +21,10 @@ interface CircularTimerProps {
 }
 
 export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
-
   const [cycleDone, setCycleDone] = useState(false);
   const [mockTaskCountdown, setMockTaskCountDown] = useState(4);
 
-  const timerTranslations = useTranslations('components.timer');
+  const timerTranslations = useTranslations("components.timer");
 
   const {
     currentMode,
@@ -35,39 +34,40 @@ export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
     activateNextMode,
     isTimerPaused,
     setIsPaused,
+    currentTimeLeft,
+    longBreakIntervalCounter,
+    longBreakInterval,
   } = useCycleStore();
 
-  // countdown state variable
-  const [time, setTime] = useState(durations[currentMode]);
   const intervalRef = useRef<NodeJS.Timeout>(null);
 
   // important for countdown animation
   const [prevTime, setPrevTime] = useState("");
 
   useEffect(() => {
-    setPrevTime(formatTime(time));
+    setPrevTime(formatTime(currentTimeLeft));
+
     intervalRef.current = setInterval(() => {
       if (!isTimerPaused && !cycleDone) {
-        setTime((prev) => (prev > 0 ? prev - 1 : prev));
+        // Decrement time left
+        setTimeLeft(currentMode, currentTimeLeft > 0 ? currentTimeLeft - 1 : 0);
       }
     }, 1000);
 
-    if (time === 0) {
-      // < -------------- MOCK CONDITION FOR TESTING --------------> //
-      if (mockTaskCountdown === 0) {
-        setCycleDone(true);
-      } else {
-        if (currentMode === Mode.FOCUS) {
-          setMockTaskCountDown(mockTaskCountdown - 1);
-        }
-      }
+    // When timer reaches 0
+    if (currentTimeLeft === 0) {
+      // Determine if we should mark cycle as done
+      const shouldMarkCycleDone =
+        longBreakIntervalCounter + 1 === longBreakInterval &&
+        currentMode === Mode.LONG_BREAK;
 
-      if (!cycleDone) {
+      if (shouldMarkCycleDone) {
+        setCycleDone(true);
+        setIsPaused(true);
+      } else {
+        // Activate next mode and set its duration
         activateNextMode();
         setTimeLeft(nextMode, durations[nextMode]);
-        setTime(durations[nextMode]);
-      } else {
-        setIsPaused(true);
       }
     }
 
@@ -75,16 +75,16 @@ export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [
-    time,
+    currentTimeLeft,
     isTimerPaused,
     activateNextMode,
     durations,
     nextMode,
     setTimeLeft,
-    prevTime,
-    mockTaskCountdown,
     currentMode,
     cycleDone,
+    longBreakIntervalCounter,
+    longBreakInterval,
   ]);
 
   const styles = buildStyles({
@@ -119,14 +119,14 @@ export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
         >
           <CircularProgressbarWithChildren
             strokeWidth={6.5}
-            value={time}
+            value={currentTimeLeft}
             maxValue={durations[currentMode]}
             styles={styles}
           >
             <TimeTickerAnim
               prev={prevTime}
-              current={formatTime(time)}
-              seconds={time}
+              current={formatTime(currentTimeLeft)}
+              seconds={currentTimeLeft}
               textColor={`${
                 isDarkMode
                   ? cycleDone
@@ -150,8 +150,8 @@ export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
             >
               <TimerControls
                 initialTime={durations[currentMode]}
-                setTime={setTime}
-                isDarkMode={isDarkMode} // Pass isDarkMode to TimerControls
+                setTime={(newTime: number) => setTimeLeft(currentMode, newTime)}
+                isDarkMode={isDarkMode}
               />
             </motion.div>
           </AnimatePresence>
@@ -165,14 +165,14 @@ export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
                 isDarkMode ? "text-[#f4f4f5]" : "text-[#3f3f46]"
               }`}
             >
-              {timerTranslations('cycle-finish.header')}
+              {timerTranslations("cycle-finish.header")}
             </h3>
             <h6
               className={`${
                 isDarkMode ? "text-[#f4f4f5]" : "text-[#71717a]"
               } text-[18px]`}
             >
-              {timerTranslations('cycle-finish.message')}
+              {timerTranslations("cycle-finish.message")}
             </h6>
           </div>
           <OnFinishedCycleButton isDarkMode={isDarkMode} />{" "}
@@ -302,21 +302,21 @@ const TimerControls = ({
   });
 
   const handleNextSession = () => {
-     const tasks = queryClient.getQueryData<Task[]>(["tasks"]);
-     const firstTask = tasks?.find((task) => task.status !== "completed");
+    const tasks = queryClient.getQueryData<Task[]>(["tasks"]);
+    const firstTask = tasks?.find((task) => task.status !== "completed");
 
-     if (firstTask) {
-       completeFirstListTask.mutate(firstTask.id, {
-         onSuccess: () => {
-           if (usePomodoroStore.getState().settings.is_auto_start_breaks) {
-             setIsPaused(true);
-           } else {
-             setIsPaused(false);
-           }
-         },
-       });
-     }
-   };
+    if (firstTask) {
+      completeFirstListTask.mutate(firstTask.id, {
+        onSuccess: () => {
+          if (usePomodoroStore.getState().settings.is_auto_start_breaks) {
+            setIsPaused(true);
+          } else {
+            setIsPaused(false);
+          }
+        },
+      });
+    }
+  };
 
   return (
     <div className={containerStyles}>
@@ -374,8 +374,8 @@ const OnFinishedCycleButton = ({
 }: {
   isDarkMode: boolean; // Add isDarkMode prop
 }) => {
-  const modeTranslations = useTranslations('components.mode-badges')
-  const timerTranslations = useTranslations('components.timer');;
+  const modeTranslations = useTranslations("components.mode-badges");
+  const timerTranslations = useTranslations("components.timer");
 
   return (
     <Button
@@ -384,7 +384,8 @@ const OnFinishedCycleButton = ({
       }`}
       onClick={() => {}}
     >
-      {timerTranslations('cycle-finish.buttons.start-focus.text')} {modeTranslations('focus.title')}
+      {timerTranslations("cycle-finish.buttons.start-focus.text")}{" "}
+      {modeTranslations("focus.title")}
     </Button>
   );
 };

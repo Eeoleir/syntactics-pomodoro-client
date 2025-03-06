@@ -276,7 +276,7 @@ function PomodoroSettingsComponent({
                       </FormItem>
                     )}
                   />
-                  <FormField
+                  {/* <FormField
                     control={form.control}
                     name="autoStartFocus"
                     render={({ field }) => (
@@ -298,7 +298,7 @@ function PomodoroSettingsComponent({
                         </FormControl>
                       </FormItem>
                     )}
-                  />
+                  /> */}
                   <FormField
                     control={form.control}
                     name="cycles"
@@ -359,29 +359,10 @@ function PomodoroSettingsComponent({
                       </div>
                       <FormControl>
                         <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                          disabled={!isEditing}
-                          className={switchClassName}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="autoSwitchTasks"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg shadow-sm">
-                      <div>
-                        <FormLabel>
-                          {translations("tasks.fields.auto-switch-tasks.title")}
-                        </FormLabel>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
+                          checked={!!field.value} // Ensures `0` becomes `false` and `1`/`true` remains `true`
+                          onCheckedChange={(value) =>
+                            field.onChange(value ? 1 : 0)
+                          } // Ensures proper toggling
                           disabled={!isEditing}
                           className={switchClassName}
                         />

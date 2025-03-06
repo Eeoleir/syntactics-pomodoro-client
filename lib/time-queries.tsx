@@ -10,7 +10,11 @@ function getToken(): string | null {
   return Cookies.get("token") || null;
 }
 
-export async function pauseTimerRequest(status: string, timer_id: number) {
+export async function changeTimerStatusRequest(
+  status: string,
+  timer_id: number,
+  time_remaining: number
+) {
   const token = getToken();
   if (!token) throw new Error("No authentication token available");
 
@@ -21,7 +25,8 @@ export async function pauseTimerRequest(status: string, timer_id: number) {
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
-      status: "paused",
+      status: status,
+      time_remaining: time_remaining,
     }),
   });
   if (!response.ok) {
@@ -33,7 +38,7 @@ export async function pauseTimerRequest(status: string, timer_id: number) {
   return await response.json();
 }
 
-export async function playTimerRequest(
+export async function createTimerRequest(
   task_id: number,
   session_type: string,
   duration: number
@@ -59,5 +64,29 @@ export async function playTimerRequest(
     throw new Error("Failed to play timer");
   }
   toast.success("Timer play successfully");
+  return await response.json();
+}
+
+export async function getOngoingTimerRequest() {
+  const token = getToken();
+  if (!token) throw new Error("No authentication token available");
+
+  const response = await fetch(`${API_BASE_URL}timer`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok && response.status !== 404) {
+    toast.warning("Failed to check timer status");
+    throw new Error("Failed to check timer status");
+  }
+
+  if (response.status === 404) {
+    return null; // No ongoing timer
+  }
+
   return await response.json();
 }
