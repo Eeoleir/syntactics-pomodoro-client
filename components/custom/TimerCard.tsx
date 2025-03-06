@@ -36,7 +36,7 @@ export default function PomodoroTimerCard() {
     "flex flex-col w-full p-[24px] rounded-xl border pb-12";
   const containerStyles = isDarkMode
     ? `border-[#27272a] bg-[#18181B]`
-    : `border-[#e4e4e7] dark:border-[#27272A] bg-gray-100`;
+    : `border-[#e4e4e7] dark:border-[#27272A]`;
 
   return (
     <div
@@ -134,7 +134,7 @@ function CardTop({ isDarkMode }: Readonly<{ isDarkMode: boolean }>) {
       />
 
       <div
-        className={`flex flex-col space-y-[24px] text-[#71717A] dark:text-[#A1A1AA] mt-[24px]`}
+        className={`long-break-button flex flex-col space-y-[24px] text-[#71717A] dark:text-[#A1A1AA] mt-[24px]`}
       >
         <CycleIndicator
           title={timerTranslations("modes.current-mode.header")}
