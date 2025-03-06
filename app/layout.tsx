@@ -42,7 +42,6 @@ export default async function RootLayout({
   const messages = await getMessages();
   const session = await getServerSession();
   const isLoggedIn = !!session;
-  const userId = session?.user?.id ? Number(session.user.id) : undefined;
 
   return (
     <html lang={locale} suppressHydrationWarning>
@@ -71,9 +70,7 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           <ClientThemeWrapper>
             <ClientQueryProvider>
-              <ThemeManager isLoggedIn={isLoggedIn} userId={userId}>
-                {children}
-              </ThemeManager>
+              <ThemeManager isLoggedIn={isLoggedIn}>{children}</ThemeManager>
               <Toaster />
             </ClientQueryProvider>
           </ClientThemeWrapper>
