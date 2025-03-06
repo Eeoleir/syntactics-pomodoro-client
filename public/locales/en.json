@@ -346,6 +346,15 @@
       "general" : {
         "minutes" : "minutes"
       }
+    },
+    "force-login-dialog" : {
+      "header" : "Invalid Token Session",
+      "subheader" : "Your account has been logged out, please login again.",
+      "buttons" : {
+        "continue" : {
+          "text" : "Continue"
+        }
+      }
     }
   }
 }

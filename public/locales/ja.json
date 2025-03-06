@@ -346,6 +346,15 @@
       "general" : {
         "minutes" : "分"
       }
+    },
+    "force-login-dialog": {
+      "header": "無効なトークンセッション",
+      "subheader": "アカウントがログアウトされました。再度ログインしてください。",
+      "buttons": {
+        "continue": {
+          "text": "続ける"
+        }
+      }
     }
   }
 }

@@ -346,6 +346,15 @@
       "general" : {
         "minutes" : "minutos"
       }
+    },
+    "force-login-dialog": {
+      "header": "Sessão de Token Inválida",
+      "subheader": "Sua conta foi desconectada. Faça login novamente.",
+      "buttons": {
+        "continue": {
+          "text": "Continuar"
+        }
+      }
     }
   }
 }

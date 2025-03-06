@@ -132,8 +132,9 @@ export async function validateToken(token: string) {
       }
     });
 
-    // const data = await response.json();
-    // console.log(`Token check response: ${data}`);
+    console.log(response.status);
+    const data = await response.json();
+    console.log(`Token check response: ${data}`);
 
     return response.status;
   } catch (e) {
