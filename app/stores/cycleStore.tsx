@@ -3,8 +3,8 @@ import { usePomodoroStore } from "./pomodoroStore";
 
 export enum Mode {
   FOCUS = "focus",
-  SHORT_BREAK = "short-break",
-  LONG_BREAK = "long-break",
+  SHORT_BREAK = "short_break",
+  LONG_BREAK = "long_break",
 }
 
 type Tasks = {
@@ -20,6 +20,7 @@ type CycleState = {
   nextMode: Mode;
   isTimerPaused: boolean;
   noAvailableTasks: boolean;
+  timerId: number | null;
 };
 
 type CycleStateActions = {
@@ -30,6 +31,7 @@ type CycleStateActions = {
   activateNextMode: () => void;
   setIsPaused: (paused: boolean) => void;
   setNoAvailableTasks: (noAvailableTasks: boolean) => void;
+  setTimerId: (id: number) => void;
 };
 
 export const useCycleStore = create<CycleState & CycleStateActions>((set) => ({
@@ -50,6 +52,21 @@ export const useCycleStore = create<CycleState & CycleStateActions>((set) => ({
   nextMode: Mode.SHORT_BREAK,
   isTimerPaused: true,
   noAvailableTasks: false,
+  timerId: null,
+
+  setTimerId: (newTimerId: number) => set((state) => {
+    if (!state.timerId) {
+      return {};
+    } else {
+      console.log(state.timerId);
+      if (state.timerId < newTimerId) {
+        return {
+          timerId: newTimerId
+        }
+      }
+    }
+    return {};
+  }),
 
   setDurations: (newDurations: { [keys in Mode]: number }) =>
     set(() => ({ durations: newDurations })),
@@ -80,8 +97,10 @@ export const useCycleStore = create<CycleState & CycleStateActions>((set) => ({
         nextMode: nextModeValue,
       };
     }),
+
   activateNextMode: () =>
     set((state) => {
+      console.log('activating next mode');
       let newCurrentMode: Mode;
       let newNextMode: Mode;
       let newIntervalCount: number = state.longBreakIntervalCounter;
@@ -110,6 +129,11 @@ export const useCycleStore = create<CycleState & CycleStateActions>((set) => ({
 
         // Do not increment counter here
       }
+
+      console.log(`
+        new current mode: ${newCurrentMode},\n
+        nextMode: ${newNextMode},\n
+        currentTimeLeft: ${state.durations[newCurrentMode]},\n`)
 
       return {
         currentMode: newCurrentMode,

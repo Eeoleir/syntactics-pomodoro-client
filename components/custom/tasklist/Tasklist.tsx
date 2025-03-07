@@ -58,8 +58,10 @@ const TaskList = () => {
   const noAvailableTasks = useCycleStore((state) => state.noAvailableTasks);
   const isTimerPaused = useCycleStore((state) => state.isTimerPaused);
   const setIsPaused = useCycleStore((state) => state.setIsPaused);
-  const [timer_id, setTimerId] = React.useState<number | null>(null);
   const translations = useTranslations("components.task-list");
+  const timerId = useCycleStore((state) => state.timerId);
+
+  const { setTimerId } = useCycleStore();
 
   const [editInfo, setEditInfo] = React.useState({
     taskId: 0,
@@ -155,7 +157,7 @@ const TaskList = () => {
       task_id,
       session_type,
       duration,
-    }: {
+    } : {
       task_id: number;
       session_type: string;
       duration: number;
@@ -298,12 +300,7 @@ const TaskList = () => {
                 createTimerMutation.mutate(
                   {
                     task_id: first.id,
-                    session_type:
-                      currentMode === Mode.FOCUS
-                        ? "focus"
-                        : currentMode === Mode.SHORT_BREAK
-                        ? "short_break"
-                        : "long_break",
+                    session_type: currentMode,
                     duration: Number(
                       currentMode === Mode.FOCUS
                         ? usePomodoroStore.getState().settings.focus_duration *
@@ -372,11 +369,11 @@ const TaskList = () => {
             },
           });
         } else if (isTimerPaused) {
-          if (timer_id !== null) {
+          if (timerId !== null) {
             changeTimerStatusMutation.mutate(
               {
                 status: "paused",
-                timer_id: timer_id,
+                timer_id: timerId,
                 time_remaining: currentTimeLeft,
               },
               {
@@ -388,12 +385,7 @@ const TaskList = () => {
                     console.log("Time remaining in useEffect:", timeRemaining);
 
                     // Set the remaining time
-                    const mode =
-                      response.data.session_type === "focus"
-                        ? Mode.FOCUS
-                        : response.data.session_type === "short_break"
-                        ? Mode.SHORT_BREAK
-                        : Mode.LONG_BREAK;
+                    const mode = response.data.session_type
 
                     useCycleStore.getState().setTimeLeft(mode, timeRemaining);
                   }

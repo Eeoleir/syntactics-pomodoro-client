@@ -2,7 +2,7 @@ import {
   buildStyles,
   CircularProgressbarWithChildren,
 } from "react-circular-progressbar";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Rajdhani } from "next/font/google";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "../ui/button";
@@ -14,6 +14,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { finishFirstTask, Task } from "@/lib/task-queries";
 import { toast } from "sonner";
 import { usePomodoroStore } from "@/app/stores/pomodoroStore";
+import { createTimerRequest } from "@/lib/time-queries";
 const rajdhani = Rajdhani({ subsets: ["latin"], weight: ["700"] });
 
 interface CircularTimerProps {
@@ -23,7 +24,6 @@ interface CircularTimerProps {
 export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
   const [cycleDone, setCycleDone] = useState(false);
   const [mockTaskCountdown, setMockTaskCountDown] = useState(4);
-
   const timerTranslations = useTranslations("components.timer");
 
   const {
@@ -38,6 +38,8 @@ export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
     longBreakIntervalCounter,
     longBreakInterval,
   } = useCycleStore();
+
+  const [internalMode, setInternalMode] = useState(currentMode);
 
   const intervalRef = useRef<NodeJS.Timeout>(null);
 
@@ -64,11 +66,12 @@ export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
       if (shouldMarkCycleDone) {
         setCycleDone(true);
         setIsPaused(true);
-      } else {
-        // Activate next mode and set its duration
-        activateNextMode();
-        setTimeLeft(nextMode, durations[nextMode]);
       }
+      // else {
+      //   // Activate next mode and set its duration
+      //   activateNextMode();
+      //   setTimeLeft(nextMode, durations[nextMode]);
+      // }
     }
 
     return () => {
@@ -247,7 +250,17 @@ const TimerControls = ({
   setTime: CallableFunction;
   isDarkMode: boolean; // Add isDarkMode prop
 }) => {
-  const { isTimerPaused, setIsPaused } = useCycleStore();
+  const {
+    isTimerPaused,
+    setIsPaused,
+    activateNextMode,
+    currentMode,
+    nextMode,
+    durations,
+    setTimeLeft,
+    timerId,
+    setTimerId
+  } = useCycleStore();
 
   const togglePause = () => {
     setIsPaused(!isTimerPaused);
@@ -301,18 +314,72 @@ const TimerControls = ({
     },
   });
 
+  const createTimerMutation = useMutation({
+    mutationFn: ({
+      task_id,
+      session_type,
+      duration,
+    } : {
+      task_id: number;
+      session_type: string;
+      duration: number;
+    }) => createTimerRequest(task_id, session_type, duration),
+    onSuccess: (response) => {
+      setTimerId(response.data.id);
+      toast.success("Timer play successfully");
+      console.log("Timer response:", response);
+    },
+    onError: (error) => {
+      toast.error("Failed to play timer");
+      console.error("Timer play error:", error);
+    },
+  });
+
   const handleNextSession = () => {
     const tasks = queryClient.getQueryData<Task[]>(["tasks"]);
     const firstTask = tasks?.find((task) => task.status !== "completed");
+    console.log(tasks);
+    console.log(firstTask);
+    activateNextMode();
 
-    if (firstTask) {
+    if (!firstTask) {
+      return false;
+    }
+
+    setIsPaused(true);
+    createTimerMutation.mutate(
+      {
+        task_id: firstTask?.id,
+        session_type: nextMode,
+        duration: durations[nextMode]
+      },
+      {
+        onSuccess: (response) => {
+          if (!response.data) {
+            console.log('on-skip --> request response returned without data')
+            return false;
+          }
+          console.log(`on skip --> ${response}`);
+          setTimerId(response.data.id);
+
+          let timeRemaining = response.data.time_remaining ?? response.data.duration;
+
+          console.log(response.data.session_type)
+          setIsPaused(false);
+        }
+      }
+    )
+
+    if (firstTask && currentMode === Mode.FOCUS) {
       completeFirstListTask.mutate(firstTask.id, {
         onSuccess: () => {
-          if (usePomodoroStore.getState().settings.is_auto_start_breaks) {
-            setIsPaused(true);
-          } else {
-            setIsPaused(false);
-          }
+          setTimeout(() => {
+            if (usePomodoroStore.getState().settings.is_auto_start_breaks) {
+              setIsPaused(true);
+            } else {
+              setIsPaused(false);
+            };
+          }, 1000)
         },
       });
     }

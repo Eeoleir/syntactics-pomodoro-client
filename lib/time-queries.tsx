@@ -85,7 +85,7 @@ export async function getOngoingTimerRequest() {
   }
 
   if (response.status === 404) {
-    return null; 
+    return null;
   }
 
   return await response.json();

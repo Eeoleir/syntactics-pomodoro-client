@@ -7,7 +7,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getPreferences, editDarkMode } from "@/lib/preference-queries";
 import useAuthStore from "@/app/stores/authStore";
 
-
 export function ThemeManager({
   children,
   userId,

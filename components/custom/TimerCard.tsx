@@ -285,7 +285,7 @@ const ModeBadge = ({
       `,
     },
     [Mode.LONG_BREAK]: {
-      title: badgeTranslations("long-break.title"),
+      title: badgeTranslations("long_break.title"),
       style: `
         border-[#06b6d4]
         text-[#06b6d4]
@@ -294,7 +294,7 @@ const ModeBadge = ({
       `,
     },
     [Mode.SHORT_BREAK]: {
-      title: badgeTranslations("short-break.title"),
+      title: badgeTranslations("short_break.title"),
       style: `
         text-[#f59e0b]
         border-[#f59e0b]
@@ -318,6 +318,7 @@ const ModeBadge = ({
       setShowTooltip(false);
     }
   };
+
   useEffect(() => {
     document.addEventListener("click", handleClickOutside);
     return () => {
