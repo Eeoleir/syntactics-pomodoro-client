@@ -406,19 +406,19 @@ const TimerControls = ({
     }
 
 
-    if (firstTask && currentMode === Mode.FOCUS) {
-      completeFirstListTask.mutate(firstTask.id, {
-        onSuccess: () => {
-          setTimeout(() => {
-            if (usePomodoroStore.getState().settings.is_auto_start_breaks) {
-              setIsPaused(true);
-            } else {
-              setIsPaused(false);
-            };
-          }, 1000)
-        },
-      });
-    }
+    // if (firstTask && currentMode === Mode.FOCUS) {
+    //   completeFirstListTask.mutate(firstTask.id, {
+    //     onSuccess: () => {
+    //       setTimeout(() => {
+    //         if (usePomodoroStore.getState().settings.is_auto_start_breaks) {
+    //           setIsPaused(true);
+    //         } else {
+    //           setIsPaused(false);
+    //         };
+    //       }, 1000)
+    //     },
+    //   });
+    // }
   };
 
   return (

@@ -10,6 +10,7 @@ export interface Task {
   description: string;
   due_date: string;
   estimated_cycles: number;
+  completed_cycles: number;
   status: "in_progress" | "completed" | "pending";
   user_id: number;
 }
@@ -161,6 +162,39 @@ export async function editTaskStatus(id: number, status: string) {
     }
 
     toast.success("Task status updated successfully.  ");
+    return data;
+  } catch (error: any) {
+    toast.warning(error.message);
+    throw error;
+  }
+}
+
+export async function editTaskCompletedCycleStatus(
+  id: number,
+  completed_cycles: number
+) {
+  const token = getToken();
+  if (!token) throw new Error("No authentication token available");
+
+  try {
+    const response = await fetch(`${API_BASE_URL}tasks/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        completed_cycles: completed_cycles,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to update task status");
+    }
+
+    toast.success("Task cycle updated successfully.  ");
     return data;
   } catch (error: any) {
     toast.warning(error.message);

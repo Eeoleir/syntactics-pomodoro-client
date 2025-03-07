@@ -48,7 +48,7 @@ export const useCycleStore = create<CycleState & CycleStateActions>((set) => ({
     usePomodoroStore.getState().settings.cycles_before_long_break,
   longBreakIntervalCounter: 0,
   currentMode: Mode.FOCUS,
-  currentTimeLeft: 1500,
+  currentTimeLeft: 0,
   nextMode: Mode.SHORT_BREAK,
   isTimerPaused: true,
   noAvailableTasks: false,
