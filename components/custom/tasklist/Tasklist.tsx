@@ -512,7 +512,12 @@ const TaskList = () => {
 
   const handleCheckboxChange = (taskId: number, currentStatus: string) => {
     const newStatus = currentStatus === "completed" ? "pending" : "completed";
-
+    if (currentStatus === "completed") {
+      editCompletedCycleMutation.mutate({
+        id: taskId,
+        completed_cycles: 0,
+      });
+    }
     // Optimistic update of local state
     // setTaskList(
     //   taskList.map((task) =>
