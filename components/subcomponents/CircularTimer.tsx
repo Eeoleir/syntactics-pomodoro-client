@@ -14,7 +14,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { finishFirstTask, Task } from "@/lib/task-queries";
 import { toast } from "sonner";
 import { usePomodoroStore } from "@/app/stores/pomodoroStore";
-import { createTimerRequest } from "@/lib/time-queries";
+import { changeTimerStatusRequest, createTimerRequest } from "@/lib/time-queries";
+import { Cone } from "lucide-react";
 const rajdhani = Rajdhani({ subsets: ["latin"], weight: ["700"] });
 
 interface CircularTimerProps {
@@ -335,40 +336,75 @@ const TimerControls = ({
     },
   });
 
+  const changeTimerStatusMutation = useMutation({
+    mutationFn: ({
+      status,
+      timer_id,
+      time_remaining,
+    }: {
+      status: string;
+      timer_id: number;
+      time_remaining: number;
+    }) => changeTimerStatusRequest(status, timer_id, time_remaining),
+    onSuccess: () => {
+      toast.success("Timer paused successfully");
+    },
+    onError: (error) => {
+      console.error("Timer pause error:", error);
+    },
+  });
+
   const handleNextSession = () => {
     const tasks = queryClient.getQueryData<Task[]>(["tasks"]);
     const firstTask = tasks?.find((task) => task.status !== "completed");
     console.log(tasks);
     console.log(firstTask);
-    activateNextMode();
 
-    if (!firstTask) {
-      return false;
+    let proceed = false;
+    console.log(timerId)
+    if (timerId) {
+      changeTimerStatusMutation.mutate({
+        status: "completed",
+        timer_id: timerId,
+        time_remaining: 0}, {
+          onSuccess: (response) => {
+            console.log('change timer stat');
+            proceed = true;
+
+            console.log(firstTask);
+            if (!firstTask || !proceed) {
+              return false;
+            }
+
+            activateNextMode();
+            setIsPaused(true);
+
+            createTimerMutation.mutate(
+              {
+                task_id: firstTask?.id,
+                session_type: nextMode,
+                duration: durations[nextMode]
+              },
+              {
+                onSuccess: (response) => {
+                  if (!response.data) {
+                    console.log('on-skip --> request response returned without data')
+                    return false;
+                  }
+                  console.log(`on skip --> ${response}`);
+                  setTimerId(response.data.id);
+
+                  let timeRemaining = response.data.time_remaining ?? response.data.duration;
+
+                  console.log(response.data.session_type)
+                  setIsPaused(false);
+                }
+              }
+            )
+          }
+        })
     }
 
-    setIsPaused(true);
-    createTimerMutation.mutate(
-      {
-        task_id: firstTask?.id,
-        session_type: nextMode,
-        duration: durations[nextMode]
-      },
-      {
-        onSuccess: (response) => {
-          if (!response.data) {
-            console.log('on-skip --> request response returned without data')
-            return false;
-          }
-          console.log(`on skip --> ${response}`);
-          setTimerId(response.data.id);
-
-          let timeRemaining = response.data.time_remaining ?? response.data.duration;
-
-          console.log(response.data.session_type)
-          setIsPaused(false);
-        }
-      }
-    )
 
     if (firstTask && currentMode === Mode.FOCUS) {
       completeFirstListTask.mutate(firstTask.id, {

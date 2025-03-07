@@ -61,7 +61,7 @@ const TaskList = () => {
   const translations = useTranslations("components.task-list");
   const timerId = useCycleStore((state) => state.timerId);
 
-  const { setTimerId } = useCycleStore();
+  const {setTimerId} = useCycleStore();
 
   const [editInfo, setEditInfo] = React.useState({
     taskId: 0,
@@ -165,7 +165,7 @@ const TaskList = () => {
     onSuccess: (response) => {
       setTimerId(response.data.id);
       toast.success("Timer play successfully");
-      console.log("Timer response:", response);
+      console.log("Timer response create:", response);
     },
     onError: (error) => {
       toast.error("Failed to play timer");
@@ -177,7 +177,7 @@ const TaskList = () => {
     mutationFn: () => getOngoingTimerRequest(),
     onSuccess: (response) => {
       setTimerId(response.data.id);
-      console.log("Timer response:", response);
+      console.log("Timer response get ongoing:", response);
     },
   });
 
@@ -185,12 +185,12 @@ const TaskList = () => {
     let intervalId: NodeJS.Timeout | undefined;
 
     if (taskList && taskList.length > 0) {
-      const sortedTasks = [...taskList].sort((a, b) => {
-        if (a.status === "completed" && b.status !== "completed") return 1;
-        if (b.status === "completed" && a.status !== "completed") return -1;
-        return 0;
-      });
-      const first = sortedTasks[0];
+      // const sortedTasks = [...taskList].sort((a, b) => {
+      //   // if (a.status === "completed" && b.status !== "completed") return 1;
+      //   // if (b.status === "completed" && a.status !== "completed") return -1;
+      //   // return 0;
+      // });
+      const first = taskList[0];
 
       setFirstTask({
         id: first.id,
@@ -300,7 +300,12 @@ const TaskList = () => {
                 createTimerMutation.mutate(
                   {
                     task_id: first.id,
-                    session_type: currentMode,
+                    session_type:
+                      currentMode === Mode.FOCUS
+                        ? "focus"
+                        : currentMode === Mode.SHORT_BREAK
+                        ? "short_break"
+                        : "long_break",
                     duration: Number(
                       currentMode === Mode.FOCUS
                         ? usePomodoroStore.getState().settings.focus_duration *
@@ -385,7 +390,12 @@ const TaskList = () => {
                     console.log("Time remaining in useEffect:", timeRemaining);
 
                     // Set the remaining time
-                    const mode = response.data.session_type
+                    const mode =
+                      response.data.session_type === "focus"
+                        ? Mode.FOCUS
+                        : response.data.session_type === "short_break"
+                        ? Mode.SHORT_BREAK
+                        : Mode.LONG_BREAK;
 
                     useCycleStore.getState().setTimeLeft(mode, timeRemaining);
                   }

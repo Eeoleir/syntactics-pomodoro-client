@@ -56,7 +56,7 @@ export const useCycleStore = create<CycleState & CycleStateActions>((set) => ({
 
   setTimerId: (newTimerId: number) => set((state) => {
     if (!state.timerId) {
-      return {};
+      return {timerId: newTimerId};
     } else {
       console.log(state.timerId);
       if (state.timerId < newTimerId) {
