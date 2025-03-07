@@ -91,7 +91,7 @@
     }
   },
   "dashboard": {
-    "page-title": "ポモドーロ",
+    "page-title": "PomoSync",
     "page-subtitle": "魔法のように時間を管理しましょう！",
     "buttons": {
       "settings": {
@@ -265,11 +265,11 @@
             "title" : "集中",
             "mins" : "分"
           },
-          "short-break" : {
+          "short_break" : {
             "title" : "短い休憩",
             "mins" : "分"
           },
-          "long-break" : {
+          "long_break" : {
             "title" : "長い休憩",
             "mins" : "分"
           },

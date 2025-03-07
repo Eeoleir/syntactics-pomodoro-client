@@ -108,6 +108,8 @@ function CardTop({ isDarkMode }: Readonly<{ isDarkMode: boolean }>) {
     const code = error.message.substring(error.message.length - 3, error.message.length);
     if (parseInt(code) === 401) {
       Cookies.remove('token');
+      Cookies.remove('tokenExpiresAt');
+      Cookies.remove('NEXT_LOCALE');
       return (
           <InvalidSessionDialog/>
       )
@@ -318,7 +320,6 @@ const ModeBadge = ({
       setShowTooltip(false);
     }
   };
-
   useEffect(() => {
     document.addEventListener("click", handleClickOutside);
     return () => {

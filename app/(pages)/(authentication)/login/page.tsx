@@ -87,6 +87,7 @@ export default function Login() {
             is_auto_complete_tasks: pref.is_auto_complete_tasks,
             is_auto_switch_tasks: pref.is_auto_switch_tasks,
             is_dark_mode: pref.is_dark_mode,
+            language: pref.language,
           });
         }
       } catch (error) {}

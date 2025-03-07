@@ -21,12 +21,14 @@ import { usePomodoroStore } from "@/app/stores/pomodoroStore";
 import { useTranslations } from "next-intl";
 import { useMutation } from "@tanstack/react-query";
 import { editDarkMode } from "@/lib/preference-queries";
+import { editLanguagePreference } from "@/lib/preference-queries";
 import { useProfileStore } from "@/app/stores/profileStore";
 import LocaleInitializer, {
   locales,
   useLocaleStore,
 } from "@/app/stores/localeStore";
 import { Locale } from "@/next-intl-services/config";
+
 
 const Dashboard = () => {
   const router = useRouter();
@@ -39,7 +41,8 @@ const Dashboard = () => {
 
   useEffect(() => {
     setIsDarkMode(settings.is_dark_mode);
-  }, [settings.is_dark_mode]);
+    setCurrentLocale(settings.language); // Sync language from settings
+  }, [settings.is_dark_mode, settings.language, setCurrentLocale]);
 
   const darkModeMutation = useMutation({
     mutationFn: (params: { id: number; is_dark_mode: number }) =>
@@ -52,6 +55,20 @@ const Dashboard = () => {
 
       setIsDarkMode(!isDarkMode);
       setSettings({ is_dark_mode: !isDarkMode });
+    },
+  });
+
+  // New language mutation
+  const languageMutation = useMutation({
+    mutationFn: (params: { id: number; language: string }) =>
+      editLanguagePreference(params.id, params.language),
+    onSuccess: () => {
+      toast.success("Language preference updated successfully!");
+    },
+    onError: (error) => {
+      toast.error("Failed to update language preference");
+      setCurrentLocale(settings.language || locales.ENGLISH); // Revert on error
+      setSettings({ language: settings.language || locales.ENGLISH });
     },
   });
 
@@ -68,6 +85,20 @@ const Dashboard = () => {
       });
     } else {
       console.error("No user ID available to update dark mode");
+    }
+  };
+
+  const updateLanguage = (newLanguage: Locale) => {
+    setCurrentLocale(newLanguage);
+    setSettings({ language: newLanguage });
+
+    if (userId) {
+      languageMutation.mutate({
+        id: userId,
+        language: newLanguage,
+      });
+    } else {
+      console.error("No user ID available to update language");
     }
   };
 
@@ -171,7 +202,7 @@ const Dashboard = () => {
             <Select
               value={currentLocale}
               onValueChange={(value: Locale) => {
-                setCurrentLocale(value);
+                updateLanguage(value);
               }}
             >
               <SelectTrigger>
@@ -197,9 +228,7 @@ const Dashboard = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value={locales.ENGLISH}>EN (English)</SelectItem>
-                <SelectItem value={locales.PORTUGUESE}>
-                  PT (Português)
-                </SelectItem>
+                <SelectItem value={locales.PORTUGUESE}>PT (Português)</SelectItem>
                 <SelectItem value={locales.JAPANESE}>JA (日本語)</SelectItem>
               </SelectContent>
             </Select>

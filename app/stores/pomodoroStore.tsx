@@ -1,6 +1,7 @@
-
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { locales } from "@/app/stores/localeStore";
+import { Locale } from "@/next-intl-services/config";
 
 export interface PomodoroState {
   settings: {
@@ -13,6 +14,7 @@ export interface PomodoroState {
     is_auto_complete_tasks: boolean;
     is_auto_switch_tasks: boolean;
     is_dark_mode: boolean;
+    language: Locale; 
   };
   userId: number | null;
   setSettings: (settings: Partial<PomodoroState["settings"]>) => void;
@@ -32,6 +34,7 @@ export const usePomodoroStore = create<PomodoroState>()(
         is_auto_complete_tasks: false,
         is_auto_switch_tasks: false,
         is_dark_mode: false,
+        language: locales.ENGLISH, 
       },
       userId: null,
       setSettings: (settings) =>
@@ -42,7 +45,7 @@ export const usePomodoroStore = create<PomodoroState>()(
       setUserId: (userId) => set({ userId }),
     }),
     {
-      name: "pomodoro-preferences-storage", 
+      name: "pomodoro-preferences-storage",
     }
   )
 );

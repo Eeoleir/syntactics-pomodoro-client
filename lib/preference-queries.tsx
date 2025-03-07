@@ -3,6 +3,8 @@ import Cookies from "js-cookie";
 import useAuthStore from "@/app/stores/authStore";
 import API_BASE_URL from "./api_url";
 import { toast } from "sonner";
+// import { locales } from "@/app/stores/localeStore";
+import { Locale } from "@/next-intl-services/config";
 
 
 export interface Preference {
@@ -16,6 +18,7 @@ export interface Preference {
   is_auto_complete_tasks: boolean;
   is_auto_switch_tasks: boolean;
   is_dark_mode: boolean;
+  language: Locale; 
 }
 
 function getToken(): string | null {
@@ -109,7 +112,36 @@ export async function editDarkMode(id: number, is_dark_mode: number) {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || "Failed to complete task");
+      throw new Error(data.message || "Failed to update dark mode");
+    }
+
+    return data;
+  } catch (error: any) {
+    throw error;
+  }
+}
+
+// New function for language preference
+export async function editLanguagePreference(id: number, language: string) {
+  const token = getToken();
+  if (!token) throw new Error("No authentication token available");
+
+  try {
+    const response = await fetch(`${API_BASE_URL}preferences/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        language: language,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to update language preference");
     }
 
     return data;

@@ -91,7 +91,7 @@
     }
   },
   "dashboard": {
-    "page-title": "Pomodoro",
+    "page-title": "PomoSync",
     "page-subtitle": "Gerencie seu tempo de forma mágica!",
     "buttons": {
       "settings": {
@@ -265,11 +265,11 @@
             "title": "Foco",
             "mins": "min"
           },
-          "short-break": {
+          "short_break": {
             "title": "Pausa Curta",
             "mins": "min"
           },
-          "long-break": {
+          "long_break": {
             "title": "Pausa Longa",
             "mins": "min"
           },

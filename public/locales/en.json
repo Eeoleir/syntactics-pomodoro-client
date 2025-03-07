@@ -91,7 +91,7 @@
     }
   },
   "dashboard" : {
-    "page-title" : "Pomodoro",
+    "page-title" : "PomoSync",
     "page-subtitle" : "Manage your time in a magical way!",
     "buttons" : {
       "settings" : {

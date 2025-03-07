@@ -2,6 +2,8 @@
 
 import { create } from "zustand";
 import Cookies from "js-cookie";
+import { locales } from "@/app/stores/localeStore"; // Import your Locale type
+import { Locale } from "@/next-intl-services/config";
 
 interface User {
   email: string;
@@ -19,6 +21,7 @@ export interface Preference {
   is_auto_complete_tasks: boolean;
   is_auto_switch_tasks: boolean;
   is_dark_mode: boolean;
+  language: Locale;
 }
 
 interface AuthState {
