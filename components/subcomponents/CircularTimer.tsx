@@ -11,10 +11,17 @@ import { formatTime, generateColor } from "@/lib/utils";
 import { Mode, useCycleStore } from "@/app/stores/cycleStore";
 import { useTranslations } from "next-intl";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { finishFirstTask, Task } from "@/lib/task-queries";
+import {
+  editTaskCompletedCycleStatus,
+  finishFirstTask,
+  Task,
+} from "@/lib/task-queries";
 import { toast } from "sonner";
 import { usePomodoroStore } from "@/app/stores/pomodoroStore";
-import { changeTimerStatusRequest, createTimerRequest } from "@/lib/time-queries";
+import {
+  changeTimerStatusRequest,
+  createTimerRequest,
+} from "@/lib/time-queries";
 import { Cone } from "lucide-react";
 const rajdhani = Rajdhani({ subsets: ["latin"], weight: ["700"] });
 
@@ -260,12 +267,13 @@ const TimerControls = ({
     durations,
     setTimeLeft,
     timerId,
-    setTimerId
+    setTimerId,
   } = useCycleStore();
 
   const togglePause = () => {
     setIsPaused(!isTimerPaused);
   };
+  const [completedCycles, setCompletedCycles] = React.useState<number>(0);
 
   const noAvailableTasks = useCycleStore((state) => state.noAvailableTasks);
 
@@ -287,6 +295,13 @@ const TimerControls = ({
 
   const reset = () => {
     setTime(initialTime);
+
+    changeTimerStatusMutation.mutate({
+      status: "completed",
+      timer_id: timerId!,
+      time_remaining: initialTime,
+    });
+
     setIsPaused(true);
   };
 
@@ -320,7 +335,7 @@ const TimerControls = ({
       task_id,
       session_type,
       duration,
-    } : {
+    }: {
       task_id: number;
       session_type: string;
       duration: number;
@@ -354,21 +369,37 @@ const TimerControls = ({
     },
   });
 
+  const editCompletedCycleMutation = useMutation({
+    mutationFn: ({
+      id,
+      completed_cycles,
+    }: {
+      id: number;
+      completed_cycles: number;
+    }) => editTaskCompletedCycleStatus(id, completed_cycles),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    },
+  });
+
   const handleNextSession = () => {
     const tasks = queryClient.getQueryData<Task[]>(["tasks"]);
     const firstTask = tasks?.find((task) => task.status !== "completed");
-    console.log(tasks);
-    console.log(firstTask);
+    console.log("Task From CircularTimer: ", tasks);
+    console.log("First task from CircularTimer: ", firstTask);
 
     let proceed = false;
-    console.log(timerId)
+    console.log(timerId);
     if (timerId) {
-      changeTimerStatusMutation.mutate({
-        status: "completed",
-        timer_id: timerId,
-        time_remaining: 0}, {
+      changeTimerStatusMutation.mutate(
+        {
+          status: "completed",
+          timer_id: timerId,
+          time_remaining: 0,
+        },
+        {
           onSuccess: (response) => {
-            console.log('change timer stat');
+            console.log("change timer stat");
             proceed = true;
 
             console.log(firstTask);
@@ -379,32 +410,60 @@ const TimerControls = ({
             activateNextMode();
             setIsPaused(true);
 
+            const updatedNextMode = useCycleStore.getState().nextMode;
+
+            if (
+              updatedNextMode === Mode.SHORT_BREAK ||
+              updatedNextMode === Mode.LONG_BREAK
+            ) {
+              const updatedCompletedCycles = completedCycles + 1;
+              editCompletedCycleMutation.mutate({
+                id: firstTask.id,
+                completed_cycles: updatedCompletedCycles + 1,
+              });
+              queryClient.invalidateQueries({ queryKey: ["tasks"] });
+
+              console.log("Current Mode:", updatedNextMode);
+              setCompletedCycles(updatedCompletedCycles);
+              if (firstTask.completed_cycles === firstTask.estimated_cycles) {
+                completeFirstListTask.mutate(firstTask.id, {
+                  onSuccess: () => {
+                    toast.success("Task completed successfully");
+                    queryClient.invalidateQueries({ queryKey: ["tasks"] });
+                  },
+                });
+              }
+            }
+
             createTimerMutation.mutate(
               {
                 task_id: firstTask?.id,
                 session_type: nextMode,
-                duration: durations[nextMode]
+                duration: durations[nextMode],
               },
               {
                 onSuccess: (response) => {
                   if (!response.data) {
-                    console.log('on-skip --> request response returned without data')
+                    console.log(
+                      "on-skip --> request response returned without data"
+                    );
                     return false;
                   }
                   console.log(`on skip --> ${response}`);
                   setTimerId(response.data.id);
 
-                  let timeRemaining = response.data.time_remaining ?? response.data.duration;
+                  let timeRemaining =
+                    response.data.time_remaining ?? response.data.duration;
 
-                  console.log(response.data.session_type)
-                  setIsPaused(false);
-                }
+                  console.log(response.data.session_type);
+                  setIsPaused(true);
+                },
               }
-            )
-          }
-        })
+            );
+          },
+        }
+      );
     }
-
 
     // if (firstTask && currentMode === Mode.FOCUS) {
     //   completeFirstListTask.mutate(firstTask.id, {

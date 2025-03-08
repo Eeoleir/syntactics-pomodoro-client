@@ -58,7 +58,6 @@ export async function fetchPomodoroHistory(
   if (!token) throw new Error("No authentication token available");
 
   const url = `${API_BASE_URL}pomodoro?page=${page}`;
-  console.log("Fetching from:", url);
   const response = await fetch(url, {
     method: "GET",
     headers: {
@@ -85,7 +84,6 @@ export async function fetchPomodoroHistory(
   }
 
   const data: PaginatedHistoryResponse = await response.json();
-  console.log("API raw response:", data);
 
   return data.data.map((item: ApiHistoryItem) => ({
     id: item.id,

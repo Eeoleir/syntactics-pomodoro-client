@@ -36,7 +36,6 @@ export async function fetchProfile(): Promise<Profile> {
   }
 
   const data = await response.json();
-  console.log("API raw response:", data);
 
   return {
     name: data.name || "",

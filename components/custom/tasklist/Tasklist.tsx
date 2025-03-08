@@ -81,6 +81,7 @@ const TaskList = () => {
   } = useQuery({
     queryKey: ["tasks"],
     queryFn: getTasks,
+    refetchOnWindowFocus: false,
   });
 
   const deleteMutation = useMutation({
@@ -191,6 +192,9 @@ const TaskList = () => {
       id: number;
       completed_cycles: number;
     }) => editTaskCompletedCycleStatus(id, completed_cycles),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    },
   });
 
   useEffect(() => {
@@ -292,11 +296,12 @@ const TaskList = () => {
                         setIsPaused(true);
                       }
                       activateNextMode();
-                      const updatedNextMode = useCycleStore.getState().nextMode;
+                      const updatedCurrentMode =
+                        useCycleStore.getState().currentMode;
 
                       if (
-                        updatedNextMode === Mode.SHORT_BREAK ||
-                        updatedNextMode === Mode.LONG_BREAK
+                        updatedCurrentMode === Mode.SHORT_BREAK ||
+                        updatedCurrentMode === Mode.LONG_BREAK
                       ) {
                         const updatedCompletedCycles = completedCycles + 1;
                         editCompletedCycleMutation.mutate({
@@ -305,7 +310,7 @@ const TaskList = () => {
                         });
                         queryClient.invalidateQueries({ queryKey: ["tasks"] });
 
-                        console.log("Current Mode:", updatedNextMode);
+                        console.log("Current Mode:", updatedCurrentMode);
                         setCompletedCycles(updatedCompletedCycles);
                         console.log(
                           "Current cycle",
@@ -328,12 +333,12 @@ const TaskList = () => {
                       createTimerMutation.mutate(
                         {
                           task_id: first.id,
-                          session_type: updatedNextMode,
+                          session_type: updatedCurrentMode,
                           duration: Number(
-                            updatedNextMode === Mode.FOCUS
+                            updatedCurrentMode === Mode.FOCUS
                               ? usePomodoroStore.getState().settings
                                   .focus_duration * 60
-                              : updatedNextMode === Mode.SHORT_BREAK
+                              : updatedCurrentMode === Mode.SHORT_BREAK
                               ? usePomodoroStore.getState().settings
                                   .short_break_duration * 60
                               : usePomodoroStore.getState().settings

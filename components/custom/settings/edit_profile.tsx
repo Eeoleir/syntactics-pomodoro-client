@@ -57,7 +57,6 @@ function EditProfileComponent({
 
   useEffect(() => {
     if (profile) {
-      console.log("Syncing form with profile:", profile);
       form.reset({
         name: profile.name || "",
         email: profile.email || "",

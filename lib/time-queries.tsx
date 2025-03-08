@@ -30,9 +30,6 @@ export async function changeTimerStatusRequest(
     }),
   });
   if (!response.ok) {
-    toast.warning("Failed to pause timer");
-
-    throw new Error("Failed to pause timer");
   }
   toast.success("Timer paused successfully");
   return await response.json();
