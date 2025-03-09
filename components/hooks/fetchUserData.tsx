@@ -21,7 +21,7 @@ export default function UserDataProvider({ children }: UserDataProviderProps) {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    console.log("UserDataProvider: Initial profile:", profile);
+    // console.log("UserDataProvider: Initial profile:", profile);
     if (!profile) {
       const loadProfile = async () => {
         try {

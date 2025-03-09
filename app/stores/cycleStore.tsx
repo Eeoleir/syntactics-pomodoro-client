@@ -58,7 +58,6 @@ export const useCycleStore = create<CycleState & CycleStateActions>((set) => ({
     if (!state.timerId) {
       return {timerId: newTimerId};
     } else {
-      console.log(state.timerId);
       if (state.timerId < newTimerId) {
         return {
           timerId: newTimerId
@@ -100,7 +99,7 @@ export const useCycleStore = create<CycleState & CycleStateActions>((set) => ({
 
   activateNextMode: () =>
     set((state) => {
-      console.log('activating next mode');
+      // console.log('activating next mode');
       let newCurrentMode: Mode;
       let newNextMode: Mode;
       let newIntervalCount: number = state.longBreakIntervalCounter;
@@ -130,10 +129,10 @@ export const useCycleStore = create<CycleState & CycleStateActions>((set) => ({
         // Do not increment counter here
       }
 
-      console.log(`
-        new current mode: ${newCurrentMode},\n
-        nextMode: ${newNextMode},\n
-        currentTimeLeft: ${state.durations[newCurrentMode]},\n`)
+      // console.log(`
+      //   new current mode: ${newCurrentMode},\n
+      //   nextMode: ${newNextMode},\n
+      //   currentTimeLeft: ${state.durations[newCurrentMode]},\n`)
 
       return {
         currentMode: newCurrentMode,

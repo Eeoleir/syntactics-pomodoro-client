@@ -17,7 +17,7 @@ export const useProfileStore = create<ProfileState>()(
     (set) => ({
       profile: null,
       setProfile: (profile) => {
-        console.log("Setting profile:", profile);
+        // console.log("Setting profile:", profile);
         set({ profile });
       },
       clearProfile: () => {

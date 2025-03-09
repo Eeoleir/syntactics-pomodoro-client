@@ -100,7 +100,7 @@ const EditTask: React.FC<EditTaskProps> = ({
 
   const handleGoBack = () => {
     setEditTaskActive("default");
-    console.log("Go back");
+    // console.log("Go back");
   };
 
   return (

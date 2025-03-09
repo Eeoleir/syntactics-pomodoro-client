@@ -343,7 +343,7 @@ const TimerControls = ({
     onSuccess: (response) => {
       setTimerId(response.data.id);
       toast.success("Timer play successfully");
-      console.log("Timer response:", response);
+      // console.log("Timer response:", response);
     },
     onError: (error) => {
       toast.error("Failed to play timer");
@@ -385,11 +385,11 @@ const TimerControls = ({
   const handleNextSession = () => {
     const tasks = queryClient.getQueryData<Task[]>(["tasks"]);
     const firstTask = tasks?.find((task) => task.status !== "completed");
-    console.log("Task From CircularTimer: ", tasks);
-    console.log("First task from CircularTimer: ", firstTask);
+    // console.log("Task From CircularTimer: ", tasks);
+    // console.log("First task from CircularTimer: ", firstTask);
 
     let proceed = false;
-    console.log(timerId);
+    // console.log(timerId);
     if (timerId) {
       changeTimerStatusMutation.mutate(
         {
@@ -399,10 +399,10 @@ const TimerControls = ({
         },
         {
           onSuccess: (response) => {
-            console.log("change timer stat");
+            // console.log("change timer stat");
             proceed = true;
 
-            console.log(firstTask);
+            // console.log(firstTask);
             if (!firstTask || !proceed) {
               return false;
             }
@@ -423,7 +423,7 @@ const TimerControls = ({
               });
               queryClient.invalidateQueries({ queryKey: ["tasks"] });
 
-              console.log("Current Mode:", updatedNextMode);
+              // console.log("Current Mode:", updatedNextMode);
               setCompletedCycles(updatedCompletedCycles);
 
               if (updatedCompletedCycles === firstTask.estimated_cycles) {
@@ -445,18 +445,18 @@ const TimerControls = ({
               {
                 onSuccess: (response) => {
                   if (!response.data) {
-                    console.log(
-                      "on-skip --> request response returned without data"
-                    );
+                    // console.log(
+                    //   "on-skip --> request response returned without data"
+                    // );
                     return false;
                   }
-                  console.log(`on skip --> ${response}`);
+                  // console.log(`on skip --> ${response}`);
                   setTimerId(response.data.id);
 
                   let timeRemaining =
                     response.data.time_remaining ?? response.data.duration;
 
-                  console.log(response.data.session_type);
+                  // console.log(response.data.session_type);
                   setIsPaused(false);
                 },
               }

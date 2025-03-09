@@ -82,7 +82,7 @@ const TaskList = () => {
   } = useQuery({
     queryKey: ["tasks"],
     queryFn: getTasks,
-    refetchOnWindowFocus: false,
+    // refetchOnWindowFocus: false,
   });
 
   const deleteMutation = useMutation({
@@ -169,7 +169,7 @@ const TaskList = () => {
     onSuccess: (response) => {
       setTimerId(response.data.id);
       toast.success("Timer play successfully");
-      console.log("Timer response create:", response);
+      // console.log("Timer response create:", response);
     },
     onError: (error) => {
       toast.error("Failed to play timer");
@@ -181,7 +181,7 @@ const TaskList = () => {
     mutationFn: () => getOngoingTimerRequest(),
     onSuccess: (response) => {
       setTimerId(response.data.id);
-      console.log("Timer response get ongoing:", response);
+      // console.log("Timer response get ongoing:", response);
     },
   });
 
@@ -249,10 +249,10 @@ const TaskList = () => {
                             response.data.time_remaining ??
                             response.data.duration;
 
-                          console.log(
-                            "Time remaining in useEffect:",
-                            timeRemaining
-                          );
+                          // console.log(
+                          //   "Time remaining in useEffect:",
+                          //   timeRemaining
+                          // );
 
                           const mode =
                             response.data.session_type === "focus"
@@ -279,7 +279,7 @@ const TaskList = () => {
 
                   let timeRemaining =
                     response.data.time_remaining ?? response.data.duration;
-                  console.log("Time remaining in useEffect:", timeRemaining);
+                  // console.log("Time remaining in useEffect:", timeRemaining);
 
                   useCycleStore.getState().setTimeLeft(mode, timeRemaining);
 
@@ -309,16 +309,16 @@ const TaskList = () => {
                         });
                         queryClient.invalidateQueries({ queryKey: ["tasks"] });
 
-                        console.log(
-                          "Break completed, incrementing cycle count"
-                        );
+                        // console.log(
+                        //   "Break completed, incrementing cycle count"
+                        // );
                         setCompletedCycles(updatedCompletedCycles);
-                        console.log(
-                          "Current cycle",
-                          updatedCompletedCycles,
-                          " / ",
-                          first.estimated_cycles
-                        );
+                        // console.log(
+                        //   "Current cycle",
+                        //   updatedCompletedCycles,
+                        //   " / ",
+                        //   first.estimated_cycles
+                        // );
 
                         if (updatedCompletedCycles === first.estimated_cycles) {
                           if (
@@ -354,7 +354,7 @@ const TaskList = () => {
                         {
                           onSuccess: (newResponse) => {
                             setTimerId(newResponse.data.id);
-                            console.log("New timer response:", newResponse);
+                            // console.log("New timer response:", newResponse);
                             getOngoingTimerMutation.mutate();
                           },
                         }
@@ -386,7 +386,7 @@ const TaskList = () => {
                   {
                     onSuccess: (newResponse) => {
                       setTimerId(newResponse.data.id);
-                      console.log("New timer created:", newResponse);
+                      // console.log("New timer created:", newResponse);
                       getOngoingTimerMutation.mutate();
                     },
                   }
@@ -419,10 +419,10 @@ const TaskList = () => {
                       let timeRemaining =
                         response.data.time_remaining ?? response.data.duration;
 
-                      console.log(
-                        "Time remaining in useEffect:",
-                        timeRemaining
-                      );
+                      // console.log(
+                      //   "Time remaining in useEffect:",
+                      //   timeRemaining
+                      // );
 
                       const mode =
                         response.data.session_type === "focus"
@@ -452,7 +452,7 @@ const TaskList = () => {
                     let timeRemaining =
                       response.data.time_remaining ?? response.data.duration;
 
-                    console.log("Time remaining in useEffect:", timeRemaining);
+                    // console.log("Time remaining in useEffect:", timeRemaining);
 
                     const mode =
                       response.data.session_type === "focus"
@@ -476,9 +476,9 @@ const TaskList = () => {
     };
   }, [orderedTasks, isTimerPaused]);
 
-  useEffect(() => {
-    console.log("First task:", firstTask);
-  }, [firstTask]);
+  // useEffect(() => {
+  //   console.log("First task:", firstTask);
+  // }, [firstTask]);
 
   const handleActionClick = (taskId: number) => {
     setIsSpinning(true);

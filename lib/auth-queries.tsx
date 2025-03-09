@@ -132,12 +132,12 @@ export async function validateToken(token: string) {
       }
     });
 
-    console.log(response.status);
+    // console.log(response.status);
     const data = await response.json();
-    console.log(`Token check response: ${data}`);
+    // console.log(`Token check response: ${data}`);
 
     return response.status;
   } catch (e) {
-    console.log(`err: ${e}`);
+    // console.log(`err: ${e}`);
   }
 }

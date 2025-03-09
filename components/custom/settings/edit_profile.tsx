@@ -72,10 +72,10 @@ function EditProfileComponent({
     if (selectedFile) changedFields.profile_photo_file = selectedFile;
 
     if (Object.keys(changedFields).length > 0) {
-      console.log("Submitting changes:", changedFields);
+      // console.log("Submitting changes:", changedFields);
       try {
         const updatedProfile = await updateProfile(changedFields);
-        console.log("Updated profile received:", updatedProfile);
+        // console.log("Updated profile received:", updatedProfile);
         setIsEditing(false);
         setSelectedFile(null);
         setPreviewUrl(updatedProfile.profile_photo);
@@ -111,7 +111,7 @@ function EditProfileComponent({
       setSelectedFile(file);
       const localUrl = URL.createObjectURL(file);
       setPreviewUrl(localUrl);
-      console.log("Selected file:", file);
+      // console.log("Selected file:", file);
     }
   };
 

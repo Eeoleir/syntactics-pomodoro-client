@@ -68,7 +68,7 @@ export async function fetchPomodoroHistory(
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.log("API error:", errorText, "Status:", response.status);
+    // console.log("API error:", errorText, "Status:", response.status);
     if (response.status === 500) {
       const token = Cookies.get('token');
       if (!token) {

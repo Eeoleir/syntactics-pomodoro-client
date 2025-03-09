@@ -60,7 +60,7 @@ export async function editPreference(
   if (!token) throw new Error("No authentication token available");
 
   const url = `${API_BASE_URL}preferences/${user_id}`;
-  console.log("PATCH URL:", url);
+  // console.log("PATCH URL:", url);
 
   try {
     const response = await fetch(url, {

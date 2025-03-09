@@ -31,7 +31,7 @@ export async function fetchProfile(): Promise<Profile> {
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.log("API error:", errorText, "Status:", response.status);
+    // console.log("API error:", errorText, "Status:", response.status);
     throw new Error(`Failed to fetch profile: ${response.status}`);
   }
 
@@ -59,8 +59,8 @@ export async function editProfile(
 
   // Debug the file
   if (updatedProfile.profile_photo_file) {
-    console.log("File type:", updatedProfile.profile_photo_file.type);
-    console.log("File size:", updatedProfile.profile_photo_file.size);
+    // console.log("File type:", updatedProfile.profile_photo_file.type);
+    // console.log("File size:", updatedProfile.profile_photo_file.size);
 
     // Add the file - be explicit about the third parameter
     formData.append(
@@ -85,12 +85,12 @@ export async function editProfile(
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.log("API error:", errorText, "Status:", response.status);
+    // console.log("API error:", errorText, "Status:", response.status);
     throw new Error(`Failed to update profile: ${response.status}`);
   }
   toast.success("Profile updated successfully.");
   const data = await response.json();
-  console.log("API raw response (edit):", data);
+  // console.log("API raw response (edit):", data);
 
   const user = data.user || {};
   return {
