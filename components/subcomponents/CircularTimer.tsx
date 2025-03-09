@@ -416,16 +416,17 @@ const TimerControls = ({
               updatedNextMode === Mode.SHORT_BREAK ||
               updatedNextMode === Mode.LONG_BREAK
             ) {
-              const updatedCompletedCycles = completedCycles + 1;
+              const updatedCompletedCycles = firstTask.completed_cycles + 1;
               editCompletedCycleMutation.mutate({
                 id: firstTask.id,
-                completed_cycles: updatedCompletedCycles + 1,
+                completed_cycles: updatedCompletedCycles,
               });
               queryClient.invalidateQueries({ queryKey: ["tasks"] });
 
               console.log("Current Mode:", updatedNextMode);
               setCompletedCycles(updatedCompletedCycles);
-              if (firstTask.completed_cycles === firstTask.estimated_cycles) {
+
+              if (updatedCompletedCycles === firstTask.estimated_cycles) {
                 completeFirstListTask.mutate(firstTask.id, {
                   onSuccess: () => {
                     toast.success("Task completed successfully");
@@ -456,7 +457,7 @@ const TimerControls = ({
                     response.data.time_remaining ?? response.data.duration;
 
                   console.log(response.data.session_type);
-                  setIsPaused(true);
+                  setIsPaused(false);
                 },
               }
             );
@@ -464,20 +465,6 @@ const TimerControls = ({
         }
       );
     }
-
-    // if (firstTask && currentMode === Mode.FOCUS) {
-    //   completeFirstListTask.mutate(firstTask.id, {
-    //     onSuccess: () => {
-    //       setTimeout(() => {
-    //         if (usePomodoroStore.getState().settings.is_auto_start_breaks) {
-    //           setIsPaused(true);
-    //         } else {
-    //           setIsPaused(false);
-    //         };
-    //       }, 1000)
-    //     },
-    //   });
-    // }
   };
 
   return (

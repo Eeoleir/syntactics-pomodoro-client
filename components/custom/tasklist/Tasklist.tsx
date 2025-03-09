@@ -62,6 +62,7 @@ const TaskList = () => {
   const setIsPaused = useCycleStore((state) => state.setIsPaused);
   const translations = useTranslations("components.task-list");
   const timerId = useCycleStore((state) => state.timerId);
+  const [focusCompleted, setFocusCompleted] = React.useState(false);
 
   const { setTimerId } = useCycleStore();
 
@@ -196,7 +197,6 @@ const TaskList = () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
     },
   });
-
   useEffect(() => {
     let intervalId: NodeJS.Timeout | undefined;
 
@@ -295,13 +295,12 @@ const TaskList = () => {
                       ) {
                         setIsPaused(true);
                       }
-                      activateNextMode();
-                      const updatedCurrentMode =
-                        useCycleStore.getState().currentMode;
 
+                      // Check current mode BEFORE transition
+                      // Only increment if a BREAK is ending (not when a break is starting)
                       if (
-                        updatedCurrentMode === Mode.SHORT_BREAK ||
-                        updatedCurrentMode === Mode.LONG_BREAK
+                        mode === Mode.SHORT_BREAK ||
+                        mode === Mode.LONG_BREAK
                       ) {
                         const updatedCompletedCycles = completedCycles + 1;
                         editCompletedCycleMutation.mutate({
@@ -310,7 +309,9 @@ const TaskList = () => {
                         });
                         queryClient.invalidateQueries({ queryKey: ["tasks"] });
 
-                        console.log("Current Mode:", updatedCurrentMode);
+                        console.log(
+                          "Break completed, incrementing cycle count"
+                        );
                         setCompletedCycles(updatedCompletedCycles);
                         console.log(
                           "Current cycle",
@@ -329,6 +330,11 @@ const TaskList = () => {
                           }
                         }
                       }
+
+                      // Now transition to next mode
+                      activateNextMode();
+                      const updatedCurrentMode =
+                        useCycleStore.getState().currentMode;
 
                       createTimerMutation.mutate(
                         {
