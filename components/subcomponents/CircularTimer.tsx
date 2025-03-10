@@ -269,9 +269,16 @@ const TimerControls = ({
     timerId,
     setTimerId,
   } = useCycleStore();
+  const [isButtonDisabled, setIsButtonDisabled] = React.useState(false);
 
   const togglePause = () => {
     setIsPaused(!isTimerPaused);
+
+    setIsButtonDisabled(true);
+
+    setTimeout(() => {
+      setIsButtonDisabled(false);
+    }, 5000);
   };
   const [completedCycles, setCompletedCycles] = React.useState<number>(0);
 
@@ -303,6 +310,11 @@ const TimerControls = ({
     });
 
     setIsPaused(true);
+    setIsButtonDisabled(true);
+
+    setTimeout(() => {
+      setIsButtonDisabled(false);
+    }, 5000);
   };
 
   const queryClient = useQueryClient();
@@ -464,6 +476,12 @@ const TimerControls = ({
         }
       );
     }
+
+    setIsButtonDisabled(true);
+
+    setTimeout(() => {
+      setIsButtonDisabled(false);
+    }, 5000);
   };
 
   return (
@@ -473,6 +491,7 @@ const TimerControls = ({
         <Button
           className={`${secondaryBtnStyles} ${secondaryBtnLayout}`}
           onClick={reset}
+          disabled={noAvailableTasks || isButtonDisabled}
         >
           <Image
             src={`/timer_control_icons/restart.svg`}
@@ -487,7 +506,7 @@ const TimerControls = ({
         <Button
           className={`${primaryButtonStyle} ${primaryBtnLayout}`}
           onClick={togglePause}
-          disabled={noAvailableTasks}
+          disabled={noAvailableTasks || isButtonDisabled}
         >
           <Image
             src={`/timer_control_icons/${
@@ -503,6 +522,7 @@ const TimerControls = ({
         <Button
           className={`${secondaryBtnStyles} ${secondaryBtnLayout}`}
           onClick={handleNextSession}
+          disabled={noAvailableTasks || isButtonDisabled}
         >
           <Image
             src={`/timer_control_icons/next_session.svg`}
