@@ -148,9 +148,7 @@ const TaskList = () => {
       timer_id: number;
       time_remaining: number;
     }) => changeTimerStatusRequest(status, timer_id, time_remaining),
-    onSuccess: () => {
-      toast.success("Timer paused successfully");
-    },
+    onSuccess: () => {},
     onError: (error) => {
       console.error("Timer pause error:", error);
     },
@@ -168,7 +166,6 @@ const TaskList = () => {
     }) => createTimerRequest(task_id, session_type, duration),
     onSuccess: (response) => {
       setTimerId(response.data.id);
-      toast.success("Timer play successfully");
       // console.log("Timer response create:", response);
     },
     onError: (error) => {

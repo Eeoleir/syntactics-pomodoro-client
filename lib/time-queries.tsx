@@ -31,7 +31,6 @@ export async function changeTimerStatusRequest(
   });
   if (!response.ok) {
   }
-  toast.success("Timer paused successfully");
   return await response.json();
 }
 
@@ -60,7 +59,6 @@ export async function createTimerRequest(
 
     throw new Error("Failed to play timer");
   }
-  toast.success("Timer play successfully");
   return await response.json();
 }
 
