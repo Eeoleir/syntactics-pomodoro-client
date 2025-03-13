@@ -52,7 +52,8 @@ const TaskList = () => {
     timerPaused,
     controlTimerPause,
     currentTimerId,
-    setCurrentTimerId
+    setCurrentTimerId,
+    cyclesFromLongBreak
   } = useCycleStore();
 
   const {
@@ -151,6 +152,21 @@ const TaskList = () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
     },
   });
+
+  useEffect(() => {
+    if (!activeTask) return;
+    if (activeTask.estimated_cycles <= activeTask.completed_cycles + 1) {
+      completeFirstListTask.mutate(activeTask.id);
+      setActiveTask(tasks[1]);
+    } else {
+      editCompletedCycleMutation.mutate(
+        {
+          id: activeTask?.id,
+          completed_cycles: activeTask.completed_cycles + 1
+        }
+      );
+    }
+  }, [cyclesFromLongBreak])
 
   const handleActionClick = (taskId: number) => {
     setIsSpinning(true);
@@ -259,7 +275,7 @@ const TaskList = () => {
         <>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="iAmHere font-bold text-2xl text-[#52525B] dark:text-[#A1A1AA]">
+              <h1 className="iAmHere font-bold text-2xl text-[#52525B] dark:text-white">
                 {translations("header")}
               </h1>
               <p className="text-[#71717A] font-normal text-base">

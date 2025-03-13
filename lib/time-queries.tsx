@@ -13,7 +13,8 @@ function getToken(): string | null {
 export async function changeTimerStatusRequest(
   status: string,
   timer_id: number,
-  time_remaining: number
+  time_remaining: number,
+  until_long_break: number
 ) {
   const token = getToken();
   if (!token) throw new Error("No authentication token available");
@@ -27,6 +28,7 @@ export async function changeTimerStatusRequest(
     body: JSON.stringify({
       status: status,
       time_remaining: time_remaining,
+      until_long_break: until_long_break
     }),
   });
   if (!response.ok) {
@@ -37,7 +39,8 @@ export async function changeTimerStatusRequest(
 export async function createTimerRequest(
   task_id: number,
   session_type: string,
-  duration: number
+  duration: number,
+  until_long_break: number
 ) {
   const token = getToken();
   if (!token) throw new Error("No authentication token available");
@@ -52,6 +55,7 @@ export async function createTimerRequest(
       task_id: task_id,
       session_type: session_type,
       duration: duration,
+      until_long_break: until_long_break
     }),
   });
   if (!response.ok) {

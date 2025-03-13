@@ -1,4 +1,4 @@
-import {
+  import {
   buildStyles,
   CircularProgressbarWithChildren,
 } from "react-circular-progressbar";

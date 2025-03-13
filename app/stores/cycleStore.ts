@@ -24,6 +24,7 @@ type CycleState = {
   // interval vars
   currentCycleQueue: Mode[];
   currentMode: Mode;
+  longBreakInterval: number;
   cyclesFromLongBreak: number;
   currentTimerId: number | null
 }
@@ -31,7 +32,7 @@ type CycleState = {
 type CycleActions = {
   setDurations: (newDurations: { [keys in Mode]: number }) => void;
   setLongBreakInterval: (newInterval: number) => void;
-  setCyclesFromLongbreak: (cycles: number) => void;
+  setCyclesFromLongbreak: (cycles: number, mode: "focus" | "long_break" | "short_break") => void;
   toNextMode: () => void;
   setCurrentTimerId: (id: number) => void;
 }
@@ -49,10 +50,13 @@ const defaultCycleQueue = [
 
 export const useCycleStore = create<TimerState & TimerActions & CycleState & CycleActions>((set) => ({
   // <-- timer state -->
-  timeLeft: 300,
+  timeLeft: 1500,
   timerPaused: true,
-  setTimeLeft: (t: number) => set(() => ({timeLeft: t})),
-  controlTimerPause: (b?: boolean) => set((state) => ({timerPaused: b ? b : !state.timerPaused})),
+  setTimeLeft: (t: number) => set(() => {
+    console.log(`timeleft --> ${t}`);
+    return { timeLeft: t }
+  }),
+  controlTimerPause: (b?: boolean) => set((state) => ({ timerPaused: b ? b : !state.timerPaused })),
 
   // <-- cycle state -->
   durations: {
@@ -65,8 +69,9 @@ export const useCycleStore = create<TimerState & TimerActions & CycleState & Cyc
   },
   currentCycleQueue: defaultCycleQueue,
   currentMode: Mode.FOCUS,
-  cyclesFromLongBreak: 4,
+  cyclesFromLongBreak: usePomodoroStore.getState().settings.cycles_before_long_break - 1,
   currentTimerId: null,
+  longBreakInterval: usePomodoroStore.getState().settings.cycles_before_long_break,
 
   setDurations: (newDurations: { [keys in Mode]: number }) =>
     set(() => ({ durations: newDurations })),
@@ -75,23 +80,59 @@ export const useCycleStore = create<TimerState & TimerActions & CycleState & Cyc
     set((state) => ({
       currentCycleQueue: Array.from({ length: interval })
         .reduceRight<Mode[]>((queue, _, i) => {
-          queue.unshift(i === 0 ? Mode.LONG_BREAK : Mode.SHORT_BREAK);
+          queue.unshift(i === 0 ? Mode.SHORT_BREAK : Mode.LONG_BREAK);
           queue.unshift(Mode.FOCUS);
           return queue;
         }, [])
     })),
 
-  setCyclesFromLongbreak: (cycles: number) => set((state) => {
-    return { cyclesFromLongBreak: cycles };
+  // <-- set the current cycle run from long break
+  // preferably retrieved from api
+  // don't use to move to next cycle
+  setCyclesFromLongbreak: (cycles: number, mode: "focus" | "short_break" | "long_break") => set((state) => {
+    if (state.currentCycleQueue.length === 0) {
+      console.log('currentCycleQueue has length of 0');
+      return {};
+    }
+    let newQueue = state.currentCycleQueue;
+    console.log(`initial queue --> ${newQueue}`)
+    for (let c = 0; c < state.longBreakInterval - cycles; c++) {
+      for (let x = 0; x < 2; x++) {
+        const m = newQueue.shift();
+        if (!m) break;
+        console.log(`${c} -> ${newQueue}`)
+        newQueue.push(m);
+      }
+    }
+
+    if (mode === "short_break" || mode === "long_break") {
+      const x = newQueue.shift();
+      if (x) newQueue.push(x);
+    }
+
+    console.log(newQueue);
+    return {
+      cyclesFromLongBreak: cycles,
+      currentCycleQueue: newQueue,
+      currentMode: newQueue[0]
+    };
   }),
 
   toNextMode: () => set((state) => {
     if (state.currentCycleQueue.length === 0) return {};
     const [first, ...rest] = state.currentCycleQueue;
     const newQueue = [...rest, first];
-    return {
+    let newCyclesFromLngBrk = -1;
+    if (state.currentMode !== Mode.FOCUS) {
+      newCyclesFromLngBrk = state.cyclesFromLongBreak > 0 ? state.cyclesFromLongBreak - 1 : state.longBreakInterval
+    }
+    return newCyclesFromLngBrk < 0 ? {
       currentCycleQueue: newQueue,
       currentMode: newQueue[0]
+    } : {
+      currentCycleQueue: newQueue,
+      currentMode: newQueue[0],
+      cyclesFromLongBreak: newCyclesFromLngBrk
     };
   }),
 

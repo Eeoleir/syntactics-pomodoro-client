@@ -10,7 +10,7 @@ import Image from "next/image";
 import { cn, formatTime, generateColor } from "@/lib/utils";
 import { Mode, useCycleStore } from "@/app/stores/cycleStore";
 import { useTranslations } from "next-intl";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   editTaskCompletedCycleStatus,
   finishFirstTask,
@@ -41,7 +41,15 @@ export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
     timeLeft,
     setTimeLeft,
     timerPaused,
+    setCyclesFromLongbreak,
+    cyclesFromLongBreak,
+    setCurrentTimerId
   } = useCycleStore();
+
+  const {
+    activeTask,
+    setActiveTask
+  } = useTaskStore();
 
   // timer logic and behavior vars
   const intervalRef = useRef<NodeJS.Timeout>(null);
@@ -60,6 +68,7 @@ export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
     }
 
     intervalRef.current = setInterval(() => {
+      console.log(timeLeft);
       if (!timerPaused && !cycleDone) {
         setTimeLeft(timeLeft > 0 ? timeLeft - 1 : timeLeft);
       }
@@ -80,10 +89,72 @@ export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
     }
   }, [timeLeft]);
 
-  // on mode update, update duration
+  // <-- fetch existing timer session (if any)
+  // <-- create a new timer session
+  const createTimerMutation = useMutation({
+    mutationFn: ({
+      task_id,
+      session_type,
+      duration,
+      until_long_break
+    }: {
+      task_id: number;
+      session_type: string;
+      duration: number;
+      until_long_break: number
+    }) => createTimerRequest(task_id, session_type, duration, until_long_break),
+    onSuccess: (response) => {
+      setCurrentTimerId(response.data.id);
+      console.log('useEffect on init but create timer');
+      setTimeLeft(response.data.time_remaining ?? response.data.duration);
+      setCyclesFromLongbreak(
+        fetchedTimerSession.data.until_long_break,
+        fetchedTimerSession.data.session_type
+      );
+    },
+    onError: (error) => {
+      toast.error("Failed to play timer");
+      console.error("Timer play error:", error);
+    },
+  });
+
+  const {
+    data: fetchedTimerSession,
+    isLoading,
+    isError
+  } = useQuery({
+    queryKey: ["timer_session"],
+    queryFn: getOngoingTimerRequest
+  });
+
   useEffect(() => {
-    setTimeLeft(durations[currentMode]);
-  }, [currentMode, durations]);
+    if (fetchedTimerSession) {
+      const message = fetchedTimerSession.message;
+      if (message === "No ongoing or paused timer") {
+        if (!activeTask) return;
+        const mutationVars = {
+          task_id: activeTask?.id,
+          session_type: currentMode,
+          duration: durations[currentMode],
+          until_long_break: cyclesFromLongBreak
+        }
+        createTimerMutation.mutate(mutationVars);
+      } else {
+        console.log('useEffect on init');
+        setTimeLeft(fetchedTimerSession.data.duration - fetchedTimerSession.data.actual_duration);
+        setCurrentTimerId(fetchedTimerSession.data.id);
+        setCyclesFromLongbreak(
+          fetchedTimerSession.data.until_long_break,
+          fetchedTimerSession.data.session_type
+        );
+      }
+    }
+  }, [fetchedTimerSession])
+
+  // // on mode update, update duration
+  // useEffect(() => {
+  //   setTimeLeft(durations[currentMode]);
+  // }, [currentMode, durations]);
 
   const circProgressBarStyles = buildStyles({
     pathTransition: "stroke-dashoffset 0.15s ease-out 0s",
@@ -102,12 +173,11 @@ export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
   }
 
   return (
-    <div
-      onMouseOver={handleMouseOver}
-      onMouseOut={handleMouseOut}
-      className="container w-full flex flex-row justify-center max-h-72 px-5 space-x-5"
-    >
-      <div className={`container w-6/12 flex justify-center py-2`}>
+    <div className="container w-full flex flex-row justify-center max-h-72 px-5 space-x-5">
+      <div
+        onMouseOver={handleMouseOver}
+        onMouseOut={handleMouseOut}
+        className={`container w-6/12 flex justify-center py-2`}>
         <div className={`min-w-[250px] ${
           (isHovering || timerPaused) && !cycleDone
             ? "blur-sm opacity-75"
@@ -172,11 +242,15 @@ const TimerControls = ({
     setTimeLeft,
     durations,
     setCurrentTimerId,
-    setCyclesFromLongbreak
+    setCyclesFromLongbreak,
+    currentTimerId,
+    cyclesFromLongBreak,
+    timeLeft
   } = useCycleStore();
 
   const {
-    activeTask
+    activeTask,
+    tasks
   } = useTaskStore();
 
   // <-- mutations here
@@ -186,11 +260,13 @@ const TimerControls = ({
       status,
       timer_id,
       time_remaining,
+      until_long_break
     }: {
       status: string;
       timer_id: number;
       time_remaining: number;
-    }) => changeTimerStatusRequest(status, timer_id, time_remaining),
+      until_long_break: number;
+    }) => changeTimerStatusRequest(status, timer_id, time_remaining, until_long_break),
     onSuccess: () => {},
     onError: (error) => {
       console.error("Timer pause error:", error);
@@ -202,13 +278,17 @@ const TimerControls = ({
       task_id,
       session_type,
       duration,
+      until_long_break
     }: {
       task_id: number;
       session_type: string;
       duration: number;
-    }) => createTimerRequest(task_id, session_type, duration),
+      until_long_break: number
+    }) => createTimerRequest(task_id, session_type, duration, until_long_break),
     onSuccess: (response) => {
+      console.log(`{} --> ${response.data}`);
       setCurrentTimerId(response.data.id);
+      setTimeLeft(response.data.time_remaining ?? response.data.duration);
       // console.log("Timer response create:", response);
     },
     onError: (error) => {
@@ -221,6 +301,7 @@ const TimerControls = ({
     mutationFn: () => getOngoingTimerRequest(),
     onSuccess: (response) => {
       setCurrentTimerId(response.data.id);
+      setTimeLeft(response.data.time_remaining);
     },
   });
 
@@ -229,62 +310,54 @@ const TimerControls = ({
   // <-- handle pause click
   const togglePause = () => {
     controlTimerPause();
+    if (!activeTask || !currentTimerId) return;
+    const mutationVars = {
+      status: !timerPaused ? "paused" : "ongoing",
+      timer_id: currentTimerId,
+      time_remaining: timeLeft,
+      until_long_break: cyclesFromLongBreak
+    }
+    changeTimerStatusMutation.mutate(mutationVars);
   }
-  useEffect(() => {
-    if (!activeTask) {
-      console.log(`task store active task --> ${activeTask}`);
-      return;
-    }
-    if (timerPaused) {
 
-    } else {
-      getOngoingTimerMutation.mutate(undefined, {
-        onSuccess: (response) => {
-          if (response.data) {
-            const taskId = response.data.task.id;
-            if (taskId !== activeTask?.id) {
-              const mutationVars = {
-                task_id: activeTask.id,
-                session_type: currentMode,
-                duration: durations[currentMode]
-              }
-              createTimerMutation.mutate(
-                mutationVars,
-                {
-                  onSuccess: (response) => {
-                    setTimeLeft(response.data.time_remaining ?? response.data.duration);
-                    setCyclesFromLongbreak(4); //TODO: dummy palang ni di pa ko sure
-                  }
-                }
-              )
-            } else {
-              setCurrentTimerId(response.data.id);
-              setTimeLeft(response.data.session_type);
-            }
-          } else {
-            const mutationVars = {
-              task_id: activeTask.id,
-              session_type: currentMode,
-              duration: durations[currentMode]
-            }
-            createTimerMutation.mutate(
-              mutationVars,
-              {
-                onSuccess: (response) => {
-                  setCurrentTimerId(response.data.id);
-                  setTimeLeft(response.data.time_remaining ?? response.data.duration);
-                  setCyclesFromLongbreak(4);
-                }
-              }
-            )
-          }
-        }
-      })
-    }
+  useEffect(() => {
+
   }, [timerPaused]);
   // <-- handle click skip
   const handleSkipCycle = () => {
     toNextMode();
+    if (!activeTask) {
+      console.log('no active task on skip!');
+      return;
+    }
+
+    // <-- update current to "completed"
+    const changeMutationVars = {
+      status: "completed",
+      timer_id: currentTimerId ?? 0,
+      time_remaining: timeLeft,
+      until_long_break: cyclesFromLongBreak
+    }
+    changeTimerStatusMutation.mutate(
+      changeMutationVars
+    );
+
+    // <-- create mutation
+    const createMutationVars = {
+      task_id: activeTask.id,
+      session_type: currentCycleQueue[1],
+      duration: durations[currentCycleQueue[1]],
+      until_long_break: cyclesFromLongBreak
+    }
+    console.log(createMutationVars)
+    createTimerMutation.mutate(createMutationVars,
+      {
+        onSuccess: (response) => {
+          console.log(response.data);
+          setCurrentTimerId(response.data.id);
+          setTimeLeft(response.data.time_remaining ?? response.data.duration);
+        }
+      })
     controlTimerPause(true);
   }
   // <-- handle reset
