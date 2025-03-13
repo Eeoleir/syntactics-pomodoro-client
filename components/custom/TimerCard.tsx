@@ -54,7 +54,7 @@ export default function PomodoroTimerCard() {
 }
 
 function CardTop({ isDarkMode }: Readonly<{ isDarkMode: boolean }>) {
-  const { currentMode, nextMode } = useCycleStore();
+  const { currentCycleQueue } = useCycleStore();
 
   const timerTranslations = useTranslations("components.timer");
   const sessionTranslations = useTranslations("components.session-data");
@@ -178,12 +178,12 @@ function CardTop({ isDarkMode }: Readonly<{ isDarkMode: boolean }>) {
         <CycleIndicator
           title={timerTranslations("modes.current-mode.header")}
           subText={timerTranslations("modes.current-mode.sub-header")}
-          modeBadge={<ModeBadge mode={currentMode} isDarkMode={isDarkMode} />}
+          modeBadge={<ModeBadge mode={currentCycleQueue[0]} isDarkMode={isDarkMode} />}
         />
         <CycleIndicator
           title={timerTranslations("modes.next-mode.header")}
           subText={timerTranslations("modes.next-mode.sub-header")}
-          modeBadge={<ModeBadge mode={nextMode} isDarkMode={isDarkMode} />}
+          modeBadge={<ModeBadge mode={currentCycleQueue[1]} isDarkMode={isDarkMode} />}
         />
       </div>
 

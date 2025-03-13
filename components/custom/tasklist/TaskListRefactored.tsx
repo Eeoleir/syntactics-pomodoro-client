@@ -35,34 +35,37 @@ import {
 import { useTaskStore } from "@/app/stores/taskStore";
 
 const TaskList = () => {
-  const queryClient = useQueryClient();
-  const translations = useTranslations("components.task-list");
-
+  const [activeTaskId, setActiveTaskId] = React.useState<number | null>(null);
+  const [taskList, setTaskList] = React.useState<Task[]>([]);
   const [isSpinning, setIsSpinning] = React.useState(false);
   const [AddTaskActive, setAddTaskActive] = React.useState("default");
   const [EditTaskActive, setEditTaskActive] = React.useState("default");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+  const queryClient = useQueryClient();
+  const [firstTask, setFirstTask] = React.useState<Task | null>(null);
+  const [totalCyclesBeforeLongBreak, setTotalCyclesBeforeLongBreak] =
+    React.useState<number>(0);
 
   const [completedCycles, setCompletedCycles] = React.useState<number>(0);
+  const currentMode = useCycleStore((state) => state.currentMode);
+  const nextMode = useCycleStore((state) => state.nextMode);
+  const [lastCompletedMode, setLastCompletedMode] = React.useState<Mode | null>(
+    null
+  );
+  const currentTimeLeft = useCycleStore((state) => state.currentTimeLeft);
+  const activateNextMode = useCycleStore((state) => state.activateNextMode);
 
-  const {
-    currentMode,
-    toNextMode,
-    timeLeft,
-    timerPaused,
-    controlTimerPause,
-    currentTimerId,
-    setCurrentTimerId,
-    cyclesFromLongBreak
-  } = useCycleStore();
+  const setNoAvailableTasks = useCycleStore((state) => state.setNoAvailableTasks);
+  const noAvailableTasks = useCycleStore((state) => state.noAvailableTasks);
+  const isTimerPaused = useCycleStore((state) => state.isTimerPaused);
+  const setIsPaused = useCycleStore((state) => state.setIsPaused);
+  const translations = useTranslations("components.task-list");
+  const timerId = useCycleStore((state) => state.timerId);
+  const [focusCompleted, setFocusCompleted] = React.useState(false);
 
-  const {
-    tasks,
-    addTask,
-    newTasks,
-    activeTask,
-    setActiveTask
-  } = useTaskStore();
+  const { setCurrentTimerId } = useCycleStore();
+
+  const { tasks, addTask, newTasks } = useTaskStore();
 
   const [editInfo, setEditInfo] = React.useState({
     taskId: 0,
@@ -73,7 +76,16 @@ const TaskList = () => {
     taskStatus: "",
   });
 
-  // <-- delete task
+  const {
+    data: fetchedTasks,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["tasks"],
+    queryFn: getTasks,
+    // refetchOnWindowFocus: false,
+  });
+
   const deleteMutation = useMutation({
     mutationFn: (taskId: number) => deleteTask(taskId),
     onSuccess: () => {
@@ -88,17 +100,6 @@ const TaskList = () => {
   // Add a state to track the original order
   const [orderedTasks, setOrderedTasks] = React.useState<Task[]>([]);
 
-  // <-- query fresh tasks
-  const {
-    data: fetchedTasks,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["tasks"],
-    queryFn: getTasks,
-    // refetchOnWindowFocus: false,
-  });
-  // <-- update dependents of queried task list
   useEffect(() => {
     if (fetchedTasks) {
       // Sort tasks initially - completed tasks at bottom
@@ -107,14 +108,12 @@ const TaskList = () => {
         if (b.status === "completed" && a.status !== "completed") return -1;
         return 0;
       });
-      const unfinished = [...fetchedTasks.filter(t => t.status !== "completed")];
       newTasks(fetchedTasks);
-      setActiveTask(unfinished[0]);
+      setTaskList(sortedTasks);
       setOrderedTasks(sortedTasks);
     }
   }, [fetchedTasks]);
 
-  // <-- complete the focused task
   const completeFirstListTask = useMutation({
     mutationFn: (taskId: number) => finishFirstTask(taskId),
     onMutate: async (taskId) => {
@@ -141,6 +140,50 @@ const TaskList = () => {
     },
   });
 
+  const changeTimerStatusMutation = useMutation({
+    mutationFn: ({
+      status,
+      timer_id,
+      time_remaining,
+    }: {
+      status: string;
+      timer_id: number;
+      time_remaining: number;
+    }) => changeTimerStatusRequest(status, timer_id, time_remaining),
+    onSuccess: () => {},
+    onError: (error) => {
+      console.error("Timer pause error:", error);
+    },
+  });
+
+  const createTimerMutation = useMutation({
+    mutationFn: ({
+      task_id,
+      session_type,
+      duration,
+    }: {
+      task_id: number;
+      session_type: string;
+      duration: number;
+    }) => createTimerRequest(task_id, session_type, duration),
+    onSuccess: (response) => {
+      setCurrentTimerId(response.data.id);
+      // console.log("Timer response create:", response);
+    },
+    onError: (error) => {
+      toast.error("Failed to play timer");
+      console.error("Timer play error:", error);
+    },
+  });
+
+  const getOngoingTimerMutation = useMutation({
+    mutationFn: () => getOngoingTimerRequest(),
+    onSuccess: (response) => {
+      setCurrentTimerId(response.data.id);
+      // console.log("Timer response get ongoing:", response);
+    },
+  });
+
   const editCompletedCycleMutation = useMutation({
     mutationFn: ({
       id,
@@ -153,26 +196,292 @@ const TaskList = () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
     },
   });
-
   useEffect(() => {
-    if (!activeTask) return;
-    if (activeTask.estimated_cycles <= activeTask.completed_cycles + 1) {
-      completeFirstListTask.mutate(activeTask.id);
-      setActiveTask(tasks[1]);
-    } else {
-      editCompletedCycleMutation.mutate(
-        {
-          id: activeTask?.id,
-          completed_cycles: activeTask.completed_cycles + 1
+    let intervalId: NodeJS.Timeout | undefined;
+
+    if (orderedTasks && orderedTasks.length > 0) {
+      const first = orderedTasks[0];
+      setNoAvailableTasks(false);
+
+      setFirstTask({
+        id: first.id,
+        title: first.title,
+        description: first.description,
+        due_date: first.due_date,
+        estimated_cycles: first.estimated_cycles,
+        completed_cycles: first.completed_cycles,
+        status: first.status,
+        user_id: first.user_id,
+      });
+
+      if (first.status !== "completed") {
+        if (!isTimerPaused) {
+          getOngoingTimerMutation.mutate(undefined, {
+            onSuccess: (response) => {
+              if (response.data) {
+                const task_id = response.data.task.id;
+                if (task_id !== first.id) {
+                  createTimerMutation.mutate(
+                    {
+                      task_id: first.id,
+                      session_type:
+                        currentMode === Mode.FOCUS
+                          ? "focus"
+                          : currentMode === Mode.SHORT_BREAK
+                          ? "short_break"
+                          : "long_break",
+                      duration: Number(
+                        currentMode === Mode.FOCUS
+                          ? usePomodoroStore.getState().settings
+                              .focus_duration * 60
+                          : currentMode === Mode.SHORT_BREAK
+                          ? usePomodoroStore.getState().settings
+                              .short_break_duration * 60
+                          : usePomodoroStore.getState().settings
+                              .long_break_duration * 60
+                      ),
+                    },
+                    {
+                      onSuccess: (response) => {
+                        if (response.data) {
+                          let timeRemaining =
+                            response.data.time_remaining ??
+                            response.data.duration;
+
+                          // console.log(
+                          //   "Time remaining in useEffect:",
+                          //   timeRemaining
+                          // );
+
+                          const mode =
+                            response.data.session_type === "focus"
+                              ? Mode.FOCUS
+                              : response.data.session_type === "short_break"
+                              ? Mode.SHORT_BREAK
+                              : Mode.LONG_BREAK;
+
+                          useCycleStore
+                            .getState()
+                            .setTimeLeft(mode, timeRemaining);
+                        }
+                      },
+                    }
+                  );
+                } else {
+                  setCurrentTimerId(response.data.id);
+                  const mode =
+                    response.data.session_type === "focus"
+                      ? Mode.FOCUS
+                      : response.data.session_type === "short_break"
+                      ? Mode.SHORT_BREAK
+                      : Mode.LONG_BREAK;
+
+                  let timeRemaining =
+                    response.data.time_remaining ?? response.data.duration;
+                  // console.log("Time remaining in useEffect:", timeRemaining);
+
+                  useCycleStore.getState().setTimeLeft(mode, timeRemaining);
+
+                  intervalId = setInterval(() => {
+                    timeRemaining -= 1;
+                    useCycleStore.getState().setTimeLeft(mode, timeRemaining);
+
+                    if (timeRemaining < 1) {
+                      clearInterval(intervalId);
+                      if (
+                        usePomodoroStore.getState().settings
+                          .is_auto_start_breaks
+                      ) {
+                        setIsPaused(true);
+                      }
+
+                      // Check current mode BEFORE transition
+                      // Only increment if a BREAK is ending (not when a break is starting)
+                      if (
+                        mode === Mode.SHORT_BREAK ||
+                        mode === Mode.LONG_BREAK
+                      ) {
+                        const updatedCompletedCycles = completedCycles + 1;
+                        editCompletedCycleMutation.mutate({
+                          id: first.id,
+                          completed_cycles: updatedCompletedCycles,
+                        });
+                        queryClient.invalidateQueries({ queryKey: ["tasks"] });
+
+                        // console.log(
+                        //   "Break completed, incrementing cycle count"
+                        // );
+                        setCompletedCycles(updatedCompletedCycles);
+                        // console.log(
+                        //   "Current cycle",
+                        //   updatedCompletedCycles,
+                        //   " / ",
+                        //   first.estimated_cycles
+                        // );
+
+                        if (updatedCompletedCycles === first.estimated_cycles) {
+                          if (
+                            usePomodoroStore.getState().settings
+                              .is_auto_complete_tasks
+                          ) {
+                            completeFirstListTask.mutate(first.id);
+                            setCompletedCycles(0);
+                          }
+                        }
+                      }
+
+                      // Now transition to next mode
+                      activateNextMode();
+                      const updatedCurrentMode =
+                        useCycleStore.getState().currentMode;
+
+                      createTimerMutation.mutate(
+                        {
+                          task_id: first.id,
+                          session_type: updatedCurrentMode,
+                          duration: Number(
+                            updatedCurrentMode === Mode.FOCUS
+                              ? usePomodoroStore.getState().settings
+                                  .focus_duration * 60
+                              : updatedCurrentMode === Mode.SHORT_BREAK
+                              ? usePomodoroStore.getState().settings
+                                  .short_break_duration * 60
+                              : usePomodoroStore.getState().settings
+                                  .long_break_duration * 60
+                          ),
+                        },
+                        {
+                          onSuccess: (newResponse) => {
+                            setCurrentTimerId(newResponse.data.id);
+                            // console.log("New timer response:", newResponse);
+                            getOngoingTimerMutation.mutate();
+                          },
+                        }
+                      );
+                    }
+                  }, 1000);
+                }
+              } else {
+                createTimerMutation.mutate(
+                  {
+                    task_id: first.id,
+                    session_type:
+                      currentMode === Mode.FOCUS
+                        ? "focus"
+                        : currentMode === Mode.SHORT_BREAK
+                        ? "short_break"
+                        : "long_break",
+                    duration: Number(
+                      currentMode === Mode.FOCUS
+                        ? usePomodoroStore.getState().settings.focus_duration *
+                            60
+                        : currentMode === Mode.SHORT_BREAK
+                        ? usePomodoroStore.getState().settings
+                            .short_break_duration * 60
+                        : usePomodoroStore.getState().settings
+                            .long_break_duration * 60
+                    ),
+                  },
+                  {
+                    onSuccess: (newResponse) => {
+                      setCurrentTimerId(newResponse.data.id);
+                      // console.log("New timer created:", newResponse);
+                      getOngoingTimerMutation.mutate();
+                    },
+                  }
+                );
+              }
+            },
+            onError: () => {
+              createTimerMutation.mutate(
+                {
+                  task_id: first.id,
+                  session_type:
+                    currentMode === Mode.FOCUS
+                      ? "focus"
+                      : currentMode === Mode.SHORT_BREAK
+                      ? "short_break"
+                      : "long_break",
+                  duration: Number(
+                    currentMode === Mode.FOCUS
+                      ? usePomodoroStore.getState().settings.focus_duration * 60
+                      : currentMode === Mode.SHORT_BREAK
+                      ? usePomodoroStore.getState().settings
+                          .short_break_duration * 60
+                      : usePomodoroStore.getState().settings
+                          .long_break_duration * 60
+                  ),
+                },
+                {
+                  onSuccess: (response) => {
+                    if (response.data) {
+                      let timeRemaining =
+                        response.data.time_remaining ?? response.data.duration;
+
+                      // console.log(
+                      //   "Time remaining in useEffect:",
+                      //   timeRemaining
+                      // );
+
+                      const mode =
+                        response.data.session_type === "focus"
+                          ? Mode.FOCUS
+                          : response.data.session_type === "short_break"
+                          ? Mode.SHORT_BREAK
+                          : Mode.LONG_BREAK;
+
+                      useCycleStore.getState().setTimeLeft(mode, timeRemaining);
+                    }
+                  },
+                }
+              );
+            },
+          });
+        } else if (isTimerPaused) {
+          if (timerId !== null) {
+            changeTimerStatusMutation.mutate(
+              {
+                status: "paused",
+                timer_id: timerId,
+                time_remaining: currentTimeLeft,
+              },
+              {
+                onSuccess: (response) => {
+                  if (response.data) {
+                    let timeRemaining =
+                      response.data.time_remaining ?? response.data.duration;
+
+                    // console.log("Time remaining in useEffect:", timeRemaining);
+
+                    const mode =
+                      response.data.session_type === "focus"
+                        ? Mode.FOCUS
+                        : response.data.session_type === "short_break"
+                        ? Mode.SHORT_BREAK
+                        : Mode.LONG_BREAK;
+
+                    useCycleStore.getState().setTimeLeft(mode, timeRemaining);
+                  }
+                },
+              }
+            );
+          }
         }
-      );
+      }
     }
-  }, [cyclesFromLongBreak])
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [orderedTasks, isTimerPaused]);
+
+  // useEffect(() => {
+  //   console.log("First task:", firstTask);
+  // }, [firstTask]);
 
   const handleActionClick = (taskId: number) => {
     setIsSpinning(true);
-    const targetTask = tasks.find(t => t.id === taskId);
-    setActiveTask(targetTask ? targetTask : null);
+    setActiveTaskId(activeTaskId === taskId ? null : taskId);
     setTimeout(() => setIsSpinning(false), 500);
   };
 
@@ -227,11 +536,14 @@ const TaskList = () => {
     // );
 
     // Check if there are any pending tasks after the status change
-    const hasUncompletedTasks = tasks.some((task) =>
+    const hasUncompletedTasks = taskList.some((task) =>
       task.id === taskId
         ? newStatus !== "completed"
         : task.status !== "completed"
     );
+
+    // Update noAvailableTasks state based on whether there are any pending tasks
+    setNoAvailableTasks(!hasUncompletedTasks);
 
     // Make API request to update status
     editStatusMutation.mutate({ id: taskId, status: newStatus });
@@ -246,7 +558,7 @@ const TaskList = () => {
 
     // Update both states
     setOrderedTasks(items);
-    newTasks(items);
+    setTaskList(items);
   };
 
   if (isLoading)
@@ -270,13 +582,13 @@ const TaskList = () => {
             taskCycle: editInfo.taskCycle.toString(),
           }}
           setEditInfo={setEditInfo}
-          originalTask={tasks.find((task) => task.id === editInfo.taskId)!}
+          originalTask={taskList.find((task) => task.id === editInfo.taskId)!}
         />
       ) : AddTaskActive === "default" ? (
         <>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="iAmHere font-bold text-2xl text-[#52525B] dark:text-white">
+              <h1 className="iAmHere font-bold text-2xl text-[#52525B] dark:text-[#A1A1AA]">
                 {translations("header")}
               </h1>
               <p className="text-[#71717A] font-normal text-base">
@@ -361,7 +673,7 @@ const TaskList = () => {
                                     handleActionClick(task.id);
                                   }}
                                 >
-                                  {activeTask?.id === task.id && (
+                                  {activeTaskId === task.id && (
                                     <div className="flex items-center gap-4">
                                       <svg
                                         id="edit-task-button"
@@ -491,7 +803,7 @@ const TaskList = () => {
                                     strokeWidth="1.5"
                                     stroke="currentColor"
                                     className={`size-5 dark:text-[#71717A] hover:bg-slate-200 dark:hover:bg-slate-600 rounded-full cursor-pointer transition-transform duration-500 ${
-                                      activeTask?.id === task.id
+                                      activeTaskId === task.id
                                         ? "rotate-[180deg]"
                                         : ""
                                     }

@@ -7,10 +7,10 @@ import { Rajdhani } from "next/font/google";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "../ui/button";
 import Image from "next/image";
-import { formatTime, generateColor } from "@/lib/utils";
+import { cn, formatTime, generateColor } from "@/lib/utils";
 import { Mode, useCycleStore } from "@/app/stores/cycleStore";
 import { useTranslations } from "next-intl";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   editTaskCompletedCycleStatus,
   finishFirstTask,
@@ -21,8 +21,10 @@ import { usePomodoroStore } from "@/app/stores/pomodoroStore";
 import {
   changeTimerStatusRequest,
   createTimerRequest,
+  getOngoingTimerRequest,
 } from "@/lib/time-queries";
 import { Cone } from "lucide-react";
+import { useTaskStore } from "@/app/stores/taskStore";
 const rajdhani = Rajdhani({ subsets: ["latin"], weight: ["700"] });
 
 interface CircularTimerProps {
@@ -30,127 +32,180 @@ interface CircularTimerProps {
 }
 
 export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
-  const [cycleDone, setCycleDone] = useState(false);
-  const [mockTaskCountdown, setMockTaskCountDown] = useState(4);
-  const timerTranslations = useTranslations("components.timer");
+  const translations = useTranslations("components.timer");
+  const cycleDone = false; // dummy value for cycleDone (cyclee is done if (allTasks === completed))
 
   const {
     currentMode,
     durations,
+    timeLeft,
     setTimeLeft,
-    nextMode,
-    activateNextMode,
-    isTimerPaused,
-    setIsPaused,
-    currentTimeLeft,
-    longBreakIntervalCounter,
-    longBreakInterval,
+    timerPaused,
+    setCyclesFromLongbreak,
+    cyclesFromLongBreak,
+    setCurrentTimerId
   } = useCycleStore();
 
-  const [internalMode, setInternalMode] = useState(currentMode);
+  const {
+    activeTask,
+    setActiveTask
+  } = useTaskStore();
 
+  // timer logic and behavior vars
   const intervalRef = useRef<NodeJS.Timeout>(null);
-
-  // important for countdown animation
   const [prevTime, setPrevTime] = useState("");
 
+  // time countdown
   useEffect(() => {
-    setPrevTime(formatTime(currentTimeLeft));
+    setPrevTime(formatTime(timeLeft));
+
+    if (timerPaused || cycleDone) {
+      if (intervalRef.current !== null) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      return;
+    }
 
     intervalRef.current = setInterval(() => {
-      if (!isTimerPaused && !cycleDone) {
-        // Decrement time left
-        setTimeLeft(currentMode, currentTimeLeft > 0 ? currentTimeLeft - 1 : 0);
+      console.log(timeLeft);
+      if (!timerPaused && !cycleDone) {
+        setTimeLeft(timeLeft > 0 ? timeLeft - 1 : timeLeft);
       }
     }, 1000);
 
-    // When timer reaches 0
-    if (currentTimeLeft === 0) {
-      // Determine if we should mark cycle as done
-      const shouldMarkCycleDone =
-        longBreakIntervalCounter + 1 === longBreakInterval &&
-        currentMode === Mode.LONG_BREAK;
-
-      if (shouldMarkCycleDone) {
-        setCycleDone(true);
-        setIsPaused(true);
-      }
-      // else {
-      //   // Activate next mode and set its duration
-      //   activateNextMode();
-      //   setTimeLeft(nextMode, durations[nextMode]);
-      // }
-    }
-
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (intervalRef.current !== null) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
     };
-  }, [
-    currentTimeLeft,
-    isTimerPaused,
-    activateNextMode,
-    durations,
-    nextMode,
-    setTimeLeft,
-    currentMode,
-    cycleDone,
-    longBreakIntervalCounter,
-    longBreakInterval,
-  ]);
+  }, [timerPaused, timeLeft]);
 
-  const styles = buildStyles({
-    pathTransition: "stroke-dashoffset 0.15s ease-out 0s",
-    pathColor: !cycleDone ? generateColor(currentMode) : "#f4f4f5",
-    trailColor: isDarkMode ? "#27272a" : "#f4f4f5", // Use isDarkMode for trail color
-    strokeLinecap: "round",
+  // timer logic & behaviors
+  useEffect(() => {
+    if (timeLeft === 0) {
+      // logic here
+    }
+  }, [timeLeft]);
+
+  // <-- fetch existing timer session (if any)
+  // <-- create a new timer session
+  const createTimerMutation = useMutation({
+    mutationFn: ({
+      task_id,
+      session_type,
+      duration,
+      until_long_break
+    }: {
+      task_id: number;
+      session_type: string;
+      duration: number;
+      until_long_break: number
+    }) => createTimerRequest(task_id, session_type, duration, until_long_break),
+    onSuccess: (response) => {
+      setCurrentTimerId(response.data.id);
+      console.log('useEffect on init but create timer');
+      setTimeLeft(response.data.time_remaining ?? response.data.duration);
+      setCyclesFromLongbreak(
+        fetchedTimerSession.data.until_long_break,
+        fetchedTimerSession.data.session_type
+      );
+    },
+    onError: (error) => {
+      toast.error("Failed to play timer");
+      console.error("Timer play error:", error);
+    },
   });
 
-  // on hover logic
+  const {
+    data: fetchedTimerSession,
+    isLoading,
+    isError
+  } = useQuery({
+    queryKey: ["timer_session"],
+    queryFn: getOngoingTimerRequest
+  });
+
+  useEffect(() => {
+    if (fetchedTimerSession) {
+      const message = fetchedTimerSession.message;
+      if (message === "No ongoing or paused timer") {
+        if (!activeTask) return;
+        const mutationVars = {
+          task_id: activeTask?.id,
+          session_type: currentMode,
+          duration: durations[currentMode],
+          until_long_break: cyclesFromLongBreak
+        }
+        createTimerMutation.mutate(mutationVars);
+      } else {
+        console.log('useEffect on init');
+        setTimeLeft(fetchedTimerSession.data.duration - fetchedTimerSession.data.actual_duration);
+        setCurrentTimerId(fetchedTimerSession.data.id);
+        setCyclesFromLongbreak(
+          fetchedTimerSession.data.until_long_break,
+          fetchedTimerSession.data.session_type
+        );
+      }
+    }
+  }, [fetchedTimerSession])
+
+  // // on mode update, update duration
+  // useEffect(() => {
+  //   setTimeLeft(durations[currentMode]);
+  // }, [currentMode, durations]);
+
+  const circProgressBarStyles = buildStyles({
+    pathTransition: "stroke-dashoffset 0.15s ease-out 0s",
+    pathColor: cycleDone ? "#f4f4f5" : generateColor(currentMode),
+    trailColor: isDarkMode ? "#27272a" : "#f4f4f5",
+    strokeLinecap: "round"
+  })
+
+  // handles blur timer and show controls
   const [isHovering, setIsHovering] = useState(false);
   const handleMouseOver = () => {
     setIsHovering(true);
-  };
+  }
   const handleMouseOut = () => {
     setIsHovering(false);
-  };
+  }
 
   return (
-    <div
-      onMouseOver={handleMouseOver}
-      onMouseOut={handleMouseOut}
-      className="container w-full flex flex-row justify-center max-h-72 px-5 space-x-5"
-    >
-      <div className={`container w-6/12 flex justify-center py-2`}>
-        <div
-          className={`min-w-[250px] ${
-            (isHovering || isTimerPaused) && !cycleDone
-              ? "blur-sm opacity-75"
-              : ""
-          } transition duration-200`}
-        >
-          <CircularProgressbarWithChildren
-            strokeWidth={6.5}
-            value={currentTimeLeft}
-            maxValue={durations[currentMode]}
-            styles={styles}
-          >
-            <TimeTickerAnim
+    <div className="container w-full flex flex-row justify-center max-h-72 px-5 space-x-5">
+      <div
+        onMouseOver={handleMouseOver}
+        onMouseOut={handleMouseOut}
+        className={`container w-6/12 flex justify-center py-2`}>
+        <div className={`min-w-[250px] ${
+          (isHovering || timerPaused) && !cycleDone
+            ? "blur-sm opacity-75"
+            : ""
+          } transition duration-200`}>
+            <CircularProgressbarWithChildren
+              strokeWidth={6.5}
+              value={timeLeft}
+              maxValue={durations[currentMode]}
+              styles={circProgressBarStyles}
+            >
+              <TimerTickerAnim
               prev={prevTime}
-              current={formatTime(currentTimeLeft)}
-              seconds={currentTimeLeft}
+              current={formatTime(timeLeft)}
+              seconds={timeLeft}
               textColor={`${
                 isDarkMode
                   ? cycleDone
-                    ? "text-[#3f3f46]"
+                    ? "text-[#4f4f46]"
                     : "text-white"
                   : cycleDone
-                  ? "text-[#d4d4d8]"
-                  : "text-[#52525b]"
-              }`}
-            />
-          </CircularProgressbarWithChildren>
+                    ? "text-[#d4d4d8]"
+                    : "text-[#52525b]"
+                }`}
+              />
+            </CircularProgressbarWithChildren>
         </div>
-        {(isHovering || isTimerPaused) && !cycleDone && (
+        {(isHovering || timerPaused) && !cycleDone && (
           <AnimatePresence>
             <motion.div
               initial={{ opacity: 0, scale: 0.95, marginTop: 5 }}
@@ -161,44 +216,228 @@ export default function CircularTimer({ isDarkMode }: CircularTimerProps) {
             >
               <TimerControls
                 initialTime={durations[currentMode]}
-                setTime={(newTime: number) => setTimeLeft(currentMode, newTime)}
                 isDarkMode={isDarkMode}
               />
             </motion.div>
           </AnimatePresence>
         )}
       </div>
-      {cycleDone && (
-        <div className="flex flex-col w-6/12 justify-start space-y-20">
-          <div className="flex flex-col space-y-3">
-            <h3
-              className={`font-sans text-[32px] font-bold ${
-                isDarkMode ? "text-[#f4f4f5]" : "text-[#3f3f46]"
-              }`}
-            >
-              {timerTranslations("cycle-finish.header")}
-            </h3>
-            <h6
-              className={`${
-                isDarkMode ? "text-[#f4f4f5]" : "text-[#71717a]"
-              } text-[18px]`}
-            >
-              {timerTranslations("cycle-finish.message")}
-            </h6>
-          </div>
-          <OnFinishedCycleButton isDarkMode={isDarkMode} />{" "}
-          {/* Pass isDarkMode */}
-        </div>
-      )}
+    </div>
+  )
+}
+
+const TimerControls = ({
+  initialTime,
+  isDarkMode,
+} : {
+  initialTime: number;
+  isDarkMode: boolean;
+}) => {
+  const {
+    timerPaused,
+    controlTimerPause,
+    toNextMode,
+    currentMode,
+    currentCycleQueue,
+    setTimeLeft,
+    durations,
+    setCurrentTimerId,
+    setCyclesFromLongbreak,
+    currentTimerId,
+    cyclesFromLongBreak,
+    timeLeft
+  } = useCycleStore();
+
+  const {
+    activeTask,
+    tasks
+  } = useTaskStore();
+
+  // <-- mutations here
+  // <-- patch timer status
+  const changeTimerStatusMutation = useMutation({
+    mutationFn: ({
+      status,
+      timer_id,
+      time_remaining,
+      until_long_break
+    }: {
+      status: string;
+      timer_id: number;
+      time_remaining: number;
+      until_long_break: number;
+    }) => changeTimerStatusRequest(status, timer_id, time_remaining, until_long_break),
+    onSuccess: () => {},
+    onError: (error) => {
+      console.error("Timer pause error:", error);
+    },
+  });
+  // <-- create a new timer session
+  const createTimerMutation = useMutation({
+    mutationFn: ({
+      task_id,
+      session_type,
+      duration,
+      until_long_break
+    }: {
+      task_id: number;
+      session_type: string;
+      duration: number;
+      until_long_break: number
+    }) => createTimerRequest(task_id, session_type, duration, until_long_break),
+    onSuccess: (response) => {
+      console.log(`{} --> ${response.data}`);
+      setCurrentTimerId(response.data.id);
+      setTimeLeft(response.data.time_remaining ?? response.data.duration);
+      // console.log("Timer response create:", response);
+    },
+    onError: (error) => {
+      toast.error("Failed to play timer");
+      console.error("Timer play error:", error);
+    },
+  });
+  // <-- get ongoing timer (if any)
+  const getOngoingTimerMutation = useMutation({
+    mutationFn: () => getOngoingTimerRequest(),
+    onSuccess: (response) => {
+      setCurrentTimerId(response.data.id);
+      setTimeLeft(response.data.time_remaining);
+    },
+  });
+
+  // controls logic
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  // <-- handle pause click
+  const togglePause = () => {
+    controlTimerPause();
+    if (!activeTask || !currentTimerId) return;
+    const mutationVars = {
+      status: !timerPaused ? "paused" : "ongoing",
+      timer_id: currentTimerId,
+      time_remaining: timeLeft,
+      until_long_break: cyclesFromLongBreak
+    }
+    changeTimerStatusMutation.mutate(mutationVars);
+  }
+
+  useEffect(() => {
+
+  }, [timerPaused]);
+  // <-- handle click skip
+  const handleSkipCycle = () => {
+    toNextMode();
+    if (!activeTask) {
+      console.log('no active task on skip!');
+      return;
+    }
+
+    // <-- update current to "completed"
+    const changeMutationVars = {
+      status: "completed",
+      timer_id: currentTimerId ?? 0,
+      time_remaining: timeLeft,
+      until_long_break: cyclesFromLongBreak
+    }
+    changeTimerStatusMutation.mutate(
+      changeMutationVars
+    );
+
+    // <-- create mutation
+    const createMutationVars = {
+      task_id: activeTask.id,
+      session_type: currentCycleQueue[1],
+      duration: durations[currentCycleQueue[1]],
+      until_long_break: cyclesFromLongBreak
+    }
+    console.log(createMutationVars)
+    createTimerMutation.mutate(createMutationVars,
+      {
+        onSuccess: (response) => {
+          console.log(response.data);
+          setCurrentTimerId(response.data.id);
+          setTimeLeft(response.data.time_remaining ?? response.data.duration);
+        }
+      })
+    controlTimerPause(true);
+  }
+  // <-- handle reset
+  const handleReset = () => {
+    setTimeLeft(durations[currentMode]);
+    controlTimerPause(true);
+  }
+
+  const secondaryBtnLayout = "w-[56px] h-[56px] shadow-none";
+  const secondaryBtnStyles = `${
+    isDarkMode
+      ? "bg-[#3f3f46] hover:bg-[#2e2e33]"
+      : "bg-[#f4f4f5] hover:bg-[#dedee0]"
+  }`;
+
+  const primaryBtnLayout = "w-[72px] h-[72px]";
+  const primaryButtonStyle = `${
+    isDarkMode
+      ? "bg-[#52525b] hover:bg-[#393940]"
+      : "bg-[#e4e4e7] hover:bg-[#cdcdd1]"
+  }`;
+
+  return (
+    <div className={cn("container w-full h-64 blurred-background flex items-end justify-center")}>
+      <div className="flex flex-row justify-center items-center space-x-3">
+        {/* --- reset time --- */}
+        <Button
+          onClick={handleReset}
+          className={`${secondaryBtnLayout} ${secondaryBtnStyles}`}>
+          <Image
+            src={`/timer_control_icons/restart.svg`}
+            alt={"?"}
+            width={25}
+            height={25}
+            className="-mt-[2px]"
+          />
+        </Button>
+
+        {/* --- pause / start timer --- */}
+        <Button
+          className={`${primaryButtonStyle} ${primaryBtnLayout}`}
+          onClick={togglePause}
+          disabled={isButtonDisabled}
+        >
+          <Image
+            src={`/timer_control_icons/${
+              timerPaused ? "start" : "pause"
+            }.svg`}
+            alt={"?"}
+            width={33}
+            height={39}
+            className="-mt-[2px]"
+          />
+        </Button>
+
+        {/* --- proceed to next cycle  --- */}
+        <Button
+          className={`${secondaryBtnStyles} ${secondaryBtnLayout}`}
+          onClick={handleSkipCycle}
+          disabled={isButtonDisabled}
+        >
+          <Image
+            src={`/timer_control_icons/next_session.svg`}
+            alt={"?"}
+            width={25}
+            height={25}
+            className="-mt-[2px]"
+          />
+        </Button>
+
+      </div>
     </div>
   );
 }
 
-const TimeTickerAnim = ({
+const TimerTickerAnim = ({
   prev,
   current,
   seconds,
-  textColor,
+  textColor
 }: {
   prev: string;
   current: string;
@@ -222,11 +461,11 @@ const TimeTickerAnim = ({
           {
             duration: 200,
             easing: "ease-out",
-            fill: "forwards",
+            fill: "forwards"
           }
         );
       }
-    });
+    })
   }, [current, prev]);
 
   const textSizeClass = seconds > 3600 ? "text-[45px]" : "text-[64px]";
@@ -247,300 +486,12 @@ const TimeTickerAnim = ({
       ))}
     </h3>
   );
-};
-
-const TimerControls = ({
-  initialTime,
-  setTime,
-  isDarkMode,
-}: {
-  initialTime: number;
-  setTime: CallableFunction;
-  isDarkMode: boolean; // Add isDarkMode prop
-}) => {
-  const {
-    isTimerPaused,
-    setIsPaused,
-    activateNextMode,
-    currentMode,
-    nextMode,
-    durations,
-    setTimeLeft,
-    timerId,
-    setTimerId,
-  } = useCycleStore();
-  const [isButtonDisabled, setIsButtonDisabled] = React.useState(false);
-
-  const togglePause = () => {
-    setIsPaused(!isTimerPaused);
-
-    setIsButtonDisabled(true);
-
-    setTimeout(() => {
-      setIsButtonDisabled(false);
-    }, 5000);
-  };
-  const [completedCycles, setCompletedCycles] = React.useState<number>(0);
-
-  const noAvailableTasks = useCycleStore((state) => state.noAvailableTasks);
-
-  const containerStyles = `container w-full h-64 blurred-background flex items-end justify-center`;
-
-  const secondaryBtnLayout = "w-[56px] h-[56px] shadow-none";
-  const secondaryBtnStyles = `${
-    isDarkMode
-      ? "bg-[#3f3f46] hover:bg-[#2e2e33]"
-      : "bg-[#f4f4f5] hover:bg-[#dedee0]"
-  }`;
-
-  const primaryBtnLayout = "w-[72px] h-[72px]";
-  const primaryButtonStyle = `${
-    isDarkMode
-      ? "bg-[#52525b] hover:bg-[#393940]"
-      : "bg-[#e4e4e7] hover:bg-[#cdcdd1]"
-  }`;
-
-  const reset = () => {
-    setTime(initialTime);
-
-    changeTimerStatusMutation.mutate({
-      status: "completed",
-      timer_id: timerId!,
-      time_remaining: initialTime,
-    });
-
-    setIsPaused(true);
-    setIsButtonDisabled(true);
-
-    setTimeout(() => {
-      setIsButtonDisabled(false);
-    }, 5000);
-  };
-
-  const queryClient = useQueryClient();
-
-  const completeFirstListTask = useMutation({
-    mutationFn: (taskId: number) => finishFirstTask(taskId),
-    onMutate: async (taskId) => {
-      await queryClient.cancelQueries({ queryKey: ["tasks"] });
-      const previousTasks = queryClient.getQueryData<Task[]>(["tasks"]);
-
-      queryClient.setQueryData<Task[]>(["tasks"], (old) =>
-        old?.map((task) =>
-          task.id === taskId ? { ...task, status: "completed" } : task
-        )
-      );
-
-      return { previousTasks };
-    },
-    onError: (err, taskId, context) => {
-      queryClient.setQueryData(["tasks"], context?.previousTasks);
-      toast.warning("Failed to mark task as completed");
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks"] });
-    },
-  });
-
-  const createTimerMutation = useMutation({
-    mutationFn: ({
-      task_id,
-      session_type,
-      duration,
-    }: {
-      task_id: number;
-      session_type: string;
-      duration: number;
-    }) => createTimerRequest(task_id, session_type, duration),
-    onSuccess: (response) => {
-      setTimerId(response.data.id);
-      // console.log("Timer response:", response);
-    },
-    onError: (error) => {
-      toast.error("Failed to play timer");
-      console.error("Timer play error:", error);
-    },
-  });
-
-  const changeTimerStatusMutation = useMutation({
-    mutationFn: ({
-      status,
-      timer_id,
-      time_remaining,
-    }: {
-      status: string;
-      timer_id: number;
-      time_remaining: number;
-    }) => changeTimerStatusRequest(status, timer_id, time_remaining),
-    onSuccess: () => {
-      ("Timer paused successfully");
-    },
-    onError: (error) => {
-      console.error("Timer pause error:", error);
-    },
-  });
-
-  const editCompletedCycleMutation = useMutation({
-    mutationFn: ({
-      id,
-      completed_cycles,
-    }: {
-      id: number;
-      completed_cycles: number;
-    }) => editTaskCompletedCycleStatus(id, completed_cycles),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks"] });
-    },
-  });
-
-  const handleNextSession = () => {
-    const tasks = queryClient.getQueryData<Task[]>(["tasks"]);
-    const firstTask = tasks?.find((task) => task.status !== "completed");
-    // console.log("Task From CircularTimer: ", tasks);
-    // console.log("First task from CircularTimer: ", firstTask);
-
-    let proceed = false;
-    // console.log(timerId);
-    if (timerId) {
-      changeTimerStatusMutation.mutate(
-        {
-          status: "completed",
-          timer_id: timerId,
-          time_remaining: 0,
-        },
-        {
-          onSuccess: (response) => {
-            // console.log("change timer stat");
-            proceed = true;
-
-            // console.log(firstTask);
-            if (!firstTask || !proceed) {
-              return false;
-            }
-
-            activateNextMode();
-            setIsPaused(true);
-
-            const updatedNextMode = useCycleStore.getState().nextMode;
-
-            if (
-              updatedNextMode === Mode.SHORT_BREAK ||
-              updatedNextMode === Mode.LONG_BREAK
-            ) {
-              const updatedCompletedCycles = firstTask.completed_cycles + 1;
-              editCompletedCycleMutation.mutate({
-                id: firstTask.id,
-                completed_cycles: updatedCompletedCycles,
-              });
-              queryClient.invalidateQueries({ queryKey: ["tasks"] });
-
-              // console.log("Current Mode:", updatedNextMode);
-              setCompletedCycles(updatedCompletedCycles);
-
-              if (updatedCompletedCycles === firstTask.estimated_cycles) {
-                completeFirstListTask.mutate(firstTask.id, {
-                  onSuccess: () => {
-                    toast.success("Task completed successfully");
-                    queryClient.invalidateQueries({ queryKey: ["tasks"] });
-                  },
-                });
-              }
-            }
-
-            createTimerMutation.mutate(
-              {
-                task_id: firstTask?.id,
-                session_type: nextMode,
-                duration: durations[nextMode],
-              },
-              {
-                onSuccess: (response) => {
-                  if (!response.data) {
-                    // console.log(
-                    //   "on-skip --> request response returned without data"
-                    // );
-                    return false;
-                  }
-                  // console.log(`on skip --> ${response}`);
-                  setTimerId(response.data.id);
-
-                  let timeRemaining =
-                    response.data.time_remaining ?? response.data.duration;
-
-                  // console.log(response.data.session_type);
-                  setIsPaused(false);
-                },
-              }
-            );
-          },
-        }
-      );
-    }
-
-    setIsButtonDisabled(true);
-
-    setTimeout(() => {
-      setIsButtonDisabled(false);
-    }, 5000);
-  };
-
-  return (
-    <div className={containerStyles}>
-      <div className="flex flex-row justify-center items-center space-x-3">
-        {/* ---- reset time ----- */}
-        <Button
-          className={`${secondaryBtnStyles} ${secondaryBtnLayout}`}
-          onClick={reset}
-          disabled={noAvailableTasks || isButtonDisabled}
-        >
-          <Image
-            src={`/timer_control_icons/restart.svg`}
-            alt={"?"}
-            width={25}
-            height={25}
-            className="-mt-[2px]"
-          />
-        </Button>
-        {/* ---- pause / start timer ----- */}
-
-        <Button
-          className={`${primaryButtonStyle} ${primaryBtnLayout}`}
-          onClick={togglePause}
-          disabled={noAvailableTasks || isButtonDisabled}
-        >
-          <Image
-            src={`/timer_control_icons/${
-              isTimerPaused ? "start" : "pause"
-            }.svg`}
-            alt={"?"}
-            width={33}
-            height={39}
-            className="-mt-[2px]"
-          />
-        </Button>
-        {/* ---- proceed to next cycle  ----- */}
-        <Button
-          className={`${secondaryBtnStyles} ${secondaryBtnLayout}`}
-          onClick={handleNextSession}
-          disabled={noAvailableTasks || isButtonDisabled}
-        >
-          <Image
-            src={`/timer_control_icons/next_session.svg`}
-            alt={"?"}
-            width={25}
-            height={25}
-            className="-mt-[2px]"
-          />
-        </Button>
-      </div>
-    </div>
-  );
-};
+}
 
 const OnFinishedCycleButton = ({
-  isDarkMode,
-}: {
-  isDarkMode: boolean; // Add isDarkMode prop
+  isDarkMode
+} : {
+  isDarkMode: boolean;
 }) => {
   const modeTranslations = useTranslations("components.mode-badges");
   const timerTranslations = useTranslations("components.timer");
@@ -556,4 +507,4 @@ const OnFinishedCycleButton = ({
       {modeTranslations("focus.title")}
     </Button>
   );
-};
+}
