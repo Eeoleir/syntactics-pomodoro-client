@@ -107,8 +107,9 @@ const TaskList = () => {
         if (b.status === "completed" && a.status !== "completed") return -1;
         return 0;
       });
+      const unfinished = [...fetchedTasks.filter(t => t.status !== "completed")];
       newTasks(fetchedTasks);
-      setActiveTask(fetchedTasks[0]);
+      setActiveTask(unfinished[0]);
       setOrderedTasks(sortedTasks);
     }
   }, [fetchedTasks]);
