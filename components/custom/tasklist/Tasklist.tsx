@@ -109,7 +109,7 @@ const TaskList = () => {
       });
       const unfinished = [...fetchedTasks.filter(t => t.status !== "completed")];
       newTasks(fetchedTasks);
-      setActiveTask(unfinished[0]);
+      setActiveTask(fetchedTasks[0]);
       setOrderedTasks(sortedTasks);
     }
   }, [fetchedTasks]);
